@@ -1,9 +1,9 @@
 [build]
-  command = "npm install && npm run build"
+  command = "npm install --legacy-peer-deps && npm run build"
   publish = "dist"
 
 [build.environment]
   NODE_VERSION = "18"
 
-[build.image]
-  = "ubuntu-22.04"
+[functions]
+  directory = "functions"
