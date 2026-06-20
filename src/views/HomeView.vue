@@ -15,7 +15,7 @@
     
     <!-- 搜索结果 -->
     <div v-if="searchResults.length > 0" class="search-results">
-      <h2>📋 搜索结果（{{ totalResults }} 条，共 {{ totalPages }} 页）</h2>
+      <h2>📋 搜索结果（{{ searchResults.length }} 条）</h2>
       <ul>
         <li v-for="post in searchResults" :key="post.tid">
           <router-link :to="`/post/${post.tid}?from=search&keyword=${encodeURIComponent(keyword)}`" @click="saveSearchState">
@@ -25,16 +25,9 @@
           <span class="meta">{{ formatTime(post.dateline) }}</span>
         </li>
       </ul>
-      
-      <!-- 分页导航 -->
-      <div v-if="totalPages > 1" class="pagination">
-        <button @click="goToPage(currentPage - 1)" :disabled="currentPage <= 1">上一页</button>
-        <span class="page-info">{{ currentPage }} / {{ totalPages }}</span>
-        <button @click="goToPage(currentPage + 1)" :disabled="currentPage >= totalPages">下一页</button>
-      </div>
     </div>
     
-    <!-- 手风琴菜单（无搜索时显示） -->
+    <!-- 手风琴菜单 -->
     <AccordionMenu v-else />
   </div>
 </template>
@@ -49,9 +42,6 @@ const router = useRouter()
 const keyword = ref('')
 const searchResults = ref([])
 const searchInput = ref(null)
-const currentPage = ref(1)
-const totalResults = ref(0)
-const totalPages = ref(0)
 
 const formatTime = (timestamp) => {
   const date = new Date(timestamp * 1000)
@@ -66,13 +56,11 @@ const doSearch = async () => {
     return
   }
   try {
-    const res = await fetch(`/api?action=search&keyword=${encodeURIComponent(kw)}&page=${currentPage.value}`)
+    const res = await fetch(`/api?action=search&keyword=${encodeURIComponent(kw)}`)
     const data = await res.json()
     if (data.code === 0) {
       searchResults.value = data.data
-      totalResults.value = data.total || 0
-      totalPages.value = data.total_pages || 0
-      router.replace(`/?from=search&keyword=${encodeURIComponent(kw)}&page=${currentPage.value}`)
+      router.replace(`/?from=search&keyword=${encodeURIComponent(kw)}`)
     } else {
       searchResults.value = []
     }
@@ -82,51 +70,30 @@ const doSearch = async () => {
   }
 }
 
-// 跳转到指定页
-const goToPage = (page) => {
-  if (page < 1 || page > totalPages.value) return
-  currentPage.value = page
-  doSearch()
-  window.scrollTo({ top: 0, behavior: 'smooth' })
-}
-
 const saveSearchState = () => {
   sessionStorage.setItem('searchKeyword', keyword.value)
   sessionStorage.setItem('searchResults', JSON.stringify(searchResults.value))
-  sessionStorage.setItem('currentPage', String(currentPage.value))
 }
 
 const clearSearch = () => {
   keyword.value = ''
   searchResults.value = []
-  currentPage.value = 1
-  totalResults.value = 0
-  totalPages.value = 0
   sessionStorage.removeItem('searchKeyword')
   sessionStorage.removeItem('searchResults')
-  sessionStorage.removeItem('currentPage')
   router.replace('/')
 }
 
 const restoreSearchState = () => {
   const savedKeyword = sessionStorage.getItem('searchKeyword')
   const savedResults = sessionStorage.getItem('searchResults')
-  const savedPage = sessionStorage.getItem('currentPage')
   
   if (route.query.from === 'search') {
     if (savedKeyword) {
       keyword.value = savedKeyword
     }
-    if (savedPage) {
-      currentPage.value = parseInt(savedPage) || 1
-    }
     if (savedResults) {
       try {
         searchResults.value = JSON.parse(savedResults)
-        // 重新获取总数（从 URL 参数或重新请求）
-        if (route.query.total) {
-          totalResults.value = parseInt(route.query.total) || 0
-        }
         setTimeout(() => {
           const resultsEl = document.querySelector('.search-results')
           if (resultsEl) {
@@ -146,19 +113,14 @@ const restoreSearchState = () => {
     if (!route.query.keyword) {
       sessionStorage.removeItem('searchKeyword')
       sessionStorage.removeItem('searchResults')
-      sessionStorage.removeItem('currentPage')
     }
   }
 }
 
 onMounted(() => {
   const urlKeyword = route.query.keyword
-  const urlPage = route.query.page
   if (urlKeyword) {
     keyword.value = decodeURIComponent(urlKeyword)
-    if (urlPage) {
-      currentPage.value = parseInt(urlPage) || 1
-    }
     doSearch()
   } else {
     restoreSearchState()
@@ -259,37 +221,5 @@ onMounted(() => {
   color: #aaa;
   font-size: 12px;
   float: right;
-}
-
-/* 分页样式 */
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 15px;
-  margin-top: 20px;
-  padding: 15px 0;
-  border-top: 1px solid #eee;
-}
-.pagination button {
-  padding: 8px 20px;
-  background: #42b983;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background 0.2s;
-}
-.pagination button:hover:not(:disabled) {
-  background: #359b6d;
-}
-.pagination button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.pagination .page-info {
-  font-size: 14px;
-  color: #666;
 }
 </style>
