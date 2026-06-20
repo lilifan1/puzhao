@@ -352,7 +352,8 @@ const formatTime = (timestamp) => {
 const loadPosts = async () => {
   loading.value = true
   try {
-    const url = `/api?action=list&fid=${fid.value}&page=${page.value}`
+    const baseUrl = import.meta.env.VITE_API_BASE || '/api'
+    const url = `${baseUrl}?action=list&fid=${fid.value}&page=${page.value}`
     const res = await fetch(url)
     const data = await res.json()
     if (data.code === 0) {
