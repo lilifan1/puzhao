@@ -25,6 +25,13 @@
           <span class="meta">{{ formatTime(post.dateline) }}</span>
         </li>
       </ul>
+      
+      <!-- 分页 -->
+      <div v-if="totalPages > 1" class="pagination">
+        <button @click="goToPage(currentPage - 1)" :disabled="currentPage <= 1">上一页</button>
+        <span class="page-info">{{ currentPage }} / {{ totalPages }}</span>
+        <button @click="goToPage(currentPage + 1)" :disabled="currentPage >= totalPages">下一页</button>
+      </div>
     </div>
     
     <!-- 手风琴菜单 -->
@@ -42,6 +49,12 @@ const router = useRouter()
 const keyword = ref('')
 const searchResults = ref([])
 const searchInput = ref(null)
+const currentPage = ref(1)
+const totalPages = ref(0)
+const totalResults = ref(0)
+
+// 硬编码 API 地址
+const API_BASE = 'https://www.dadaozjzhitojian.cloud/sina/ff/safe_api.php'
 
 const formatTime = (timestamp) => {
   const date = new Date(timestamp * 1000)
@@ -56,13 +69,13 @@ const doSearch = async () => {
     return
   }
   try {
-    // 使用环境变量或直接硬编码 API 地址
-    const baseUrl = import.meta.env.VITE_API_BASE || '/api'
-    const res = await fetch(`${baseUrl}?action=search&keyword=${encodeURIComponent(kw)}`)
+    const res = await fetch(`${API_BASE}?action=search&keyword=${encodeURIComponent(kw)}&page=${currentPage.value}`)
     const data = await res.json()
     if (data.code === 0) {
       searchResults.value = data.data
-      router.replace(`/?from=search&keyword=${encodeURIComponent(kw)}`)
+      totalResults.value = data.total || 0
+      totalPages.value = data.total_pages || 0
+      router.replace(`/?from=search&keyword=${encodeURIComponent(kw)}&page=${currentPage.value}`)
     } else {
       searchResults.value = []
     }
@@ -72,49 +85,52 @@ const doSearch = async () => {
   }
 }
 
+const goToPage = (page) => {
+  if (page < 1 || page > totalPages.value) return
+  currentPage.value = page
+  doSearch()
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
 const saveSearchState = () => {
   sessionStorage.setItem('searchKeyword', keyword.value)
   sessionStorage.setItem('searchResults', JSON.stringify(searchResults.value))
+  sessionStorage.setItem('currentPage', String(currentPage.value))
 }
 
 const clearSearch = () => {
   keyword.value = ''
   searchResults.value = []
+  currentPage.value = 1
+  totalPages.value = 0
+  totalResults.value = 0
   sessionStorage.removeItem('searchKeyword')
   sessionStorage.removeItem('searchResults')
+  sessionStorage.removeItem('currentPage')
   router.replace('/')
 }
 
 const restoreSearchState = () => {
   const savedKeyword = sessionStorage.getItem('searchKeyword')
   const savedResults = sessionStorage.getItem('searchResults')
+  const savedPage = sessionStorage.getItem('currentPage')
   
   if (route.query.from === 'search') {
-    if (savedKeyword) {
-      keyword.value = savedKeyword
-    }
+    if (savedKeyword) keyword.value = savedKeyword
+    if (savedPage) currentPage.value = parseInt(savedPage) || 1
     if (savedResults) {
       try {
         searchResults.value = JSON.parse(savedResults)
-        setTimeout(() => {
-          const resultsEl = document.querySelector('.search-results')
-          if (resultsEl) {
-            resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
-          }
-        }, 300)
-      } catch (e) {
-        console.warn('恢复搜索结果失败:', e)
-      }
+      } catch (e) {}
     }
     nextTick(() => {
-      if (searchInput.value) {
-        searchInput.value.focus()
-      }
+      if (searchInput.value) searchInput.value.focus()
     })
   } else {
     if (!route.query.keyword) {
       sessionStorage.removeItem('searchKeyword')
       sessionStorage.removeItem('searchResults')
+      sessionStorage.removeItem('currentPage')
     }
   }
 }
@@ -123,6 +139,7 @@ onMounted(() => {
   const urlKeyword = route.query.keyword
   if (urlKeyword) {
     keyword.value = decodeURIComponent(urlKeyword)
+    currentPage.value = parseInt(route.query.page) || 1
     doSearch()
   } else {
     restoreSearchState()
@@ -223,5 +240,36 @@ onMounted(() => {
   color: #aaa;
   font-size: 12px;
   float: right;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 20px;
+  padding: 15px 0;
+  border-top: 1px solid #eee;
+}
+.pagination button {
+  padding: 8px 20px;
+  background: #42b983;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+.pagination button:hover:not(:disabled) {
+  background: #359b6d;
+}
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.pagination .page-info {
+  font-size: 14px;
+  color: #666;
 }
 </style>
