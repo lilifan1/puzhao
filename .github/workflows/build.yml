@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build:
@@ -21,26 +21,16 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
-
-      - name: 检查 Node 和 npm 版本
-        run: |
-          node --version
-          npm --version
 
       - name: 安装依赖
         run: |
           npm config set registry https://registry.npmmirror.com
           npm install --legacy-peer-deps
-          npm list vite
 
       - name: 构建项目
         run: npx vite build
         env:
           VITE_API_BASE: ${{ secrets.VITE_API_BASE }}
-
-      - name: 检查构建产物
-        run: ls -la dist/
 
       - name: 部署到 Netlify
         uses: nwtgck/actions-netlify@v2.0
