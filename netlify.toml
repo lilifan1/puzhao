@@ -1,9 +1,0 @@
-[build]
-  # command = "npm install --legacy-peer-deps && npm run build"  ← 注释掉或删除
-  publish = "dist"
-
-[build.environment]
-  NODE_VERSION = "18"
-
-[functions]
-  directory = "functions"
