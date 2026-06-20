@@ -2,18 +2,22 @@
   <div class="container">
     <!-- 导航栏 -->
     <div class="nav-bar">
-      <router-link to="/" class="nav-btn">🏠 手风琴首页</router-link>
+      <router-link to="/" class="nav-btn">🏠 资料集首页</router-link>
       <button @click="goBack" class="nav-btn">← 返回上一级</button>
     </div>
 
     <div v-if="loading">⏳ 加载中...</div>
     <div v-else-if="post">
-      <h1>{{ post.subject }}</h1>
+      <!-- 标题区 + 复制按钮 -->
+      <div class="post-header">
+        <h1>{{ post.subject }}</h1>
+        <button @click="copyLink" class="copy-btn" title="复制本页链接">📋 复制链接</button>
+      </div>
+
       <div class="meta">
         作者：{{ post.author }} | 
         发布时间：{{ formatTime(post.dateline) }} | 
-        浏览：{{ post.views }} | 
-        回复：{{ post.replies }}
+        浏览：{{ post.views }} 
       </div>
 
       <!-- ===== 视频播放器（置顶） ===== -->
@@ -144,6 +148,27 @@ const goBack = () => {
   window.history.back()
 }
 
+// ==================== 复制链接（带标题） ====================
+const copyLink = async () => {
+  if (!post.value) return
+  const title = post.value.subject || '普照'
+  const url = window.location.href
+  const shareText = `${title}\n${url}`
+
+  try {
+    await navigator.clipboard.writeText(shareText)
+    alert('✅ 链接和标题已复制！')
+  } catch {
+    const input = document.createElement('input')
+    input.value = shareText
+    document.body.appendChild(input)
+    input.select()
+    document.execCommand('copy')
+    document.body.removeChild(input)
+    alert('✅ 链接和标题已复制！')
+  }
+}
+
 // ==================== 音频 ====================
 const extractAudioList = (retryCount = 0) => {
   const contentEl = document.querySelector('.content')
@@ -195,7 +220,6 @@ const extractAudioList = (retryCount = 0) => {
       currentAudio.value = { url: list[0].url, title: list[0].title }
     }
     
-    // 隐藏原来的音频播放器
     const playerContainer = contentEl.querySelector('.sm2-bar-ui')
     if (playerContainer) {
       playerContainer.style.display = 'none'
@@ -204,19 +228,16 @@ const extractAudioList = (retryCount = 0) => {
       audioUl.style.display = 'none'
     }
     
-    // 移动音频列表到 "点击标题即可收听" 下面
     nextTick(() => {
       moveAudioListToTop()
     })
   }
 }
 
-// 移动音频列表到 "点击标题即可收听" 下面
 const moveAudioListToTop = () => {
   const contentEl = document.querySelector('.content')
   if (!contentEl) return
   
-  // 查找包含 "点击标题即可收听" 的元素
   let targetNode = null
   const allElements = contentEl.querySelectorAll('*')
   for (const el of allElements) {
@@ -227,7 +248,6 @@ const moveAudioListToTop = () => {
     }
   }
   
-  // 如果没找到，查找 "温馨提醒"
   if (!targetNode) {
     for (const el of allElements) {
       const text = el.textContent || ''
@@ -238,21 +258,17 @@ const moveAudioListToTop = () => {
     }
   }
   
-  // 如果找到了目标位置，并且音频列表存在，就移动
   if (targetNode && audioList.value.length > 0) {
     const audioSection = document.getElementById('audio-list-container')
     if (audioSection) {
       const targetParent = targetNode.parentNode
       if (targetParent) {
-        // 找到目标节点的下一个兄弟节点
         const nextSibling = targetNode.nextSibling
-        // 把音频列表插入到目标节点后面
         targetParent.insertBefore(audioSection, nextSibling)
         console.log('✅ 音频列表已移动成功')
       }
     }
   } else {
-    // 如果还是没找到，用备用方案：查找包含 "更多精彩" 的元素，插入到它前面
     for (const el of allElements) {
       const text = el.textContent || ''
       if (text.includes('更多精彩') || text.includes('目录')) {
@@ -265,7 +281,6 @@ const moveAudioListToTop = () => {
       if (audioSection) {
         const targetParent = targetNode.parentNode
         if (targetParent) {
-          // 插入到目标节点前面
           targetParent.insertBefore(audioSection, targetNode)
           console.log('✅ 音频列表已移动到 "更多精彩" 前面')
         }
@@ -510,15 +525,15 @@ const loadPost = async (tid) => {
   audioList.value = []
   currentAudioIndex.value = -1
   currentAudio.value = null
-  
+
   if (observer) {
     observer.disconnect()
     observer = null
   }
 
-  try {
-    const baseUrl = 'https://www.dadaozjzhitojian.cloud/sina/ff/safe_api.php'
+  const baseUrl = 'https://www.dadaozjzhitojian.cloud/sina/ff/safe_api.php'
 
+  try {
     const res = await fetch(`${baseUrl}?action=thread&tid=${tid}`)
     const data = await res.json()
     if (data.code === 0) {
@@ -589,7 +604,14 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.container { max-width: 800px; margin: 0 auto; padding: 20px; }
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fef9e7;
+  min-height: 100vh;
+  border-radius: 8px;
+}
 
 .nav-bar {
   display: flex;
@@ -612,6 +634,55 @@ onMounted(async () => {
 .nav-btn:hover {
   background: #42b983;
   color: white;
+}
+
+/* ===== 标题 + 复制按钮 ===== */
+.post-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.post-header h1 {
+  flex: 1;
+  min-width: 200px;
+}
+.copy-btn {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  background: #f1c40f;
+  color: #333;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+  height: fit-content;
+  font-weight: 500;
+}
+.copy-btn:hover {
+  background: #d4ac0d;
+}
+
+/* ===== 手机端适配 ===== */
+@media (max-width: 600px) {
+  .post-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .post-header h1 {
+    min-width: unset;
+    width: 100%;
+    font-size: 18px;
+  }
+  .copy-btn {
+    align-self: flex-start;
+    font-size: 13px;
+    padding: 5px 12px;
+  }
 }
 
 h1 { color: #2c3e50; }

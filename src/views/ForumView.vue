@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <router-link to="/" class="back">← 返回手风琴目录</router-link>
+    <router-link to="/" class="back">← 返回资料集目录</router-link>
     <h1>{{ forumName }}</h1>
     <div v-if="loading">⏳ 加载中...</div>
     <div v-else-if="posts.length === 0" class="empty">该版块暂无帖子</div>
