@@ -56,7 +56,9 @@ const doSearch = async () => {
     return
   }
   try {
-    const res = await fetch(`/api?action=search&keyword=${encodeURIComponent(kw)}`)
+    // 使用环境变量或直接硬编码 API 地址
+    const baseUrl = import.meta.env.VITE_API_BASE || '/api'
+    const res = await fetch(`${baseUrl}?action=search&keyword=${encodeURIComponent(kw)}`)
     const data = await res.json()
     if (data.code === 0) {
       searchResults.value = data.data
