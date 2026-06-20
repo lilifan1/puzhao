@@ -24,7 +24,7 @@ jobs:
 
       - name: 构建项目
         run: npm run build
-        env:   # ← 修正：和 run 对齐
+        env:
           VITE_API_BASE: ${{ secrets.VITE_API_BASE }}
 
       - name: 部署到 Netlify
