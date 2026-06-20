@@ -57,7 +57,7 @@ const doSearch = async () => {
   }
   try {
     // ✅ 使用环境变量
-    const baseUrl = import.meta.env.VITE_API_BASE || '/api'
+    const baseUrl = 'https://www.dadaozjzhitojian.cloud/sina/ff/safe_api.php'
     const res = await fetch(`${baseUrl}?action=search&keyword=${encodeURIComponent(kw)}`)
     const data = await res.json()
     if (data.code === 0) {

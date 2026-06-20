@@ -517,7 +517,7 @@ const loadPost = async (tid) => {
   }
 
   try {
-    const baseUrl = import.meta.env.VITE_API_BASE || '/api'
+    const baseUrl = 'https://www.dadaozjzhitojian.cloud/sina/ff/safe_api.php'
 
     const res = await fetch(`${baseUrl}?action=thread&tid=${tid}`)
     const data = await res.json()
