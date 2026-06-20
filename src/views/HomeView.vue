@@ -18,7 +18,6 @@
       <h2>📋 搜索结果（{{ searchResults.length }} 条）</h2>
       <ul>
         <li v-for="post in searchResults" :key="post.tid">
-          <!-- 关键：链接带上 from=search 参数，并保存搜索关键词 -->
           <router-link :to="`/post/${post.tid}?from=search&keyword=${encodeURIComponent(keyword)}`" @click="saveSearchState">
             {{ post.subject }}
           </router-link>
@@ -53,16 +52,16 @@ const doSearch = async () => {
   const kw = keyword.value.trim()
   if (!kw) {
     searchResults.value = []
-    // 清除 URL 参数
     router.replace('/')
     return
   }
   try {
-    const res = await fetch(`/api?action=search&keyword=${encodeURIComponent(kw)}`)
+    // ✅ 使用环境变量
+    const baseUrl = import.meta.env.VITE_API_BASE || '/api'
+    const res = await fetch(`${baseUrl}?action=search&keyword=${encodeURIComponent(kw)}`)
     const data = await res.json()
     if (data.code === 0) {
       searchResults.value = data.data
-      // 保存搜索状态到 URL
       router.replace(`/?from=search&keyword=${encodeURIComponent(kw)}`)
     } else {
       searchResults.value = []
@@ -73,9 +72,7 @@ const doSearch = async () => {
   }
 }
 
-// 保存搜索状态（点击帖子时调用）
 const saveSearchState = () => {
-  // 将当前搜索关键词保存到 sessionStorage，以便返回时恢复
   sessionStorage.setItem('searchKeyword', keyword.value)
   sessionStorage.setItem('searchResults', JSON.stringify(searchResults.value))
 }
@@ -88,22 +85,17 @@ const clearSearch = () => {
   router.replace('/')
 }
 
-// 恢复搜索状态
 const restoreSearchState = () => {
   const savedKeyword = sessionStorage.getItem('searchKeyword')
   const savedResults = sessionStorage.getItem('searchResults')
   
-  // 如果 URL 中有 from=search 参数，尝试恢复
   if (route.query.from === 'search') {
-    // 如果有保存的关键词，恢复
     if (savedKeyword) {
       keyword.value = savedKeyword
     }
-    // 如果有保存的搜索结果，恢复
     if (savedResults) {
       try {
         searchResults.value = JSON.parse(savedResults)
-        // 滚动到搜索结果位置
         setTimeout(() => {
           const resultsEl = document.querySelector('.search-results')
           if (resultsEl) {
@@ -114,14 +106,12 @@ const restoreSearchState = () => {
         console.warn('恢复搜索结果失败:', e)
       }
     }
-    // 聚焦搜索框
     nextTick(() => {
       if (searchInput.value) {
         searchInput.value.focus()
       }
     })
   } else {
-    // 如果 URL 中没有 from=search，清除保存的状态
     if (!route.query.keyword) {
       sessionStorage.removeItem('searchKeyword')
       sessionStorage.removeItem('searchResults')
@@ -130,11 +120,9 @@ const restoreSearchState = () => {
 }
 
 onMounted(() => {
-  // 检查是否有搜索关键词参数
   const urlKeyword = route.query.keyword
   if (urlKeyword) {
     keyword.value = decodeURIComponent(urlKeyword)
-    // 自动执行搜索
     doSearch()
   } else {
     restoreSearchState()

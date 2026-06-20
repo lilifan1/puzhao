@@ -517,7 +517,7 @@ const loadPost = async (tid) => {
   }
 
   try {
-    const baseUrl = import.meta.env.DEV ? '/api' : '/.netlify/functions/api'
+    const baseUrl = import.meta.env.VITE_API_BASE || '/api'
 
     const res = await fetch(`${baseUrl}?action=thread&tid=${tid}`)
     const data = await res.json()
