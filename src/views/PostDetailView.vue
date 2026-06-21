@@ -495,6 +495,15 @@ const handleLinkClick = (event) => {
   const href = target.getAttribute('href')
   if (!href) return
 
+  // ✅ 新增：处理 article.html#/viewthread/tid/xxx 格式
+  const articleMatch = href.match(/article\.html#\/viewthread\/tid\/(\d+)/)
+  if (articleMatch) {
+    event.preventDefault()
+    event.stopPropagation()
+    router.push(`/post/${articleMatch[1]}`)
+    return
+  }
+
   if (href.startsWith('forum.php')) {
     event.preventDefault()
     event.stopPropagation()
@@ -506,7 +515,7 @@ const handleLinkClick = (event) => {
       return
     }
     
-    // ✅ 新增：检查是否是版块链接（fid）
+    // 检查是否是版块链接（fid）
     const fidMatch = href.match(/fid=(\d+)/)
     if (fidMatch) {
       router.push(`/forum/${fidMatch[1]}`)
