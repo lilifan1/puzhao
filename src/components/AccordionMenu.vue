@@ -87,6 +87,13 @@ const handleLinkClick = (url) => {
     return
   }
   
+  // 直接版块链接：forum.php?mod=forumdisplay&fid=xxx
+  const directFidMatch = url.match(/forum\.php\?mod=forumdisplay&fid=(\d+)/)
+  if (directFidMatch) {
+    router.push(`/forum/${directFidMatch[1]}`)
+    return
+  }
+  
   // 其他链接跳转到首页
   router.push('/')
 }
