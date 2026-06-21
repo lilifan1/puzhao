@@ -498,11 +498,22 @@ const handleLinkClick = (event) => {
   if (href.startsWith('forum.php')) {
     event.preventDefault()
     event.stopPropagation()
+    
+    // 检查是否是帖子链接（tid）
     const tidMatch = href.match(/tid=(\d+)/)
     if (tidMatch) {
       router.push(`/post/${tidMatch[1]}`)
       return
     }
+    
+    // ✅ 新增：检查是否是版块链接（fid）
+    const fidMatch = href.match(/fid=(\d+)/)
+    if (fidMatch) {
+      router.push(`/forum/${fidMatch[1]}`)
+      return
+    }
+    
+    // 其他 forum.php 链接跳转到首页
     router.push('/')
   }
 }
