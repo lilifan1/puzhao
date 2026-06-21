@@ -495,12 +495,21 @@ const handleLinkClick = (event) => {
   const href = target.getAttribute('href')
   if (!href) return
 
-  // ✅ 新增：处理 article.html#/viewthread/tid/xxx 格式
-  const articleMatch = href.match(/article\.html#\/viewthread\/tid\/(\d+)/)
-  if (articleMatch) {
+  // ✅ 处理 article.html#/viewthread/tid/xxx（帖子链接）
+  const articleTidMatch = href.match(/article\.html#\/viewthread\/tid\/(\d+)/)
+  if (articleTidMatch) {
     event.preventDefault()
     event.stopPropagation()
-    router.push(`/post/${articleMatch[1]}`)
+    router.push(`/post/${articleTidMatch[1]}`)
+    return
+  }
+
+  // ✅ 新增：处理 article.html#/forumdisplay/fid/xxx（版块链接）
+  const articleFidMatch = href.match(/article\.html#\/forumdisplay\/fid\/(\d+)/)
+  if (articleFidMatch) {
+    event.preventDefault()
+    event.stopPropagation()
+    router.push(`/forum/${articleFidMatch[1]}`)
     return
   }
 
@@ -508,21 +517,18 @@ const handleLinkClick = (event) => {
     event.preventDefault()
     event.stopPropagation()
     
-    // 检查是否是帖子链接（tid）
     const tidMatch = href.match(/tid=(\d+)/)
     if (tidMatch) {
       router.push(`/post/${tidMatch[1]}`)
       return
     }
     
-    // 检查是否是版块链接（fid）
     const fidMatch = href.match(/fid=(\d+)/)
     if (fidMatch) {
       router.push(`/forum/${fidMatch[1]}`)
       return
     }
     
-    // 其他 forum.php 链接跳转到首页
     router.push('/')
   }
 }
