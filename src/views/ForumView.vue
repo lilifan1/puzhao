@@ -1,10 +1,25 @@
 <template>
   <div class="container">
-    <router-link to="/" class="back">← 返回资料集目录</router-link>
+    <router-link to="/" class="back">← 返回资料集首页</router-link>
     <h1>{{ forumName }}</h1>
     <div v-if="loading">⏳ 加载中...</div>
-    <div v-else-if="posts.length === 0" class="empty">该版块暂无帖子</div>
-    <ul v-else>
+    <div v-else-if="posts.length === 0 && subForums.length === 0" class="empty">该版块暂无帖子</div>
+    
+    <!-- 子版块列表 -->
+    <div v-if="subForums.length > 0" class="sub-forums">
+      <h3>📂 子版块</h3>
+      <ul>
+        <li v-for="sub in subForums" :key="sub.fid">
+          <router-link :to="`/forum/${sub.fid}`">
+            {{ sub.name }}
+          </router-link>
+          <span class="sub-meta">（{{ sub.threads || 0 }} 个主题）</span>
+        </li>
+      </ul>
+    </div>
+    
+    <!-- 帖子列表 -->
+    <ul v-else-if="posts.length > 0">
       <li v-for="post in posts" :key="post.tid">
         <router-link :to="`/post/${post.tid}`">
           {{ post.subject }}
@@ -14,7 +29,7 @@
       </li>
     </ul>
     
-    <!-- 上下篇分页导航 -->
+    <!-- 分页 -->
     <div v-if="posts.length > 0" class="pagination-nav">
       <span class="page-info">第 {{ page }} 页</span>
       <div class="nav-links">
@@ -36,10 +51,10 @@ const forumName = ref('版块帖子')
 const page = ref(1)
 const fid = ref(0)
 const perPage = 50
+const subForums = ref([])
 
 // ==================== 版块名称映射 ====================
 const forumNames = {
-  // ===== 入门必看 =====
   '1326': '每日学习',
   '1335': '每日畅听',
   '52': '睡前一听',
@@ -88,8 +103,6 @@ const forumNames = {
   '10394': '（七）劝导升文',
   '138593': '【下载】佛像、经文、自修、小房子等资料',
   '134831': '《普照》安卓+苹果论坛下载',
-
-  // ===== 一键畅听 =====
   '11910': '震撼和感动视频',
   '99413': '师父希望大家真修实修',
   '13192': '我们唯一的师父',
@@ -177,8 +190,6 @@ const forumNames = {
   '32519': '专题音频合集-学佛改变命运',
   '130764': '师父开示每日佛言佛语・畅听合集',
   '130971': '【畅听】佛学问答175问',
-
-  // ===== 佛法书籍 =====
   '74': '白话佛法第一册',
   '73': '白话佛法第二册',
   '72': '白话佛法第三册',
@@ -218,8 +229,6 @@ const forumNames = {
   '1339': '观音堂开光与联谊会',
   '289': '弟子开示一',
   '288': '弟子开示二',
-
-  // ===== 问答知识 =====
   '132023': '【目录1】佛学问答175问',
   '99358': '【目录2】佛学问答175问',
   '92555': '疾病百科目录',
@@ -229,8 +238,6 @@ const forumNames = {
   '297': '婚姻情感集锦一 珍惜姻缘 随顺因缘',
   '296': '婚姻情感集锦二 持守戒律 圆满家庭',
   '100707': '弘法度人辅导手册目录',
-
-  // ===== 历年见面会 =====
   '1105': '2008见面会开示',
   '271': '2010见面会开示',
   '272': '2011见面会开示',
@@ -253,8 +260,6 @@ const forumNames = {
   '293': '法會同修分享',
   '298': '感动花絮',
   '1106': '精彩结束语',
-
-  // ===== 智慧小故事 =====
   '206': '佛陀故事',
   '1400': '观世音菩萨故事',
   '1323': '视频故事',
@@ -267,24 +272,16 @@ const forumNames = {
   '403': '持戒守戒小故事',
   '405': '烦恼菩提小故事',
   '406': '放下随缘 小故事',
-
-  // ===== 天地游记 =====
   '463': '天地游记一',
   '462': '天地游记二',
   '1328': '天地游记未成册一',
   '1329': '天地游记未成册二',
-
-  // ===== 心灵百科 =====
   '647': '【心灵百科】文字·畅听',
-
-  // ===== 图腾因果 =====
   '135478': '【因果视频专集·分类目录】',
   '58': '图腾视频剪辑811个',
   '100321': '《一命二运三风水》',
   '100528': '《天 地 人》',
   '100973': '共圆【中国梦】',
-
-  // ===== 节气佛诞 =====
   '134265': '释迦牟尼佛出家日，涅槃日，诞辰日，成道日',
   '134242': '观世音菩萨诞辰日，成道日，出家日开示',
   '1135': '大势至菩萨',
@@ -304,8 +301,6 @@ const forumNames = {
   '1126': '新年元旦',
   '1125': '岁末年关',
   '1334': '立春',
-
-  // ===== 问答节目 =====
   '1103': '2008年节目录音',
   '1104': '2009年节目录音',
   '202': '2010年节目录音',
@@ -328,12 +323,20 @@ const forumNames = {
   '527': '2017年音频剪辑',
   '514': '2018年音频剪辑',
   '440': '2019年音频剪辑',
-  '424': '2020年音频剪辑',
+  '424': '音频剪辑2020',
+  '425': '202001',
+  '434': '202002',
+  '433': '202003',
+  '432': '202004',
+  '431': '202005',
+  '430': '202006',
+  '429': '202007',
+  '428': '202008',
+  '427': '202009',
+  '426': '202010',
   '50': '分类音频',
   '453': '玄艺问答视频',
   '1319': '真修实修视频',
-
-  // ===== 博客速递 =====
   '409': '留言板选摘',
   '454': '博客回复',
   '63': '灵验实例',
@@ -344,6 +347,8 @@ const forumNames = {
 
 // =====================================================
 
+const baseUrl = import.meta.env.VITE_API_BASE || '/api'
+
 const formatTime = (timestamp) => {
   const date = new Date(timestamp * 1000)
   return date.toLocaleDateString() + ' ' + date.toLocaleTimeString()
@@ -351,18 +356,35 @@ const formatTime = (timestamp) => {
 
 const loadPosts = async () => {
   loading.value = true
+  subForums.value = []
   try {
-    const baseUrl = 'https://www.dadaozjzhitojian.cloud/sina/ff/safe_api.php'
     const url = `${baseUrl}?action=list&fid=${fid.value}&page=${page.value}`
     const res = await fetch(url)
     const data = await res.json()
     if (data.code === 0) {
       posts.value = data.data
+      
+      // 如果帖子为空，自动获取子版块
+      if (posts.value.length === 0) {
+        await loadSubForums()
+      }
     }
   } catch (error) {
     console.error('获取版块帖子失败:', error)
   } finally {
     loading.value = false
+  }
+}
+
+const loadSubForums = async () => {
+  try {
+    const res = await fetch(`${baseUrl}?action=subforums&fid=${fid.value}`)
+    const data = await res.json()
+    if (data.code === 0 && data.data.length > 0) {
+      subForums.value = data.data
+    }
+  } catch (error) {
+    console.error('获取子版块失败:', error)
   }
 }
 
@@ -406,7 +428,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.container { max-width: 800px; margin: 0 auto; padding: 20px; }
+.container { max-width: 800px; margin: 0 auto; padding: 20px; background: #fef9e7; min-height: 100vh; }
 .back { color: #42b983; text-decoration: none; display: inline-block; margin-bottom: 10px; }
 .back:hover { text-decoration: underline; }
 h1 { color: #2c3e50; border-bottom: 3px solid #42b983; padding-bottom: 10px; }
@@ -419,6 +441,14 @@ a:hover { color: #42b983; }
 .meta { color: #aaa; font-size: 12px; float: right; }
 .empty { color: #999; text-align: center; padding: 40px 0; }
 
+.sub-forums { margin: 20px 0; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.sub-forums h3 { color: #785635; margin-bottom: 15px; }
+.sub-forums ul { list-style: none; padding: 0; }
+.sub-forums li { padding: 10px 15px; border-bottom: 1px solid #f0f0f0; background: transparent; box-shadow: none; margin: 0; border-radius: 0; }
+.sub-forums li:last-child { border-bottom: none; }
+.sub-forums a { font-weight: 500; }
+.sub-meta { color: #999; font-size: 13px; margin-left: 8px; }
+
 .pagination-nav {
   display: flex;
   justify-content: space-between;
@@ -427,28 +457,9 @@ a:hover { color: #42b983; }
   padding: 12px 0;
   border-top: 1px solid #eee;
 }
-.page-info {
-  font-size: 14px;
-  color: #888;
-}
-.nav-links {
-  display: flex;
-  gap: 20px;
-}
-.nav-links a {
-  color: #42b983;
-  text-decoration: none;
-  font-size: 15px;
-  padding: 5px 10px;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-}
-.nav-links a:hover:not(.disabled) {
-  background-color: #f0f0f0;
-}
-.nav-links a.disabled {
-  color: #ccc;
-  cursor: not-allowed;
-  pointer-events: none;
-}
+.page-info { font-size: 14px; color: #888; }
+.nav-links { display: flex; gap: 20px; }
+.nav-links a { color: #42b983; text-decoration: none; font-size: 15px; padding: 5px 10px; border-radius: 4px; transition: background-color 0.2s; }
+.nav-links a:hover:not(.disabled) { background-color: #f0f0f0; }
+.nav-links a.disabled { color: #ccc; cursor: not-allowed; pointer-events: none; }
 </style>
