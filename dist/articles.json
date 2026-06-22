@@ -600,7 +600,7 @@
                 },
                 {
                     "title": "畅听-各经文开示",
-                    "url": "article.html#\/viewthread\/tid\/0"
+                    "url": "article.html#\/forumdisplay\/fid\/412"
                 }
             ]
         },
@@ -702,15 +702,15 @@
                 },
                 {
                     "title": "2012年广播讲座",
-                    "url": "article.html#\/forumdisplay\/fid\/258"
-                },
-                {
-                    "title": "2013年广播讲座",
                     "url": "article.html#\/forumdisplay\/fid\/259"
                 },
                 {
-                    "title": "2014年广播讲座",
+                    "title": "2013年广播讲座",
                     "url": "article.html#\/forumdisplay\/fid\/260"
+                },
+                {
+                    "title": "2014年广播讲座",
+                    "url": "article.html#\/forumdisplay\/fid\/261"
                 },
                 {
                     "title": "2015年广播讲座",
@@ -718,11 +718,11 @@
                 },
                 {
                     "title": "2016年广播讲座",
-                    "url": "article.html#\/forumdisplay\/fid\/278"
+                    "url": "article.html#\/forumdisplay\/fid\/263"
                 },
                 {
                     "title": "2017年广播讲座",
-                    "url": "article.html#\/forumdisplay\/fid\/279"
+                    "url": "article.html#\/forumdisplay\/fid\/264"
                 },
                 {
                     "title": "2018年广播讲座",
@@ -851,7 +851,7 @@
                 },
                 {
                     "title": "解答来信疑惑分类剪辑",
-                    "url": "forum.php?gid=1164"
+                    "url": "article.html#\/viewthread\/tid\/140250"
                 }
             ]
         },
@@ -1108,7 +1108,7 @@
             "items": [
                 {
                     "title": "【心灵百科】目录检索",
-                    "url": "forum.php?gid=620"
+                    "url": "article.html#\/viewthread\/tid\/98139"
                 },
                 {
                     "title": "【心灵百科】文字·畅听",
