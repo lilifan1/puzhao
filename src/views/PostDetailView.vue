@@ -270,8 +270,13 @@ const moveAudioListAfterTitle = () => {
   const allElements = contentEl.querySelectorAll('*')
   
   // 支持多种关键词变体
-  const keywords = ['点击标题即可收听', '备用音频', '温馨提醒', '点击标题收听']
-  
+  const keywords = [
+    '温馨提醒 点击标题即可收听',
+    '温馨提示',
+    '备用音频',
+    '点击标题收听'
+  ]
+
   for (const el of allElements) {
     const text = el.textContent || ''
     for (const kw of keywords) {
