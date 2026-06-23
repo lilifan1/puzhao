@@ -282,10 +282,10 @@ const moveAudioListAfterTitle = () => {
   const audioSection = document.getElementById('audio-list-container')
   if (!audioSection) return
   
+  // 查找关键词
   let targetNode = null
   const allElements = contentEl.querySelectorAll('*')
   
-  // 查找关键词
   const keywords = [
     '温馨提醒 点击标题即可收听',
     '温馨提示：点击下面的标题即可收听音频',
@@ -306,31 +306,20 @@ const moveAudioListAfterTitle = () => {
   }
   
   if (targetNode) {
-    // ✅ 直接插入到目标节点后面
-    targetNode.insertAdjacentElement('afterend', audioSection)
-    console.log('✅ 音频列表已移动到关键词后面')
-    return
+    // ✅ 找到关键词所在的父容器（section）
+    let container = targetNode.closest('section')
+    if (container) {
+      // ✅ 把音频列表插入到容器后面
+      container.insertAdjacentElement('afterend', audioSection)
+      console.log('✅ 音频列表已移动到关键词容器后面、正文前面')
+      return
+    }
   }
   
   // 如果没找到关键词，放到内容开头
   if (contentEl.firstChild) {
     contentEl.insertBefore(audioSection, contentEl.firstChild)
     console.log('✅ 音频列表已移动到内容开头')
-    return
-  }
-  
-  // 兜底：查找"更多精彩"
-  for (const el of allElements) {
-    const text = el.textContent || ''
-    if (text.includes('更多精彩') || text.includes('目录')) {
-      targetNode = el
-      break
-    }
-  }
-  
-  if (targetNode && audioList.value.length > 0) {
-    targetNode.insertAdjacentElement('afterend', audioSection)
-    console.log('✅ 音频列表已移动到 "更多精彩" 前面')
     return
   }
   
