@@ -180,11 +180,10 @@ const extractAudioList = (retryCount = 0) => {
   }
 
   let list = []
-  let audioUl = null
-  
+
+  // 查找主音频列表
   const ul = contentEl.querySelector('ul.sm2-playlist-bd')
   if (ul) {
-    audioUl = ul
     const items = ul.querySelectorAll('li')
     items.forEach(li => {
       const a = li.querySelector('a')
@@ -200,6 +199,7 @@ const extractAudioList = (retryCount = 0) => {
     })
   }
 
+  // 如果没找到，查找所有音频链接
   if (list.length === 0) {
     const links = contentEl.querySelectorAll('a[href*=".mp3"], a[href*=".m4a"]')
     links.forEach(a => {
@@ -220,24 +220,27 @@ const extractAudioList = (retryCount = 0) => {
       currentAudio.value = { url: list[0].url, title: list[0].title }
     }
     
-    const playerContainer = contentEl.querySelector('.sm2-bar-ui')
-    if (playerContainer) {
-      playerContainer.style.display = 'none'
-    }
-    if (audioUl) {
-      audioUl.style.display = 'none'
-    }
+    // ✅ 隐藏所有音频相关元素（包括主播放器和备用列表）
+    const allPlayers = contentEl.querySelectorAll('.sm2-bar-ui, ul.sm2-playlist-bd, .sm2-playlist-drawer')
+    allPlayers.forEach(el => {
+      el.style.display = 'none'
+    })
     
     nextTick(() => {
-      moveAudioListToTop()
+      moveAudioListAfterTitle()
     })
   }
 }
 
-const moveAudioListToTop = () => {
+// ==================== 移动音频列表到"点击标题即可收听"后面 ====================
+const moveAudioListAfterTitle = () => {
   const contentEl = document.querySelector('.content')
   if (!contentEl) return
   
+  const audioSection = document.getElementById('audio-list-container')
+  if (!audioSection) return
+  
+  // 查找"点击标题即可收听"元素
   let targetNode = null
   const allElements = contentEl.querySelectorAll('*')
   for (const el of allElements) {
@@ -248,6 +251,18 @@ const moveAudioListToTop = () => {
     }
   }
   
+  // 如果找到了"点击标题即可收听"，把音频列表插入到它后面
+  if (targetNode) {
+    const targetParent = targetNode.parentNode
+    if (targetParent) {
+      const nextSibling = targetNode.nextSibling
+      targetParent.insertBefore(audioSection, nextSibling)
+      console.log('✅ 音频列表已移动到 "点击标题即可收听" 后面')
+      return
+    }
+  }
+  
+  // 如果没找到，查找"温馨提醒"
   if (!targetNode) {
     for (const el of allElements) {
       const text = el.textContent || ''
@@ -259,33 +274,22 @@ const moveAudioListToTop = () => {
   }
   
   if (targetNode && audioList.value.length > 0) {
-    const audioSection = document.getElementById('audio-list-container')
-    if (audioSection) {
-      const targetParent = targetNode.parentNode
-      if (targetParent) {
-        const nextSibling = targetNode.nextSibling
-        targetParent.insertBefore(audioSection, nextSibling)
-        console.log('✅ 音频列表已移动成功')
-      }
+    const targetParent = targetNode.parentNode
+    if (targetParent) {
+      const nextSibling = targetNode.nextSibling
+      targetParent.insertBefore(audioSection, nextSibling)
+      console.log('✅ 音频列表已移动到 "温馨提醒" 后面')
+      return
     }
+  }
+  
+  // 如果什么都没找到，放到内容开头
+  if (contentEl.firstChild) {
+    contentEl.insertBefore(audioSection, contentEl.firstChild)
+    console.log('✅ 音频列表已移动到内容开头')
   } else {
-    for (const el of allElements) {
-      const text = el.textContent || ''
-      if (text.includes('更多精彩') || text.includes('目录')) {
-        targetNode = el
-        break
-      }
-    }
-    if (targetNode && audioList.value.length > 0) {
-      const audioSection = document.getElementById('audio-list-container')
-      if (audioSection) {
-        const targetParent = targetNode.parentNode
-        if (targetParent) {
-          targetParent.insertBefore(audioSection, targetNode)
-          console.log('✅ 音频列表已移动到 "更多精彩" 前面')
-        }
-      }
-    }
+    contentEl.appendChild(audioSection)
+    console.log('✅ 音频列表已追加到内容中')
   }
 }
 
@@ -495,7 +499,6 @@ const handleLinkClick = (event) => {
   const href = target.getAttribute('href')
   if (!href) return
 
-  // ✅ 处理 article.html#/viewthread/tid/xxx（帖子链接）
   const articleTidMatch = href.match(/article\.html#\/viewthread\/tid\/(\d+)/)
   if (articleTidMatch) {
     event.preventDefault()
@@ -504,7 +507,6 @@ const handleLinkClick = (event) => {
     return
   }
 
-  // ✅ 新增：处理 article.html#/forumdisplay/fid/xxx（版块链接）
   const articleFidMatch = href.match(/article\.html#\/forumdisplay\/fid\/(\d+)/)
   if (articleFidMatch) {
     event.preventDefault()
@@ -662,7 +664,6 @@ onMounted(async () => {
   color: white;
 }
 
-/* ===== 标题 + 复制按钮 ===== */
 .post-header {
   display: flex;
   align-items: center;
@@ -692,7 +693,6 @@ onMounted(async () => {
   background: #d4ac0d;
 }
 
-/* ===== 手机端适配 ===== */
 @media (max-width: 600px) {
   .post-header {
     flex-direction: column;
