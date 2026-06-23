@@ -299,6 +299,25 @@ const moveAudioListAfterTitle = () => {
     }
   }
   
+  // ✅ 第二优先级：如果没找到关键词，查找"更多精彩"
+  for (const el of allElements) {
+    const text = el.textContent || ''
+    if (text.includes('更多精彩') || text.includes('目录')) {
+      targetNode = el
+      break
+    }
+  }
+  
+  if (targetNode && audioList.value.length > 0) {
+    const targetParent = targetNode.parentNode
+    if (targetParent) {
+      const nextSibling = targetNode.nextSibling
+      targetParent.insertBefore(audioSection, nextSibling)
+      console.log('✅ 音频列表已移动到 "更多精彩" 前面')
+      return
+    }
+  }
+  
   // 如果什么都没找到，放到内容开头
   if (contentEl.firstChild) {
     contentEl.insertBefore(audioSection, contentEl.firstChild)
