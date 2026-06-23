@@ -269,13 +269,24 @@ const moveAudioListAfterTitle = () => {
   let targetNode = null
   const allElements = contentEl.querySelectorAll('*')
   
-  // 第一优先级：精确匹配 "温馨提醒 点击标题即可收听"
+  // 第一优先级：精确匹配多个关键词变体
+  const keywords = [
+    '温馨提醒 点击标题即可收听',
+    '温馨提示：点击下面的标题即可收听音频',
+    '温馨提示',
+    '备用音频',
+    '点击标题收听'
+  ]
+  
   for (const el of allElements) {
     const text = el.textContent || ''
-    if (text.includes('温馨提醒 点击标题即可收听')) {
-      targetNode = el
-      break
+    for (const kw of keywords) {
+      if (text.includes(kw)) {
+        targetNode = el
+        break
+      }
     }
+    if (targetNode) break
   }
   
   // 如果找到了关键词，把音频列表插入到它后面
@@ -288,7 +299,7 @@ const moveAudioListAfterTitle = () => {
       } else {
         targetParent.appendChild(audioSection)
       }
-      console.log('✅ 音频列表已移动到 "温馨提醒 点击标题即可收听" 后面')
+      console.log('✅ 音频列表已移动到关键词后面')
       return
     }
   }
@@ -300,7 +311,7 @@ const moveAudioListAfterTitle = () => {
     return
   }
   
-  // 第三优先级：如果内容为空，查找"更多精彩"
+  // 第三优先级：查找"更多精彩"
   for (const el of allElements) {
     const text = el.textContent || ''
     if (text.includes('更多精彩') || text.includes('目录')) {
@@ -319,7 +330,7 @@ const moveAudioListAfterTitle = () => {
     }
   }
   
-  // 如果什么都没找到，放到内容开头（而不是末尾）
+  // 如果什么都没找到，放到内容开头
   if (contentEl.firstChild) {
     contentEl.insertBefore(audioSection, contentEl.firstChild)
     console.log('✅ 音频列表已移动到内容开头（兜底）')
