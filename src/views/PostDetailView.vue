@@ -190,8 +190,28 @@ const extractAudioList = (retryCount = 0) => {
       if (a) {
         const url = a.getAttribute('href')
         if (url) {
+          // 提取标题：获取 a 标签内的纯文本，去除多余空白
+          let title = a.textContent.trim()
+          title = title.replace(/\s+/g, ' ').trim()
+          
+          // 如果标题为空或只有数字，尝试从父级获取
+          if (!title || /^\d+$/.test(title)) {
+            const clone = li.cloneNode(true)
+            const aClone = clone.querySelector('a')
+            if (aClone) aClone.remove()
+            const extraText = clone.textContent.trim()
+            if (extraText) {
+              title = extraText.replace(/\s+/g, ' ').trim()
+            }
+          }
+          
+          // 如果还是没有，用默认名称
+          if (!title || /^\d+$/.test(title)) {
+            title = `音频 ${list.length + 1}`
+          }
+          
           list.push({
-            title: a.textContent.trim(),
+            title: title,
             url: url
           })
         }
@@ -205,8 +225,13 @@ const extractAudioList = (retryCount = 0) => {
     links.forEach(a => {
       const url = a.getAttribute('href')
       if (url && !list.find(item => item.url === url)) {
+        let title = a.textContent.trim()
+        title = title.replace(/\s+/g, ' ').trim()
+        if (!title || /^\d+$/.test(title)) {
+          title = `音频 ${list.length + 1}`
+        }
         list.push({
-          title: a.textContent.trim() || '音频',
+          title: title,
           url: url
         })
       }
@@ -220,7 +245,7 @@ const extractAudioList = (retryCount = 0) => {
       currentAudio.value = { url: list[0].url, title: list[0].title }
     }
     
-    // ✅ 隐藏所有音频相关元素（包括主播放器和备用列表）
+    // 隐藏所有音频相关元素
     const allPlayers = contentEl.querySelectorAll('.sm2-bar-ui, ul.sm2-playlist-bd, .sm2-playlist-drawer')
     allPlayers.forEach(el => {
       el.style.display = 'none'
@@ -232,7 +257,7 @@ const extractAudioList = (retryCount = 0) => {
   }
 }
 
-// ==================== 移动音频列表到"点击标题即可收听"后面 ====================
+// ==================== 移动音频列表到关键词后面 ====================
 const moveAudioListAfterTitle = () => {
   const contentEl = document.querySelector('.content')
   if (!contentEl) return
@@ -240,45 +265,31 @@ const moveAudioListAfterTitle = () => {
   const audioSection = document.getElementById('audio-list-container')
   if (!audioSection) return
   
-  // 查找"点击标题即可收听"元素
+  // 查找包含关键词的元素
   let targetNode = null
   const allElements = contentEl.querySelectorAll('*')
+  
+  // 支持多种关键词变体
+  const keywords = ['点击标题即可收听', '备用音频', '温馨提醒', '点击标题收听']
+  
   for (const el of allElements) {
     const text = el.textContent || ''
-    if (text.includes('点击标题即可收听')) {
-      targetNode = el
-      break
+    for (const kw of keywords) {
+      if (text.includes(kw)) {
+        targetNode = el
+        break
+      }
     }
+    if (targetNode) break
   }
   
-  // 如果找到了"点击标题即可收听"，把音频列表插入到它后面
+  // 如果找到了关键词，把音频列表插入到它后面
   if (targetNode) {
     const targetParent = targetNode.parentNode
     if (targetParent) {
       const nextSibling = targetNode.nextSibling
       targetParent.insertBefore(audioSection, nextSibling)
-      console.log('✅ 音频列表已移动到 "点击标题即可收听" 后面')
-      return
-    }
-  }
-  
-  // 如果没找到，查找"温馨提醒"
-  if (!targetNode) {
-    for (const el of allElements) {
-      const text = el.textContent || ''
-      if (text.includes('温馨提醒')) {
-        targetNode = el
-        break
-      }
-    }
-  }
-  
-  if (targetNode && audioList.value.length > 0) {
-    const targetParent = targetNode.parentNode
-    if (targetParent) {
-      const nextSibling = targetNode.nextSibling
-      targetParent.insertBefore(audioSection, nextSibling)
-      console.log('✅ 音频列表已移动到 "温馨提醒" 后面')
+      console.log('✅ 音频列表已移动到关键词后面')
       return
     }
   }
