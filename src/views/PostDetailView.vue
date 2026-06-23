@@ -306,34 +306,10 @@ const moveAudioListAfterTitle = () => {
   }
   
   if (targetNode) {
-    // ✅ 向上查找三层 section 容器
-    let container = targetNode.closest('section')
-    if (container) {
-      // 第一层
-      let parent1 = container.parentElement?.closest('section')
-      if (parent1) {
-        let parent2 = parent1.parentElement?.closest('section')
-        if (parent2) {
-          // 使用第三层容器
-          container = parent2
-        } else {
-          // 如果没有第三层，使用第二层
-          container = parent1
-        }
-      }
-      // 如果只有一层，就使用第一层
-      
-      // 隐藏原始音频播放器
-      const existingPlayer = container.querySelector('.sm2-bar-ui')
-      if (existingPlayer) {
-        existingPlayer.style.display = 'none'
-      }
-      
-      // ✅ 把音频列表追加到容器末尾
-      container.appendChild(audioSection)
-      console.log('✅ 音频列表已移动到关键词容器末尾（向上查找了多层）')
-      return
-    }
+    // ✅ 直接把音频列表插入到关键词元素后面
+    targetNode.insertAdjacentElement('afterend', audioSection)
+    console.log('✅ 音频列表已插入到关键词后面')
+    return
   }
   
   // 如果没找到关键词，放到内容开头
