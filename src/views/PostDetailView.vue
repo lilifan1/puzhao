@@ -101,6 +101,16 @@
       </div>
     </div>
     <div v-else class="error">❌ 帖子不存在或已被删除</div>
+
+    <!-- ===== 返回顶部按钮 ===== -->
+    <button 
+      v-show="showBackToTop" 
+      @click="scrollToTop" 
+      class="back-to-top" 
+      title="返回顶部"
+    >
+      ↑
+    </button>
   </div>
 </template>
 
@@ -128,6 +138,9 @@ const currentVideoTitle = ref('')
 const prevPost = ref(null)
 const nextPost = ref(null)
 const fromSearch = ref(false)
+
+// 返回顶部
+const showBackToTop = ref(false)
 
 // DOM 引用
 const videoPlayer = ref(null)
@@ -169,6 +182,15 @@ const copyLink = async () => {
   }
 }
 
+// ==================== 返回顶部 ====================
+const handleScroll = () => {
+  showBackToTop.value = window.scrollY > 400
+}
+
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
 // ==================== 音频 ====================
 const extractAudioList = (retryCount = 0) => {
   const contentEl = document.querySelector('.content')
@@ -190,11 +212,9 @@ const extractAudioList = (retryCount = 0) => {
       if (a) {
         const url = a.getAttribute('href')
         if (url) {
-          // 提取标题：获取 a 标签内的纯文本，去除多余空白
           let title = a.textContent.trim()
           title = title.replace(/\s+/g, ' ').trim()
           
-          // 如果标题为空或只有数字，尝试从父级获取
           if (!title || /^\d+$/.test(title)) {
             const clone = li.cloneNode(true)
             const aClone = clone.querySelector('a')
@@ -205,7 +225,6 @@ const extractAudioList = (retryCount = 0) => {
             }
           }
           
-          // 如果还是没有，用默认名称
           if (!title || /^\d+$/.test(title)) {
             title = `音频 ${list.length + 1}`
           }
@@ -219,7 +238,6 @@ const extractAudioList = (retryCount = 0) => {
     })
   }
 
-  // 如果没找到，查找所有音频链接
   if (list.length === 0) {
     const links = contentEl.querySelectorAll('a[href*=".mp3"], a[href*=".m4a"]')
     links.forEach(a => {
@@ -245,7 +263,6 @@ const extractAudioList = (retryCount = 0) => {
       currentAudio.value = { url: list[0].url, title: list[0].title }
     }
     
-    // 隐藏所有音频相关元素
     const allPlayers = contentEl.querySelectorAll('.sm2-bar-ui, ul.sm2-playlist-bd, .sm2-playlist-drawer')
     allPlayers.forEach(el => {
       el.style.display = 'none'
@@ -257,7 +274,7 @@ const extractAudioList = (retryCount = 0) => {
   }
 }
 
-// ==================== 移动音频列表到关键词后面 ====================
+// ==================== 移动音频列表 ====================
 const moveAudioListAfterTitle = () => {
   const contentEl = document.querySelector('.content')
   if (!contentEl) return
@@ -265,11 +282,10 @@ const moveAudioListAfterTitle = () => {
   const audioSection = document.getElementById('audio-list-container')
   if (!audioSection) return
   
-  // 查找包含关键词的元素
   let targetNode = null
   const allElements = contentEl.querySelectorAll('*')
   
-  // 第一优先级：精确匹配多个关键词变体
+  // 第一优先级：精确匹配 "温馨提醒 点击标题即可收听"
   const keywords = [
     '温馨提醒 点击标题即可收听',
     '温馨提示：点击下面的标题即可收听音频',
@@ -289,7 +305,6 @@ const moveAudioListAfterTitle = () => {
     if (targetNode) break
   }
   
-  // 如果找到了关键词，把音频列表插入到它后面
   if (targetNode) {
     const targetParent = targetNode.parentNode
     if (targetParent) {
@@ -304,7 +319,7 @@ const moveAudioListAfterTitle = () => {
     }
   }
   
-  // 第二优先级：如果没找到关键词，放到内容开头
+  // 第二优先级：放到内容开头
   if (contentEl.firstChild) {
     contentEl.insertBefore(audioSection, contentEl.firstChild)
     console.log('✅ 音频列表已移动到内容开头')
@@ -330,7 +345,7 @@ const moveAudioListAfterTitle = () => {
     }
   }
   
-  // 如果什么都没找到，放到内容开头
+  // 兜底：放到内容开头
   if (contentEl.firstChild) {
     contentEl.insertBefore(audioSection, contentEl.firstChild)
     console.log('✅ 音频列表已移动到内容开头（兜底）')
@@ -667,6 +682,7 @@ onBeforeUnmount(() => {
     observer.disconnect()
     observer = null
   }
+  window.removeEventListener('scroll', handleScroll)
 })
 
 onMounted(async () => {
@@ -675,6 +691,7 @@ onMounted(async () => {
   if (tid) {
     await loadPost(tid)
   }
+  window.addEventListener('scroll', handleScroll)
 })
 </script>
 
@@ -960,5 +977,45 @@ h1 { color: #2c3e50; }
 .video-list-play {
   color: #42b983;
   font-size: 14px;
+}
+
+/* ===== 返回顶部按钮 ===== */
+.back-to-top {
+  position: fixed;
+  bottom: 30px;
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.85);
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.back-to-top:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+.back-to-top:active {
+  transform: scale(0.95);
+}
+
+@media (max-width: 600px) {
+  .back-to-top {
+    bottom: 20px;
+    right: 15px;
+    width: 42px;
+    height: 42px;
+    font-size: 20px;
+  }
 }
 </style>
