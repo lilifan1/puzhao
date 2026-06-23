@@ -986,13 +986,13 @@ h1 { color: #2c3e50; }
   right: 20px;
   width: 48px;
   height: 48px;
-  background: rgba(255, 255, 255, 0.85);
-  color: #333;
-  border: 1px solid #ddd;
+  background: rgba(255, 255, 255, 0.6);  /* 从 0.85 改为 0.6，更透明 */
+  color: #555;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 50%;
   font-size: 24px;
   cursor: pointer;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   transition: all 0.3s ease;
   z-index: 999;
   display: flex;
@@ -1001,9 +1001,9 @@ h1 { color: #2c3e50; }
   backdrop-filter: blur(4px);
 }
 .back-to-top:hover {
-  background: rgba(255, 255, 255, 1);
+  background: rgba(255, 255, 255, 0.9);
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 .back-to-top:active {
   transform: scale(0.95);
