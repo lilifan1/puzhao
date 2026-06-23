@@ -285,7 +285,7 @@ const moveAudioListAfterTitle = () => {
   let targetNode = null
   const allElements = contentEl.querySelectorAll('*')
   
-  // 第一优先级：精确匹配关键词
+  // 查找关键词
   const keywords = [
     '温馨提醒 点击标题即可收听',
     '温馨提示：点击下面的标题即可收听音频',
@@ -306,33 +306,20 @@ const moveAudioListAfterTitle = () => {
   }
   
   if (targetNode) {
-    const targetParent = targetNode.parentNode
-    if (targetParent) {
-      // ✅ 找到关键词后面的第一个元素节点（跳过文本节点和换行）
-      let nextElement = targetNode.nextElementSibling
-      
-      // 如果找到了下一个元素，把音频列表插入到它前面
-      if (nextElement && audioSection) {
-        targetParent.insertBefore(audioSection, nextElement)
-        console.log('✅ 音频列表已移动到关键词后面、正文前面')
-        return
-      }
-      
-      // 如果没有下一个元素，直接追加到父节点末尾
-      targetParent.appendChild(audioSection)
-      console.log('✅ 音频列表已追加到关键词后面')
-      return
-    }
+    // ✅ 直接插入到目标节点后面
+    targetNode.insertAdjacentElement('afterend', audioSection)
+    console.log('✅ 音频列表已移动到关键词后面')
+    return
   }
   
-  // 第二优先级：放到内容开头
+  // 如果没找到关键词，放到内容开头
   if (contentEl.firstChild) {
     contentEl.insertBefore(audioSection, contentEl.firstChild)
     console.log('✅ 音频列表已移动到内容开头')
     return
   }
   
-  // 第三优先级：查找"更多精彩"
+  // 兜底：查找"更多精彩"
   for (const el of allElements) {
     const text = el.textContent || ''
     if (text.includes('更多精彩') || text.includes('目录')) {
@@ -342,16 +329,12 @@ const moveAudioListAfterTitle = () => {
   }
   
   if (targetNode && audioList.value.length > 0) {
-    const targetParent = targetNode.parentNode
-    if (targetParent) {
-      const nextSibling = targetNode.nextSibling
-      targetParent.insertBefore(audioSection, nextSibling)
-      console.log('✅ 音频列表已移动到 "更多精彩" 前面')
-      return
-    }
+    targetNode.insertAdjacentElement('afterend', audioSection)
+    console.log('✅ 音频列表已移动到 "更多精彩" 前面')
+    return
   }
   
-  // 兜底：放到内容开头
+  // 最终兜底
   if (contentEl.firstChild) {
     contentEl.insertBefore(audioSection, contentEl.firstChild)
     console.log('✅ 音频列表已移动到内容开头（兜底）')
