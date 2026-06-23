@@ -306,12 +306,19 @@ const moveAudioListAfterTitle = () => {
   }
   
   if (targetNode) {
-    // ✅ 找到关键词所在的父容器（section）
+    // ✅ 找到关键词所在的容器（向上查找 section）
     let container = targetNode.closest('section')
     if (container) {
-      // ✅ 把音频列表插入到容器后面
-      container.insertAdjacentElement('afterend', audioSection)
-      console.log('✅ 音频列表已移动到关键词容器后面、正文前面')
+      // ✅ 查找容器内是否包含音频播放器
+      const existingPlayer = container.querySelector('.sm2-bar-ui')
+      if (existingPlayer) {
+        // 隐藏原始播放器
+        existingPlayer.style.display = 'none'
+      }
+      
+      // ✅ 把音频列表追加到容器末尾（正文在容器外面，所以音频列表在正文前面）
+      container.appendChild(audioSection)
+      console.log('✅ 音频列表已移动到关键词容器末尾（正文前面）')
       return
     }
   }
