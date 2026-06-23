@@ -274,7 +274,7 @@ const extractAudioList = (retryCount = 0) => {
   }
 }
 
-// ==================== 移动音频列表 ====================
+// ==================== 移动音频列表到关键词后面 ====================
 const moveAudioListAfterTitle = () => {
   const contentEl = document.querySelector('.content')
   if (!contentEl) return
@@ -285,7 +285,7 @@ const moveAudioListAfterTitle = () => {
   let targetNode = null
   const allElements = contentEl.querySelectorAll('*')
   
-  // 第一优先级：精确匹配 "温馨提醒 点击标题即可收听"
+  // 第一优先级：精确匹配关键词
   const keywords = [
     '温馨提醒 点击标题即可收听',
     '温馨提示：点击下面的标题即可收听音频',
@@ -308,13 +308,23 @@ const moveAudioListAfterTitle = () => {
   if (targetNode) {
     const targetParent = targetNode.parentNode
     if (targetParent) {
+      // ✅ 关键改动：找到关键词后面的第一个非空元素
       let nextSibling = targetNode.nextSibling
+      
+      // 跳过空文本节点和空白节点
+      while (nextSibling && 
+             ((nextSibling.nodeType === 3 && !nextSibling.textContent.trim()) || 
+              (nextSibling.nodeType === 1 && nextSibling.tagName === 'BR'))) {
+        nextSibling = nextSibling.nextSibling
+      }
+      
+      // 如果找到了下一个非空元素，把音频列表插入到它前面
       if (nextSibling && audioSection) {
         targetParent.insertBefore(audioSection, nextSibling)
       } else {
         targetParent.appendChild(audioSection)
       }
-      console.log('✅ 音频列表已移动到关键词后面')
+      console.log('✅ 音频列表已移动到关键词后面、正文前面')
       return
     }
   }
