@@ -308,23 +308,19 @@ const moveAudioListAfterTitle = () => {
   if (targetNode) {
     const targetParent = targetNode.parentNode
     if (targetParent) {
-      // ✅ 关键改动：找到关键词后面的第一个非空元素
-      let nextSibling = targetNode.nextSibling
+      // ✅ 找到关键词后面的第一个元素节点（跳过文本节点和换行）
+      let nextElement = targetNode.nextElementSibling
       
-      // 跳过空文本节点和空白节点
-      while (nextSibling && 
-             ((nextSibling.nodeType === 3 && !nextSibling.textContent.trim()) || 
-              (nextSibling.nodeType === 1 && nextSibling.tagName === 'BR'))) {
-        nextSibling = nextSibling.nextSibling
+      // 如果找到了下一个元素，把音频列表插入到它前面
+      if (nextElement && audioSection) {
+        targetParent.insertBefore(audioSection, nextElement)
+        console.log('✅ 音频列表已移动到关键词后面、正文前面')
+        return
       }
       
-      // 如果找到了下一个非空元素，把音频列表插入到它前面
-      if (nextSibling && audioSection) {
-        targetParent.insertBefore(audioSection, nextSibling)
-      } else {
-        targetParent.appendChild(audioSection)
-      }
-      console.log('✅ 音频列表已移动到关键词后面、正文前面')
+      // 如果没有下一个元素，直接追加到父节点末尾
+      targetParent.appendChild(audioSection)
+      console.log('✅ 音频列表已追加到关键词后面')
       return
     }
   }
