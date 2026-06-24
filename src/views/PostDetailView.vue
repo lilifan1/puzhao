@@ -764,6 +764,12 @@ h1 { color: #2c3e50; }
 .meta { color: #888; font-size: 14px; padding-bottom: 15px; border-bottom: 1px solid #eee; margin-bottom: 20px; }
 .content { line-height: 1.9; font-size: 16px; overflow-wrap: break-word; }
 .content img { max-width: 100%; }
+.content a {
+  text-decoration: none !important;
+}
+.content a:hover {
+  text-decoration: underline !important;  /* 鼠标悬停时显示下划线，提升体验 */
+}
 .content a { color: #42b983; text-decoration: none; }
 .content a:hover { text-decoration: underline; }
 .error { color: #e74c3c; text-align: center; padding: 50px 0; }
