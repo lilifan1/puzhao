@@ -10,41 +10,11 @@
         ref="searchInput"
       />
       
-      <!-- ✅ 搜索范围选择（默认标题搜索） -->
+      <!-- ✅ 搜索范围选择（默认迅搜搜索） -->
       <select v-model="searchScope" class="search-select">
-        <option value="title">📝 标题搜索</option>
-        <option value="full">📄 全文搜索</option>
-      </select>
-      
-      <button @click="doSearch" class="search-btn">搜索</button>
-      <button v-if="searchResults.length > 0 || keyword" @click="clearSearch" class="clear-btn">× 清除</button>
-    </div>
-    
-    <!-- 搜索结果 -->
-    <div v-if="searchResults.length > 0" class="search-results">
-      <h2>📋 搜索结果（{{ searchResults.length }} 条）</h2>
-      <ul>
-        <li v-for="post in searchResults" :key="post.tid">
-          <router-link :to="`/post/${post.tid}?from=search&keyword=${encodeURIComponent(keyword)}`" @click="saveSearchState">
-            {{ post.subject }}
-          </router-link>
-          <span class="author"> - {{ post.author }}</span>
-          <span class="meta">{{ formatTime(post.dateline) }}</span>
-        </li>
-      </ul>
-      
-      <!-- 分页 -->
-      <div v-if="totalPages > 1" class="pagination">
-        <button @click="goToPage(currentPage - 1)" :disabled="currentPage <= 1">上一页</button>
-        <span class="page-info">{{ currentPage }} / {{ totalPages }}</span>
-        <button @click="goToPage(currentPage + 1)" :disabled="currentPage >= totalPages">下一页</button>
-      </div>
-    </div>
-    
-    <!-- 手风琴菜单 -->
-    <AccordionMenu v-else />
-  </div>
-</template>
+  <option value="full">🔍 全文搜索（迅搜）</option>
+  <option value="title">📝 只搜标题</option>
+</select>
 
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
@@ -59,7 +29,7 @@ const searchInput = ref(null)
 const currentPage = ref(1)
 const totalPages = ref(0)
 const totalResults = ref(0)
-const searchScope = ref('title')  // ✅ 默认标题搜索
+const searchScope = ref('full')  // ✅ 默认全文搜索
 
 // ✅ 硬编码 API 地址
 const API_BASE = 'https://www.dadaozjzhitojian.cloud/sina/ff/safe_api.php'
