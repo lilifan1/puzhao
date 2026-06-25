@@ -44,7 +44,7 @@
     <!-- 手风琴菜单 -->
     <AccordionMenu v-else />
   </div>
-</template>
+</template>  <!-- ✅ 补上这个闭合标签 -->
 
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
