@@ -764,12 +764,6 @@ h1 { color: #2c3e50; }
 .meta { color: #888; font-size: 14px; padding-bottom: 15px; border-bottom: 1px solid #eee; margin-bottom: 20px; }
 .content { line-height: 1.9; font-size: 16px; overflow-wrap: break-word; }
 .content img { max-width: 100%; }
-.content a {
-  text-decoration: none !important;
-}
-.content a:hover {
-  text-decoration: underline !important;  /* 鼠标悬停时显示下划线，提升体验 */
-}
 .content a { color: #42b983; text-decoration: none; }
 .content a:hover { text-decoration: underline; }
 .error { color: #e74c3c; text-align: center; padding: 50px 0; }
@@ -814,7 +808,7 @@ h1 { color: #2c3e50; }
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
+  padding: 12px 15px;
   border-bottom: 1px solid #eee;
   cursor: pointer;
   transition: background 0.2s;
@@ -835,17 +829,18 @@ h1 { color: #2c3e50; }
   background: #42b983;
   color: white;
   border-radius: 50%;
-  font-size: 12px;
+  font-size: 13px;
   flex-shrink: 0;
 }
 .audio-title {
   flex: 1;
-  font-size: 14px;
+  font-size: 17px;
   color: #333;
+  font-weight: 500;
 }
 .audio-play {
   color: #42b983;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .player {
