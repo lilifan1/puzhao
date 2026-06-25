@@ -9,13 +9,6 @@
         class="search-input"
         ref="searchInput"
       />
-      
-      <!-- ✅ 搜索范围选择 -->
-      <select v-model="searchScope" class="search-select">
-        <option value="title">📝 标题搜索</option>
-        <option value="full">📄 全文搜索</option>
-      </select>
-      
       <button @click="doSearch" class="search-btn">搜索</button>
       <button v-if="searchResults.length > 0 || keyword" @click="clearSearch" class="clear-btn">× 清除</button>
     </div>
@@ -44,7 +37,7 @@
     <!-- 手风琴菜单 -->
     <AccordionMenu v-else />
   </div>
-</template>  <!-- ✅ 补上这个闭合标签 -->
+</template>
 
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
@@ -59,9 +52,8 @@ const searchInput = ref(null)
 const currentPage = ref(1)
 const totalPages = ref(0)
 const totalResults = ref(0)
-const searchScope = ref('title')  // ✅ 默认题目搜索
 
-// ✅ 硬编码 API 地址
+// 硬编码 API 地址
 const API_BASE = 'https://www.dadaozjzhitojian.cloud/sina/ff/safe_api.php'
 
 const formatTime = (timestamp) => {
@@ -77,14 +69,13 @@ const doSearch = async () => {
     return
   }
   try {
-    // ✅ 传递搜索范围参数
-    const res = await fetch(`${API_BASE}?action=search&keyword=${encodeURIComponent(kw)}&page=${currentPage.value}&scope=${searchScope.value}`)
+    const res = await fetch(`${API_BASE}?action=search&keyword=${encodeURIComponent(kw)}&page=${currentPage.value}`)
     const data = await res.json()
     if (data.code === 0) {
       searchResults.value = data.data
       totalResults.value = data.total || 0
       totalPages.value = data.total_pages || 0
-      router.replace(`/?from=search&keyword=${encodeURIComponent(kw)}&page=${currentPage.value}&scope=${searchScope.value}`)
+      router.replace(`/?from=search&keyword=${encodeURIComponent(kw)}&page=${currentPage.value}`)
     } else {
       searchResults.value = []
     }
@@ -105,7 +96,6 @@ const saveSearchState = () => {
   sessionStorage.setItem('searchKeyword', keyword.value)
   sessionStorage.setItem('searchResults', JSON.stringify(searchResults.value))
   sessionStorage.setItem('currentPage', String(currentPage.value))
-  sessionStorage.setItem('searchScope', searchScope.value)
 }
 
 const clearSearch = () => {
@@ -117,7 +107,6 @@ const clearSearch = () => {
   sessionStorage.removeItem('searchKeyword')
   sessionStorage.removeItem('searchResults')
   sessionStorage.removeItem('currentPage')
-  sessionStorage.removeItem('searchScope')
   router.replace('/')
 }
 
@@ -125,12 +114,10 @@ const restoreSearchState = () => {
   const savedKeyword = sessionStorage.getItem('searchKeyword')
   const savedResults = sessionStorage.getItem('searchResults')
   const savedPage = sessionStorage.getItem('currentPage')
-  const savedScope = sessionStorage.getItem('searchScope')
   
   if (route.query.from === 'search') {
     if (savedKeyword) keyword.value = savedKeyword
     if (savedPage) currentPage.value = parseInt(savedPage) || 1
-    if (savedScope) searchScope.value = savedScope
     if (savedResults) {
       try {
         searchResults.value = JSON.parse(savedResults)
@@ -144,7 +131,6 @@ const restoreSearchState = () => {
       sessionStorage.removeItem('searchKeyword')
       sessionStorage.removeItem('searchResults')
       sessionStorage.removeItem('currentPage')
-      sessionStorage.removeItem('searchScope')
     }
   }
 }
@@ -154,7 +140,6 @@ onMounted(() => {
   if (urlKeyword) {
     keyword.value = decodeURIComponent(urlKeyword)
     currentPage.value = parseInt(route.query.page) || 1
-    searchScope.value = route.query.scope || 'full'
     doSearch()
   } else {
     restoreSearchState()
@@ -185,18 +170,6 @@ onMounted(() => {
   transition: border-color 0.3s;
 }
 .search-input:focus {
-  border-color: #42b983;
-}
-.search-select {
-  padding: 10px 12px;
-  border: 2px solid #d8b898;
-  border-radius: 8px;
-  font-size: 14px;
-  background: #fff;
-  cursor: pointer;
-  outline: none;
-}
-.search-select:focus {
   border-color: #42b983;
 }
 .search-btn {
