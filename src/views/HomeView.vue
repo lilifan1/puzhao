@@ -10,10 +10,10 @@
         ref="searchInput"
       />
       
-      <!-- ✅ 搜索范围选择（默认迅搜搜索） -->
+      <!-- ✅ 搜索范围选择 -->
       <select v-model="searchScope" class="search-select">
-        <option value="full">🔍 全文搜索（迅搜）</option>
-        <option value="title">📝 只搜标题</option>
+        <option value="title">📝 标题搜索</option>
+        <option value="full">📄 全文搜索</option>
       </select>
       
       <button @click="doSearch" class="search-btn">搜索</button>
@@ -59,7 +59,7 @@ const searchInput = ref(null)
 const currentPage = ref(1)
 const totalPages = ref(0)
 const totalResults = ref(0)
-const searchScope = ref('full')  // ✅ 默认全文搜索
+const searchScope = ref('title')  // ✅ 默认题目搜索
 
 // ✅ 硬编码 API 地址
 const API_BASE = 'https://www.dadaozjzhitojian.cloud/sina/ff/safe_api.php'
