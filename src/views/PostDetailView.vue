@@ -546,6 +546,12 @@ const handleLinkClick = (event) => {
   const href = target.getAttribute('href')
   if (!href) return
 
+  // ===== ✅ 新增：如果链接是页面内锚点（以 # 开头），不拦截 =====
+  if (href.startsWith('#')) {
+    // 不阻止默认行为，让浏览器处理锚点跳转
+    return
+  }
+
   const articleTidMatch = href.match(/article\.html#\/viewthread\/tid\/(\d+)/)
   if (articleTidMatch) {
     event.preventDefault()
