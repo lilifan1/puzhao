@@ -957,7 +957,7 @@ h1 { color: #2c3e50; }
 }
 .video-list-title {
   flex: 1;
-  font-size: 14px;
+  font-size: 16px;
   color: #333;
 }
 .video-list-play {
