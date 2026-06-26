@@ -546,9 +546,18 @@ const handleLinkClick = (event) => {
   const href = target.getAttribute('href')
   if (!href) return
 
-  // ===== ✅ 新增：如果链接是页面内锚点（以 # 开头），不拦截 =====
+   // ===== ✅ 处理页面内锚点跳转 =====
   if (href.startsWith('#')) {
-    // 不阻止默认行为，让浏览器处理锚点跳转
+    event.preventDefault()
+    event.stopPropagation()
+    const targetId = href.substring(1) // 去掉 # 号
+    const targetElement = document.getElementById(targetId)
+    if (targetElement) {
+      targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    } else {
+      // 如果找不到元素，尝试滚动到页面顶部
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
     return
   }
 
