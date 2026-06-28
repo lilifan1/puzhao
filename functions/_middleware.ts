@@ -1,22 +1,16 @@
-export async function onRequest(context) {
-  const url = new URL(context.request.url);
-  const hostname = url.hostname;
+# 创建 functions 文件夹
+mkdir functions
 
-  // 从环境变量读取目标域名
-  let targetHostname = context.env.TARGET_HOSTNAME || '';
-
-  // 安全保护：如果未设置环境变量，或目标就是当前域名，则直接放行，不代理
-  if (!targetHostname || targetHostname === hostname) {
-    return; // 不处理，让请求正常通过
-  }
-
-  // 构造目标 URL 并转发请求
-  const targetUrl = new URL(url.pathname + url.search, `https://${targetHostname}`);
-  const proxyRequest = new Request(targetUrl.toString(), {
-    method: context.request.method,
-    headers: context.request.headers,
-    body: context.request.body,
-  });
-
-  return await fetch(proxyRequest);
-}
+# 创建 _middleware.ts 文件并写入内容
+echo export async function onRequest(context) { > functions/_middleware.ts
+echo   const url = new URL(context.request.url); >> functions/_middleware.ts
+echo   const targetHostname = context.env.TARGET_HOSTNAME; >> functions/_middleware.ts
+echo   if (!targetHostname) return; >> functions/_middleware.ts
+echo   const targetUrl = new URL(url.pathname + url.search, https://${targetHostname}); >> functions/_middleware.ts
+echo   const proxyRequest = new Request(targetUrl.toString(), { >> functions/_middleware.ts
+echo     method: context.request.method, >> functions/_middleware.ts
+echo     headers: context.request.headers, >> functions/_middleware.ts
+echo     body: context.request.body, >> functions/_middleware.ts
+echo   }); >> functions/_middleware.ts
+echo   return await fetch(proxyRequest); >> functions/_middleware.ts
+echo } >> functions/_middleware.ts
