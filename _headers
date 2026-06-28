@@ -1,0 +1,21 @@
+﻿# 为所有静态资源设置缓存
+/*.css
+  Cache-Control: public, max-age=604800
+/*.js
+  Cache-Control: public, max-age=604800
+/*.jpg
+  Cache-Control: public, max-age=2592000
+/*.png
+  Cache-Control: public, max-age=2592000
+/*.gif
+  Cache-Control: public, max-age=2592000
+
+# 为音频和视频文件设置更长的缓存（1年）
+/audio/*.mp3
+  Cache-Control: public, max-age=31536000, immutable
+/audio/*.m4a
+  Cache-Control: public, max-age=31536000, immutable
+/video/*.mp4
+  Cache-Control: public, max-age=31536000, immutable
+/video/*.webm
+  Cache-Control: public, max-age=31536000, immutable
