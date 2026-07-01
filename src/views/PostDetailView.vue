@@ -25,12 +25,12 @@
         <h3>🎬 视频播放</h3>
         <div class="video-container">
           <video 
+  <video 
   v-if="currentVideoUrl"
   ref="videoPlayer"
   controls 
   :src="currentVideoUrl" 
-  preload="metadata"
-  style="width: 100%; max-height: 500px; background: #000;"
+  style="width: 100%; max-height: 500px;"
   controlslist="nodownload"
   playsinline
   @ended="onVideoEnded"
