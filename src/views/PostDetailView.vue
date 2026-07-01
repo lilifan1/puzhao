@@ -25,16 +25,15 @@
         <h3>🎬 视频播放</h3>
         <div class="video-container">
           <video 
-          v-if="currentVideoUrl"
-          ref="videoPlayer"
-          controls 
-          :src="currentVideoUrl" 
-          poster="https://static.wixstatic.com/media/8dd7cb_777ac92550e94cf3824d803eaa3941d8~mv2.jpg"
-          style="width: 100%; max-height: 500px;"
-          controlslist="nodownload"
-          playsinline
-          @ended="onVideoEnded"
-         ></video>
+  v-if="currentVideoUrl"
+  ref="videoPlayer"
+  controls 
+  :src="currentVideoUrl" 
+  style="width: 100%; max-height: 500px; background: transparent;"
+  controlslist="nodownload"
+  playsinline
+  @ended="onVideoEnded"
+></video>
           <div v-else class="no-video">请从列表中选择一个视频</div>
         </div>
         <div class="video-info">
