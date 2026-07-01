@@ -29,7 +29,8 @@
   ref="videoPlayer"
   controls 
   :src="currentVideoUrl" 
-  style="width: 100%; max-height: 500px; background: transparent;"
+  preload="metadata"
+  style="width: 100%; max-height: 500px; background: #000;"
   controlslist="nodownload"
   playsinline
   @ended="onVideoEnded"
