@@ -883,6 +883,7 @@ h1 { color: #2c3e50; }
 }
 .video-section h3 { margin-bottom: 15px; }
 .video-container {
+  background: #000;
   border-radius: 8px;
   overflow: hidden;
   margin: 10px 0;
@@ -890,18 +891,11 @@ h1 { color: #2c3e50; }
   display: flex;
   align-items: center;
   justify-content: center;
-  /* ✅ 金色渐变色背景 */
-  background: linear-gradient(135deg, #f5e6c8 0%, #d4a574 30%, #c4956a 60%, #e8c9a0 100%);
-  position: relative;
 }
 .video-container video {
   display: block;
   max-height: 500px;
   width: 100%;
-  position: relative;
-  z-index: 1;
-  /* ✅ 视频背景透明，让渐变底色透出来 */
-  background: transparent;
 }
 .no-video {
   color: #999;
