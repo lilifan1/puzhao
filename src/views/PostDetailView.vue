@@ -8,7 +8,6 @@
 
     <div v-if="loading">⏳ 加载中...</div>
     <div v-else-if="post">
-      <!-- 标题区 + 复制按钮 -->
       <div class="post-header">
         <h1>{{ post.subject }}</h1>
         <button @click="copyLink" class="copy-btn" title="复制本页链接">📋 复制链接</button>
@@ -20,21 +19,20 @@
         浏览：{{ post.views }} 
       </div>
 
-      <!-- ===== 视频播放器（置顶） ===== -->
+      <!-- ===== 视频播放器 ===== -->
       <div v-if="videoList.length > 0" class="video-section">
         <h3>🎬 视频播放</h3>
         <div class="video-container">
           <video 
-  <video 
-  v-if="currentVideoUrl"
-  ref="videoPlayer"
-  controls 
-  :src="currentVideoUrl" 
-  style="width: 100%; max-height: 500px;"
-  controlslist="nodownload"
-  playsinline
-  @ended="onVideoEnded"
-></video>
+            v-if="currentVideoUrl"
+            ref="videoPlayer"
+            controls 
+            :src="currentVideoUrl" 
+            style="width: 100%; max-height: 500px;"
+            controlslist="nodownload"
+            playsinline
+            @ended="onVideoEnded"
+          ></video>
           <div v-else class="no-video">请从列表中选择一个视频</div>
         </div>
         <div class="video-info">
@@ -75,7 +73,7 @@
         <span v-else class="nav-link disabled">已是最后一篇 →</span>
       </div>
 
-      <!-- ===== 音频播放器（连续播放） ===== -->
+      <!-- ===== 音频播放器 ===== -->
       <div v-if="audioList.length > 0" class="audio-list" id="audio-list-container">
         <h3>🎵 音频列表</h3>
         <div v-if="currentAudio" class="player">
@@ -103,7 +101,7 @@
     </div>
     <div v-else class="error">❌ 帖子不存在或已被删除</div>
 
-    <!-- ===== 返回顶部按钮 ===== -->
+    <!-- ===== 返回顶部 ===== -->
     <button 
       v-show="showBackToTop" 
       @click="scrollToTop" 
@@ -124,26 +122,20 @@ const router = useRouter()
 const post = ref(null)
 const loading = ref(true)
 
-// 音频相关
 const audioList = ref([])
 const currentAudio = ref(null)
 const currentAudioIndex = ref(-1)
 
-// 视频相关
 const videoList = ref([])
 const currentVideoIndex = ref(-1)
 const currentVideoUrl = ref('')
 const currentVideoTitle = ref('')
 
-// 上下篇
 const prevPost = ref(null)
 const nextPost = ref(null)
 const fromSearch = ref(false)
-
-// 返回顶部
 const showBackToTop = ref(false)
 
-// DOM 引用
 const videoPlayer = ref(null)
 const audioPlayer = ref(null)
 
@@ -162,7 +154,6 @@ const goBack = () => {
   window.history.back()
 }
 
-// ==================== 复制链接（带标题） ====================
 const copyLink = async () => {
   if (!post.value) return
   const title = post.value.subject || '普照'
@@ -183,7 +174,6 @@ const copyLink = async () => {
   }
 }
 
-// ==================== 返回顶部 ====================
 const handleScroll = () => {
   showBackToTop.value = window.scrollY > 400
 }
@@ -203,8 +193,6 @@ const extractAudioList = (retryCount = 0) => {
   }
 
   let list = []
-
-  // 查找主音频列表
   const ul = contentEl.querySelector('ul.sm2-playlist-bd')
   if (ul) {
     const items = ul.querySelectorAll('li')
@@ -230,10 +218,7 @@ const extractAudioList = (retryCount = 0) => {
             title = `音频 ${list.length + 1}`
           }
           
-          list.push({
-            title: title,
-            url: url
-          })
+          list.push({ title, url })
         }
       }
     })
@@ -249,10 +234,7 @@ const extractAudioList = (retryCount = 0) => {
         if (!title || /^\d+$/.test(title)) {
           title = `音频 ${list.length + 1}`
         }
-        list.push({
-          title: title,
-          url: url
-        })
+        list.push({ title, url })
       }
     })
   }
@@ -275,7 +257,6 @@ const extractAudioList = (retryCount = 0) => {
   }
 }
 
-// ==================== 移动音频列表到关键词后面 ====================
 const moveAudioListAfterTitle = () => {
   const contentEl = document.querySelector('.content')
   if (!contentEl) return
@@ -283,7 +264,6 @@ const moveAudioListAfterTitle = () => {
   const audioSection = document.getElementById('audio-list-container')
   if (!audioSection) return
   
-  // 查找关键词
   let targetNode = null
   const allElements = contentEl.querySelectorAll('*')
   
@@ -307,31 +287,24 @@ const moveAudioListAfterTitle = () => {
   }
   
   if (targetNode) {
-    // ✅ 找到关键词所在的容器（向上查找 section）
     let container = targetNode.closest('section')
     if (container) {
-      // ✅ 查找容器内是否包含音频播放器
       const existingPlayer = container.querySelector('.sm2-bar-ui')
       if (existingPlayer) {
-        // 隐藏原始播放器
         existingPlayer.style.display = 'none'
       }
-      
-      // ✅ 把音频列表追加到容器末尾（正文在容器外面，所以音频列表在正文前面）
       container.appendChild(audioSection)
-      console.log('✅ 音频列表已移动到关键词容器末尾（正文前面）')
+      console.log('✅ 音频列表已移动到关键词容器末尾')
       return
     }
   }
   
-  // 如果没找到关键词，放到内容开头
   if (contentEl.firstChild) {
     contentEl.insertBefore(audioSection, contentEl.firstChild)
     console.log('✅ 音频列表已移动到内容开头')
     return
   }
   
-  // 最终兜底
   if (contentEl.firstChild) {
     contentEl.insertBefore(audioSection, contentEl.firstChild)
     console.log('✅ 音频列表已移动到内容开头（兜底）')
@@ -547,16 +520,15 @@ const handleLinkClick = (event) => {
   const href = target.getAttribute('href')
   if (!href) return
 
-   // ===== ✅ 处理页面内锚点跳转 =====
+  // 处理页面内锚点跳转
   if (href.startsWith('#')) {
     event.preventDefault()
     event.stopPropagation()
-    const targetId = href.substring(1) // 去掉 # 号
+    const targetId = href.substring(1)
     const targetElement = document.getElementById(targetId)
     if (targetElement) {
       targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
     } else {
-      // 如果找不到元素，尝试滚动到页面顶部
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
     return
@@ -606,7 +578,6 @@ const bindLinkHandler = () => {
   }
 }
 
-// ==================== 加载帖子 ====================
 const loadPost = async (tid) => {
   loading.value = true
   videoList.value = []
@@ -651,7 +622,6 @@ const loadPost = async (tid) => {
   }
 }
 
-// ==================== 监听 ====================
 watch(post, () => {
   if (post.value) {
     nextTick(() => {
@@ -673,7 +643,6 @@ watch(
   }
 )
 
-// ==================== 生命周期 ====================
 onBeforeUnmount(() => {
   const container = document.querySelector('.container')
   if (container) {
@@ -982,14 +951,13 @@ h1 { color: #2c3e50; }
   font-size: 14px;
 }
 
-/* ===== 返回顶部按钮 ===== */
 .back-to-top {
   position: fixed;
   bottom: 30px;
   right: 20px;
   width: 48px;
   height: 48px;
-  background: rgba(255, 255, 255, 0.6);  /* 从 0.85 改为 0.6，更透明 */
+  background: rgba(255, 255, 255, 0.6);
   color: #555;
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 50%;
