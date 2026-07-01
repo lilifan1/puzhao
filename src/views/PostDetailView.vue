@@ -24,15 +24,16 @@
         <h3>🎬 视频播放</h3>
         <div class="video-container">
           <video 
-            v-if="currentVideoUrl"
-            ref="videoPlayer"
-            controls 
-            :src="currentVideoUrl" 
-            style="width: 100%; max-height: 500px;"
-            controlslist="nodownload"
-            playsinline
-            @ended="onVideoEnded"
-          ></video>
+  v-if="currentVideoUrl"
+  ref="videoPlayer"
+  controls 
+  :src="currentVideoUrl" 
+  poster="https://static.wixstatic.com/media/8dd7cb_777ac92550e94cf3824d803eaa3941d8~mv2.jpg"
+  style="width: 100%; max-height: 500px;"
+  controlslist="nodownload"
+  playsinline
+  @ended="onVideoEnded"
+></video>
           <div v-else class="no-video">请从列表中选择一个视频</div>
         </div>
         <div class="video-info">
@@ -845,13 +846,6 @@ h1 { color: #2c3e50; }
   font-size: 13px !important;
 }
 
-.video-section {
-  margin-bottom: 25px;
-  padding: 20px;
-  background: #f8f8f8;
-  border-radius: 8px;
-}
-.video-section h3 { margin-bottom: 15px; }
 .video-container {
   background: #000;
   border-radius: 8px;
@@ -861,11 +855,18 @@ h1 { color: #2c3e50; }
   display: flex;
   align-items: center;
   justify-content: center;
+  /* ✅ 默认背景图片 */
+  background-image: url('https://static.wixstatic.com/media/8dd7cb_777ac92550e94cf3824d803eaa3941d8~mv2.jpg');
+  background-size: cover;
+  background-position: center;
+  position: relative;
 }
 .video-container video {
   display: block;
   max-height: 500px;
   width: 100%;
+  position: relative;
+  z-index: 1;
 }
 .no-video {
   color: #999;
