@@ -891,11 +891,17 @@ h1 { color: #2c3e50; }
   display: flex;
   align-items: center;
   justify-content: center;
+  background-image: url('https://static.wixstatic.com/media/8dd7cb_777ac92550e94cf3824d803eaa3941d8~mv2.jpg');
+  background-size: cover;
+  background-position: center;
+  position: relative;
 }
 .video-container video {
   display: block;
   max-height: 500px;
   width: 100%;
+  position: relative;
+  z-index: 1;
 }
 .no-video {
   color: #999;
