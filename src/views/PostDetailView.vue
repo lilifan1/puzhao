@@ -158,12 +158,20 @@ const goBack = () => {
 const copyLink = async () => {
   if (!post.value) return
   const title = post.value.subject || '普照'
-  const cleanUrl = window.location.href.split('?')[0]  // ← 直接用，不定义中间变量
+  const cleanUrl = window.location.href.split('?')[0]
   const shareText = `${title}\n${cleanUrl}`
+
+  const btn = document.querySelector('.copy-btn')
+  const originalText = btn?.textContent || '📋 复制链接'
 
   try {
     await navigator.clipboard.writeText(shareText)
-    alert('✅ 链接和标题已复制！')
+    if (btn) {
+      btn.textContent = '✅ 已复制'
+      setTimeout(() => {
+        btn.textContent = originalText
+      }, 2000)
+    }
   } catch {
     const input = document.createElement('input')
     input.value = shareText
@@ -171,7 +179,12 @@ const copyLink = async () => {
     input.select()
     document.execCommand('copy')
     document.body.removeChild(input)
-    alert('✅ 链接和标题已复制！')
+    if (btn) {
+      btn.textContent = '✅ 已复制'
+      setTimeout(() => {
+        btn.textContent = originalText
+      }, 2000)
+    }
   }
 }
 
