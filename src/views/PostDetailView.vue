@@ -159,7 +159,8 @@ const copyLink = async () => {
   if (!post.value) return
   const title = post.value.subject || '普照'
   const url = window.location.href
-  const shareText = `${title}\n${url}`
+  const cleanUrl = fullUrl.split('?')[0]  // ← 新增这一行
+  const shareText = `${title}\n${cleanUrl}`
 
   try {
     await navigator.clipboard.writeText(shareText)
