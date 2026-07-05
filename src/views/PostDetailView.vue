@@ -158,8 +158,7 @@ const goBack = () => {
 const copyLink = async () => {
   if (!post.value) return
   const title = post.value.subject || '普照'
-  const url = window.location.href
-  const cleanUrl = fullUrl.split('?')[0]  // ← 新增这一行
+  const cleanUrl = window.location.href.split('?')[0]  // ← 直接用，不定义中间变量
   const shareText = `${title}\n${cleanUrl}`
 
   try {
