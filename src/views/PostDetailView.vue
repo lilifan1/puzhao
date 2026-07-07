@@ -618,50 +618,51 @@ const loadPost = async (tid) => {
       post.value = null
     }
 
+    // ===== 先提取音频列表（不等待上下篇） =====
+    nextTick(() => {
+      setTimeout(() => {
+        extractAudioList()
+        extractVideoList()
+        bindLinkHandler()
+        setupMediaObserver()
+      }, 300)
+    })
+    // ===== 音频提取结束 =====
+
+    // ===== 上下篇：只获取当前帖子附近的帖子 =====
     if (post.value && post.value.fid) {
       const fid = post.value.fid
+      const currentTid = Number(tid)
       
-      // ===== 上下篇修复：分页获取全部帖子 =====
-      let allPosts = []
-      let page = 1
-      const limit = 50
-      let hasMore = true
+      // 只获取 100 条，避免加载过慢
+      const listRes = await fetch(`${baseUrl}?action=list&fid=${fid}&limit=100`)
+      const listData = await listRes.json()
       
-      while (hasMore) {
-        try {
-          const listRes = await fetch(`${baseUrl}?action=list&fid=${fid}&limit=${limit}&page=${page}`)
-          const listData = await listRes.json()
-          
-          if (listData.code === 0 && listData.data && listData.data.length > 0) {
-            allPosts = allPosts.concat(listData.data)
-            page++
-            if (listData.data.length < limit) {
-              hasMore = false
-            }
-          } else {
-            hasMore = false
-          }
-        } catch (e) {
-          console.error('分页获取失败:', e)
-          hasMore = false
-        }
-      }
-      // ===== 上下篇修复结束 =====
-      
-      if (allPosts.length > 0) {
-        // 按时间倒序排列（最新的在前面）
-        const posts = allPosts.sort((a, b) => b.dateline - a.dateline)
-        const currentIndex = posts.findIndex(p => Number(p.tid) === Number(tid))
+      if (listData.code === 0) {
+        const posts = listData.data.sort((a, b) => b.dateline - a.dateline)
+        const currentIndex = posts.findIndex(p => Number(p.tid) === currentTid)
         
         if (currentIndex !== -1) {
           prevPost.value = currentIndex > 0 ? posts[currentIndex - 1] : null
           nextPost.value = currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null
         } else {
-          prevPost.value = null
-          nextPost.value = null
+          // 如果当前帖子不在列表中，用更简单的方式：只找相邻的帖子
+          // 尝试获取当前帖子附近的帖子
+          const prevRes = await fetch(`${baseUrl}?action=list&fid=${fid}&limit=20`)
+          const prevData = await prevRes.json()
+          if (prevData.code === 0) {
+            const prevPosts = prevData.data.sort((a, b) => b.dateline - a.dateline)
+            const idx = prevPosts.findIndex(p => Number(p.tid) === currentTid)
+            if (idx !== -1) {
+              prevPost.value = idx > 0 ? prevPosts[idx - 1] : null
+              nextPost.value = idx < prevPosts.length - 1 ? prevPosts[idx + 1] : null
+            }
+          }
         }
       }
     }
+    // ===== 上下篇结束 =====
+    
   } catch (error) {
     console.error('获取帖子失败:', error)
     post.value = null
@@ -672,11 +673,12 @@ const loadPost = async (tid) => {
 
 watch(post, () => {
   if (post.value) {
+    // 注意：extractAudioList 已经在 loadPost 中调用了，这里不再重复调用
+    // 只做额外的绑定
     nextTick(() => {
       setTimeout(() => {
-        extractAudioList()
-        extractVideoList()
         bindLinkHandler()
+        setupMediaObserver()
       }, 500)
     })
   }
