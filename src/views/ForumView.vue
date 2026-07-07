@@ -486,7 +486,7 @@ onMounted(() => {
   text-decoration: none;
 }
 
-h1 { color: #2c3e50; border-bottom: 3px solid #42b983; padding-bottom: 10px; }
+h1 { color: #2c3e50; border-bottom: 3px solid #f1c40f; padding-bottom: 10px; }
 ul { list-style: none; padding: 0; }
 li { padding: 12px 15px; background: white; margin-bottom: 8px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: 0.2s; }
 li:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.12); }

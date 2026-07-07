@@ -340,6 +340,22 @@ const extractAudioList = (retryCount = 0) => {
       el.style.display = 'none'
     })
     
+    // ===== 删除“更多精彩”目录（加强版） =====
+const allElements = contentEl.querySelectorAll('*')
+const keywords = ['更多精彩', '每日学习', '每日畅听', '白话佛法', '入门知识', '感动视频', '广播讲座', '睡前一听', '博客留言', '法会开示']
+allElements.forEach(el => {
+  const text = el.textContent || ''
+  let matchCount = 0
+  for (const kw of keywords) {
+    if (text.includes(kw)) matchCount++
+  }
+  // 如果包含3个以上关键词，说明是“更多精彩”目录
+  if (matchCount >= 3 && !el.querySelector('.sm2-bar-ui') && !el.querySelector('audio')) {
+    el.style.display = 'none'
+  }
+})
+// ===== 删除结束 =====
+
     nextTick(() => {
       moveAudioListAfterTitle()
     })
