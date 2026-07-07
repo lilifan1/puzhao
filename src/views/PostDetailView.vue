@@ -841,25 +841,24 @@ const loadPost = async (tid) => {
     }
 
     if (post.value && post.value.fid) {
-      // 直接使用原始的 limit=100
-      const listRes = await fetch(`${baseUrl}?action=list&fid=${post.value.fid}&limit=100`)
+      const fid = post.value.fid
+      const listRes = await fetch(`${baseUrl}?action=list&fid=${fid}&limit=200`)
       const listData = await listRes.json()
       
       if (listData.code === 0) {
         const posts = listData.data
-        console.log('📋 获取到帖子数量:', posts.length)
-        // 打印前5个和后5个帖子，查看排序
-        console.log('📋 前5个:', posts.slice(0, 5).map(p => p.subject))
-        console.log('📋 后5个:', posts.slice(-5).map(p => p.subject))
+        const currentIndex = posts.findIndex(p => Number(p.tid) === Number(tid))
         
-        const currentIndex = posts.findIndex(p => p.tid == tid)
-        console.log('📍 当前帖子索引:', currentIndex)
-        
-        prevPost.value = currentIndex > 0 ? posts[currentIndex - 1] : null
-        nextPost.value = currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null
-        
-        console.log('⬅️ 上一篇:', prevPost.value?.subject || '无')
-        console.log('➡️ 下一篇:', nextPost.value?.subject || '无')
+        if (currentIndex !== -1) {
+          prevPost.value = currentIndex > 0 ? posts[currentIndex - 1] : null
+          nextPost.value = currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null
+        } else if (posts.length > 0 && posts[0]?.dateline > post.value?.dateline) {
+          nextPost.value = posts[0]
+          prevPost.value = null
+        } else {
+          prevPost.value = null
+          nextPost.value = null
+        }
       }
     }
   } catch (error) {
