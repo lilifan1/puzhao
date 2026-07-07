@@ -841,13 +841,51 @@ const loadPost = async (tid) => {
     }
 
     if (post.value && post.value.fid) {
-      const listRes = await fetch(`${baseUrl}?action=list&fid=${post.value.fid}&limit=100`)
-      const listData = await listRes.json()
-      if (listData.code === 0) {
-        const posts = listData.data
-        const currentIndex = posts.findIndex(p => p.tid == tid)
-        prevPost.value = currentIndex > 0 ? posts[currentIndex - 1] : null
-        nextPost.value = currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null
+      const fid = post.value.fid
+      
+      // ===== 分页获取全部帖子 =====
+      let allPosts = []
+      let page = 1
+      const limit = 50
+      let hasMore = true
+      
+      while (hasMore) {
+        try {
+          const listRes = await fetch(`${baseUrl}?action=list&fid=${fid}&limit=${limit}&page=${page}`)
+          const listData = await listRes.json()
+          
+          if (listData.code === 0 && listData.data && listData.data.length > 0) {
+            allPosts = allPosts.concat(listData.data)
+            page++
+            if (listData.data.length < limit) {
+              hasMore = false
+            }
+          } else {
+            hasMore = false
+          }
+        } catch (e) {
+          console.error('分页获取失败:', e)
+          hasMore = false
+        }
+      }
+      
+      console.log('📋 共获取到帖子:', allPosts.length, '条')
+      // ===== 分页结束 =====
+      
+      if (allPosts.length > 0) {
+        // 按时间倒序排列（最新的在前面）
+        const posts = allPosts.sort((a, b) => b.dateline - a.dateline)
+        
+        const currentIndex = posts.findIndex(p => Number(p.tid) === Number(tid))
+        console.log('📍 当前帖子索引:', currentIndex, '/', posts.length)
+        
+        if (currentIndex !== -1) {
+          prevPost.value = currentIndex > 0 ? posts[currentIndex - 1] : null
+          nextPost.value = currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null
+        } else {
+          prevPost.value = null
+          nextPost.value = null
+        }
       }
     }
   } catch (error) {
