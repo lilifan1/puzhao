@@ -355,16 +355,40 @@ const extractAudioList = (retryCount = 0) => {
       el.style.display = 'none'
     })
   
-  // ===== 遮盖“更多精彩”目录 =====
-  // 查找包含“温馨提醒”或“更多精彩”的容器
-  const allDivs = contentEl.querySelectorAll('div, section, p')
-  allDivs.forEach(el => {
-    const text = el.textContent || ''
-    if ((text.includes('温馨提醒') || text.includes('更多精彩') || text.includes('每日学习')) && 
-        !el.querySelector('.sm2-bar-ui') && !el.querySelector('audio')) {
-      el.style.display = 'none'
-    }
-  })
+  // ===== 精确遮盖"更多精彩"目录 =====
+  // 找到包含"温馨提醒"或"更多精彩"的父容器 section
+  const section = contentEl.querySelector('section._editor[data-support="96编辑器"]')
+  if (section) {
+    // 在这个 section 内，找到"更多精彩"相关的 ul 或 div
+    // 方法1：查找包含"每日学习"等关键词的 ul
+    const uls = section.querySelectorAll('ul')
+    uls.forEach(ul => {
+      const text = ul.textContent || ''
+      if (text.includes('每日学习') || text.includes('每日畅听') || text.includes('白话佛法')) {
+        // 检查这个 ul 是否在音频播放器附近
+        const parent = ul.closest('div') || ul.parentElement
+        // 如果父容器不包含音频播放器，隐藏它
+        if (parent && !parent.querySelector('.sm2-bar-ui') && !parent.querySelector('audio')) {
+          parent.style.display = 'none'
+          console.log('✅ 已隐藏"更多精彩"目录')
+        }
+      }
+    })
+
+    // 方法2：如果方法1没生效，直接隐藏包含"更多精彩请点击以下目录"的元素
+    const allDivs = section.querySelectorAll('div, p')
+    allDivs.forEach(el => {
+      const text = el.textContent || ''
+      if (text.includes('更多精彩请点击以下目录') || text.includes('更多精彩')) {
+        // 隐藏这个元素及其父容器（但不影响音频播放器）
+        const parent = el.closest('div') || el.parentElement
+        if (parent && !parent.querySelector('.sm2-bar-ui') && !parent.querySelector('audio')) {
+          parent.style.display = 'none'
+          console.log('✅ 已隐藏"更多精彩"目录（备用）')
+        }
+      }
+    })
+  }
   // ===== 遮盖结束 =====
 
     nextTick(() => {
