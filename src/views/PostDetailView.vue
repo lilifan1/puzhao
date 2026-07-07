@@ -841,24 +841,13 @@ const loadPost = async (tid) => {
     }
 
     if (post.value && post.value.fid) {
-      const fid = post.value.fid
-      const listRes = await fetch(`${baseUrl}?action=list&fid=${fid}&limit=200`)
+      const listRes = await fetch(`${baseUrl}?action=list&fid=${post.value.fid}&limit=100`)
       const listData = await listRes.json()
-      
       if (listData.code === 0) {
         const posts = listData.data
-        const currentIndex = posts.findIndex(p => Number(p.tid) === Number(tid))
-        
-        if (currentIndex !== -1) {
-          prevPost.value = currentIndex > 0 ? posts[currentIndex - 1] : null
-          nextPost.value = currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null
-        } else if (posts.length > 0 && posts[0]?.dateline > post.value?.dateline) {
-          nextPost.value = posts[0]
-          prevPost.value = null
-        } else {
-          prevPost.value = null
-          nextPost.value = null
-        }
+        const currentIndex = posts.findIndex(p => p.tid == tid)
+        prevPost.value = currentIndex > 0 ? posts[currentIndex - 1] : null
+        nextPost.value = currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null
       }
     }
   } catch (error) {
