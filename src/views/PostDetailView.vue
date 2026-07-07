@@ -355,46 +355,28 @@ const extractAudioList = (retryCount = 0) => {
       el.style.display = 'none'
     })
   
-  // ===== 精确遮盖"更多精彩"目录 =====
-  // 找到包含"温馨提醒"或"更多精彩"的父容器 section
+  // ===== 方案：把音频列表移到 section 外面，然后隐藏整个 section =====
   const section = contentEl.querySelector('section._editor[data-support="96编辑器"]')
-  if (section) {
-    // 在这个 section 内，找到"更多精彩"相关的 ul 或 div
-    // 方法1：查找包含"每日学习"等关键词的 ul
-    const uls = section.querySelectorAll('ul')
-    uls.forEach(ul => {
-      const text = ul.textContent || ''
-      if (text.includes('每日学习') || text.includes('每日畅听') || text.includes('白话佛法')) {
-        // 检查这个 ul 是否在音频播放器附近
-        const parent = ul.closest('div') || ul.parentElement
-        // 如果父容器不包含音频播放器，隐藏它
-        if (parent && !parent.querySelector('.sm2-bar-ui') && !parent.querySelector('audio')) {
-          parent.style.display = 'none'
-          console.log('✅ 已隐藏"更多精彩"目录')
-        }
-      }
-    })
-
-    // 方法2：如果方法1没生效，直接隐藏包含"更多精彩请点击以下目录"的元素
-    const allDivs = section.querySelectorAll('div, p')
-    allDivs.forEach(el => {
-      const text = el.textContent || ''
-      if (text.includes('更多精彩请点击以下目录') || text.includes('更多精彩')) {
-        // 隐藏这个元素及其父容器（但不影响音频播放器）
-        const parent = el.closest('div') || el.parentElement
-        if (parent && !parent.querySelector('.sm2-bar-ui') && !parent.querySelector('audio')) {
-          parent.style.display = 'none'
-          console.log('✅ 已隐藏"更多精彩"目录（备用）')
-        }
-      }
-    })
+  const audioSection = document.getElementById('audio-list-container')
+  
+  if (section && audioSection) {
+    // 把音频列表移到 section 外面（移到 section 的父容器中）
+    const parent = section.parentElement
+    if (parent) {
+      // 先把音频列表移到 section 后面
+      parent.insertBefore(audioSection, section.nextSibling)
+      // 然后隐藏整个 section（包含"更多精彩"目录）
+      section.style.display = 'none'
+      console.log('✅ 已隐藏包含"更多精彩"的 section，音频列表已移出')
+    }
   }
   // ===== 遮盖结束 =====
-
-    nextTick(() => {
-      moveAudioListAfterTitle()
-    })
-  }
+  
+  nextTick(() => {
+    // 因为音频列表已经被移走了，这里不需要再移动
+    // 但为了防止其他地方调用，保留空判断
+    // moveAudioListAfterTitle()
+  })
 }
 
 const moveAudioListAfterTitle = () => {
