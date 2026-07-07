@@ -233,14 +233,9 @@ const scrollToTop = () => {
 
 // ==================== 播放器控制（快进/快退/跳转） ====================
 
-// 音频快进快退跳转
 const audioFastUpdate = (type) => {
   const audio = audioPlayer.value
-  if (!audio) {
-    console.warn('音频播放器未找到')
-    return
-  }
-  
+  if (!audio) return
   switch (type) {
     case 1:
       audio.currentTime = Math.max(0, audio.currentTime - 15)
@@ -254,19 +249,12 @@ const audioFastUpdate = (type) => {
       const s = parseInt(audioJumpSec.value) || 0
       audio.currentTime = h * 3600 + m * 60 + s
       break
-    default:
-      break
   }
 }
 
-// 视频快进快退跳转
 const videoFastUpdate = (type) => {
   const video = videoPlayer.value
-  if (!video) {
-    console.warn('视频播放器未找到')
-    return
-  }
-  
+  if (!video) return
   switch (type) {
     case 1:
       video.currentTime = Math.max(0, video.currentTime - 15)
@@ -279,8 +267,6 @@ const videoFastUpdate = (type) => {
       const m = parseInt(videoJumpMin.value) || 0
       const s = parseInt(videoJumpSec.value) || 0
       video.currentTime = h * 3600 + m * 60 + s
-      break
-    default:
       break
   }
 }
