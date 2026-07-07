@@ -680,6 +680,52 @@ const bindLinkHandler = () => {
   }
 }
 
+const bindMediaControls = () => {
+  const contentEl = document.querySelector('.content')
+  if (!contentEl) return
+
+  // 找到所有包含视频/音频的容器
+  const mediaContainers = contentEl.querySelectorAll('section, div, p')
+  mediaContainers.forEach(container => {
+    const media = container.querySelector('video, audio')
+    if (!media) return
+
+    // 找这个容器里的所有按钮
+    const btns = container.querySelectorAll('button')
+    btns.forEach(btn => {
+      if (btn.dataset.handled === 'true') return
+      const text = btn.textContent.trim()
+
+      let type = 0
+      if (text.includes('快退') || text.includes('后退') || text.includes('退')) type = 1
+      else if (text.includes('快进') || text.includes('前进') || text.includes('进')) type = 2
+      else if (text.includes('跳转') || text.includes('转')) type = 3
+
+      if (type === 0) return
+
+      btn.addEventListener('click', (e) => {
+        e.preventDefault()
+        if (type === 1) {
+          media.currentTime = Math.max(0, media.currentTime - 15)
+        } else if (type === 2) {
+          media.currentTime = media.currentTime + 15
+        } else if (type === 3) {
+          const inputs = container.querySelectorAll('input[type="number"]')
+          let h = 0, m = 0, s = 0
+          inputs.forEach((input, idx) => {
+            const val = parseInt(input.value) || 0
+            if (idx === 0) h = val
+            else if (idx === 1) m = val
+            else if (idx === 2) s = val
+          })
+          media.currentTime = h * 3600 + m * 60 + s
+        }
+      })
+      btn.dataset.handled = 'true'
+    })
+  })
+}
+
 const loadPost = async (tid) => {
   loading.value = true
   videoList.value = []
@@ -731,6 +777,7 @@ watch(post, () => {
         extractAudioList()
         extractVideoList()
         bindLinkHandler()
+        bindMediaControls()  // ← 添加这一行
       }, 500)
     })
   }
