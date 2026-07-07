@@ -618,7 +618,7 @@ const loadPost = async (tid) => {
       post.value = null
     }
 
-    // ===== 先提取音频列表（不等待上下篇） =====
+    // ===== 先提取音频列表 =====
     nextTick(() => {
       setTimeout(() => {
         extractAudioList()
@@ -627,15 +627,14 @@ const loadPost = async (tid) => {
         setupMediaObserver()
       }, 300)
     })
-    // ===== 音频提取结束 =====
 
-    // ===== 上下篇：只获取当前帖子附近的帖子 =====
+    // ===== 上下篇：获取全部帖子 =====
     if (post.value && post.value.fid) {
       const fid = post.value.fid
       const currentTid = Number(tid)
       
-      // 只获取 100 条，避免加载过慢
-      const listRes = await fetch(`${baseUrl}?action=list&fid=${fid}&limit=100`)
+      // 使用较大的 limit 获取全部帖子
+      const listRes = await fetch(`${baseUrl}?action=list&fid=${fid}&limit=999`)
       const listData = await listRes.json()
       
       if (listData.code === 0) {
@@ -646,23 +645,11 @@ const loadPost = async (tid) => {
           prevPost.value = currentIndex > 0 ? posts[currentIndex - 1] : null
           nextPost.value = currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null
         } else {
-          // 如果当前帖子不在列表中，用更简单的方式：只找相邻的帖子
-          // 尝试获取当前帖子附近的帖子
-          const prevRes = await fetch(`${baseUrl}?action=list&fid=${fid}&limit=20`)
-          const prevData = await prevRes.json()
-          if (prevData.code === 0) {
-            const prevPosts = prevData.data.sort((a, b) => b.dateline - a.dateline)
-            const idx = prevPosts.findIndex(p => Number(p.tid) === currentTid)
-            if (idx !== -1) {
-              prevPost.value = idx > 0 ? prevPosts[idx - 1] : null
-              nextPost.value = idx < prevPosts.length - 1 ? prevPosts[idx + 1] : null
-            }
-          }
+          prevPost.value = null
+          nextPost.value = null
         }
       }
     }
-    // ===== 上下篇结束 =====
-    
   } catch (error) {
     console.error('获取帖子失败:', error)
     post.value = null
