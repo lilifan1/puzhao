@@ -355,6 +355,18 @@ const extractAudioList = (retryCount = 0) => {
       el.style.display = 'none'
     })
     
+    // 👇 在这里添加隐藏“更多精彩”目录的代码
+  // ===== 隐藏“更多精彩请点击以下目录” =====
+  const allDivs = contentEl.querySelectorAll('div, section, p')
+  allDivs.forEach(el => {
+    const text = el.textContent || ''
+    if ((text.includes('温馨提醒') || text.includes('更多精彩') || text.includes('每日学习')) && 
+        !el.querySelector('.sm2-bar-ui') && !el.querySelector('audio')) {
+      el.style.display = 'none'
+    }
+  })
+  // ===== 隐藏结束 =====
+  
     nextTick(() => {
       moveAudioListAfterTitle()
     })
