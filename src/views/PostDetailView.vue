@@ -628,25 +628,60 @@ const loadPost = async (tid) => {
       }, 300)
     })
 
-    // ===== 上下篇：获取全部帖子 =====
+    // ===== 上下篇：分页循环获取全部帖子 =====
     if (post.value && post.value.fid) {
       const fid = post.value.fid
       const currentTid = Number(tid)
       
-      // 使用较大的 limit 获取全部帖子
-      const listRes = await fetch(`${baseUrl}?action=list&fid=${fid}&limit=999`)
-      const listData = await listRes.json()
+      let allPosts = []
+      let page = 1
+      const limit = 50
+      let hasMore = true
+      let found = false
       
-      if (listData.code === 0) {
-        const posts = listData.data.sort((a, b) => b.dateline - a.dateline)
-        const currentIndex = posts.findIndex(p => Number(p.tid) === currentTid)
-        
+      while (hasMore && !found) {
+        try {
+          const listRes = await fetch(`${baseUrl}?action=list&fid=${fid}&limit=${limit}&page=${page}`)
+          const listData = await listRes.json()
+          
+          if (listData.code === 0 && listData.data && listData.data.length > 0) {
+            const posts = listData.data
+            allPosts = allPosts.concat(posts)
+            
+            // 检查当前帖子是否在这一页中
+            const foundInPage = posts.findIndex(p => Number(p.tid) === currentTid)
+            if (foundInPage !== -1) {
+              found = true
+              // 找到后，用当前页的数据计算上下篇
+              const sortedPosts = allPosts.sort((a, b) => b.dateline - a.dateline)
+              const currentIndex = sortedPosts.findIndex(p => Number(p.tid) === currentTid)
+              if (currentIndex !== -1) {
+                prevPost.value = currentIndex > 0 ? sortedPosts[currentIndex - 1] : null
+                nextPost.value = currentIndex < sortedPosts.length - 1 ? sortedPosts[currentIndex + 1] : null
+              }
+              break
+            }
+            
+            page++
+            if (listData.data.length < limit) {
+              hasMore = false
+            }
+          } else {
+            hasMore = false
+          }
+        } catch (e) {
+          console.error('分页获取失败:', e)
+          hasMore = false
+        }
+      }
+      
+      // 如果循环结束后还没找到，用所有已获取的数据再试一次
+      if (!found && allPosts.length > 0) {
+        const sortedPosts = allPosts.sort((a, b) => b.dateline - a.dateline)
+        const currentIndex = sortedPosts.findIndex(p => Number(p.tid) === currentTid)
         if (currentIndex !== -1) {
-          prevPost.value = currentIndex > 0 ? posts[currentIndex - 1] : null
-          nextPost.value = currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null
-        } else {
-          prevPost.value = null
-          nextPost.value = null
+          prevPost.value = currentIndex > 0 ? sortedPosts[currentIndex - 1] : null
+          nextPost.value = currentIndex < sortedPosts.length - 1 ? sortedPosts[currentIndex + 1] : null
         }
       }
     }
