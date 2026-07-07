@@ -44,7 +44,7 @@
           <button @click="prevVideo" :disabled="currentVideoIndex <= 0">◀ 上一个</button>
           <button @click="nextVideo" :disabled="currentVideoIndex >= videoList.length - 1">下一个 ▶</button>
         </div>
-        <!-- 视频控制栏（快进快退跳转） -->
+        <!-- ===== 视频快进快退（仅视频播放器） ===== -->
         <div class="media-controls">
           <button @click="videoFastUpdate(1)" class="ctrl-btn">⏪ 快退15秒</button>
           <button @click="videoFastUpdate(2)" class="ctrl-btn">快进15秒 ⏩</button>
@@ -99,7 +99,7 @@
             @ended="onAudioEnded"
           ></audio>
           <p>正在播放：{{ currentAudio.title }}</p>
-          <!-- 音频控制栏（快进快退跳转） -->
+          <!-- ===== 单独音频快进快退（仅当前播放的音频） ===== -->
           <div class="media-controls">
             <button @click="audioFastUpdate(1)" class="ctrl-btn">⏪ 快退15秒</button>
             <button @click="audioFastUpdate(2)" class="ctrl-btn">快进15秒 ⏩</button>
@@ -271,7 +271,6 @@ const videoFastUpdate = (type) => {
   }
 }
 
-// ==================== 音频 ====================
 // ==================== 音频 ====================
 const extractAudioList = (retryCount = 0) => {
   const contentEl = document.querySelector('.content')
@@ -896,11 +895,9 @@ onMounted(async () => {
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
-  background: linear-gradient(135deg, #fef9e7 0%, #fdf3d0 100%);
+  background-color: #fef9e7;
   min-height: 100vh;
   border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(180, 130, 30, 0.15);
-  border: 1px solid #f0e0b8;
 }
 
 /* ===== 导航栏 ===== */
@@ -913,7 +910,7 @@ onMounted(async () => {
 .nav-btn {
   display: inline-block;
   padding: 8px 18px;
-  background: linear-gradient(145deg, #f7e8b0, #edcfa0);
+  background: #f7e8b0;
   color: #7a5d2e;
   border: 1px solid #e6c88a;
   border-radius: 6px;
@@ -922,13 +919,11 @@ onMounted(async () => {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 1px 3px rgba(180, 130, 30, 0.15);
 }
 .nav-btn:hover {
-  background: linear-gradient(145deg, #edcfa0, #e0b880);
+  background: #edcfa0;
   transform: translateY(-1px);
   box-shadow: 0 3px 8px rgba(180, 130, 30, 0.25);
-  color: #5a3f1e;
 }
 
 /* ===== 帖子头部 ===== */
@@ -943,14 +938,13 @@ onMounted(async () => {
   flex: 1;
   min-width: 200px;
   color: #7a5d2e;
-  font-size: 24px;
   border-left: 4px solid #f1c40f;
   padding-left: 14px;
 }
 .copy-btn {
   flex-shrink: 0;
   padding: 6px 16px;
-  background: linear-gradient(145deg, #f7e8b0, #edcfa0);
+  background: #f7e8b0;
   color: #7a5d2e;
   border: 1px solid #e6c88a;
   border-radius: 6px;
@@ -959,13 +953,11 @@ onMounted(async () => {
   cursor: pointer;
   transition: all 0.3s ease;
   height: fit-content;
-  box-shadow: 0 1px 3px rgba(180, 130, 30, 0.12);
 }
 .copy-btn:hover {
-  background: linear-gradient(145deg, #f1c40f, #d4ac0d);
+  background: #f1c40f;
   color: #fff;
   transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(180, 130, 30, 0.3);
 }
 
 @media (max-width: 600px) {
@@ -986,7 +978,6 @@ onMounted(async () => {
   }
 }
 
-/* ===== 元信息 ===== */
 .meta {
   color: #a07d4a;
   font-size: 14px;
@@ -995,23 +986,20 @@ onMounted(async () => {
   margin-bottom: 20px;
 }
 
-/* ===== 帖子内容 ===== */
 .content {
   line-height: 1.9;
   font-size: 16px;
   overflow-wrap: break-word;
   color: #4a3a25;
 }
-.content img {
-  max-width: 100%;
-}
-.content a {
-  color: #b8860b;
-  text-decoration: none;
-}
-.content a:hover {
-  text-decoration: underline;
-  color: #d4a017;
+.content img { max-width: 100%; }
+.content a { color: #b8860b; text-decoration: none; }
+.content a:hover { text-decoration: underline; }
+
+.error {
+  color: #c0392b;
+  text-align: center;
+  padding: 50px 0;
 }
 
 /* ===== 上下篇导航 ===== */
@@ -1020,14 +1008,13 @@ onMounted(async () => {
   justify-content: space-between;
   align-items: center;
   margin: 20px 0;
-  padding: 14px 0;
+  padding: 12px 16px;
   border-top: 1px solid #f0e0b8;
   border-bottom: 1px solid #f0e0b8;
   gap: 10px;
   flex-wrap: wrap;
   background: rgba(255, 248, 220, 0.4);
   border-radius: 8px;
-  padding: 12px 16px;
 }
 .nav-link {
   color: #b8860b;
@@ -1038,9 +1025,9 @@ onMounted(async () => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  transition: color 0.3s ease;
   padding: 4px 10px;
   border-radius: 4px;
+  transition: all 0.3s ease;
 }
 .nav-link:hover:not(.disabled) {
   color: #7a5d2e;
@@ -1052,26 +1039,17 @@ onMounted(async () => {
   cursor: default;
 }
 
-/* ===== 错误提示 ===== */
-.error {
-  color: #c0392b;
-  text-align: center;
-  padding: 50px 0;
-}
-
 /* ===== 音频列表 ===== */
 .audio-list {
   margin-top: 30px;
   padding: 20px;
-  background: linear-gradient(145deg, #fffbea, #fdf6e0);
+  background: #fdf6e0;
   border-radius: 10px;
   border: 1px solid #f0e0b8;
-  box-shadow: 0 2px 8px rgba(180, 130, 30, 0.1);
 }
 .audio-list h3 {
   color: #7a5d2e;
   margin-bottom: 15px;
-  font-size: 18px;
   border-bottom: 2px solid #f1c40f;
   padding-bottom: 8px;
 }
@@ -1102,13 +1080,12 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(145deg, #f1c40f, #d4ac0d);
+  background: #f1c40f;
   color: white;
   border-radius: 50%;
   font-size: 13px;
   font-weight: bold;
   flex-shrink: 0;
-  box-shadow: 0 1px 4px rgba(180, 130, 30, 0.3);
 }
 .audio-title {
   flex: 1;
@@ -1119,13 +1096,11 @@ onMounted(async () => {
 .audio-play {
   color: #b8860b;
   font-size: 16px;
-  transition: color 0.3s ease;
 }
 .audio-item:hover .audio-play {
   color: #d4a017;
 }
 
-/* ===== 播放器 ===== */
 .player {
   margin-bottom: 15px;
   padding: 15px;
@@ -1150,14 +1125,12 @@ onMounted(async () => {
 .video-section {
   margin: 20px 0;
   padding: 18px;
-  background: linear-gradient(145deg, #fffbea, #fdf6e0);
+  background: #fdf6e0;
   border-radius: 10px;
   border: 1px solid #f0e0b8;
-  box-shadow: 0 2px 8px rgba(180, 130, 30, 0.1);
 }
 .video-section h3 {
   color: #7a5d2e;
-  font-size: 18px;
   border-bottom: 2px solid #f1c40f;
   padding-bottom: 8px;
   margin-bottom: 12px;
@@ -1209,7 +1182,7 @@ onMounted(async () => {
 }
 .video-nav button {
   padding: 8px 20px;
-  background: linear-gradient(145deg, #f7e8b0, #edcfa0);
+  background: #f7e8b0;
   color: #7a5d2e;
   border: 1px solid #e6c88a;
   border-radius: 6px;
@@ -1219,10 +1192,9 @@ onMounted(async () => {
   transition: all 0.3s ease;
 }
 .video-nav button:hover:not(:disabled) {
-  background: linear-gradient(145deg, #f1c40f, #d4ac0d);
+  background: #f1c40f;
   color: #fff;
   transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(180, 130, 30, 0.3);
 }
 .video-nav button:disabled {
   opacity: 0.4;
@@ -1257,13 +1229,12 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(145deg, #f1c40f, #d4ac0d);
+  background: #f1c40f;
   color: white;
   border-radius: 50%;
   font-size: 12px;
   font-weight: bold;
   flex-shrink: 0;
-  box-shadow: 0 1px 4px rgba(180, 130, 30, 0.3);
 }
 .video-list-title {
   flex: 1;
@@ -1279,7 +1250,7 @@ onMounted(async () => {
   color: #d4a017;
 }
 
-/* ===== 播放器控制按钮（快进快退） ===== */
+/* ===== 快进快退控制栏 ===== */
 .media-controls {
   display: flex;
   align-items: center;
@@ -1293,7 +1264,7 @@ onMounted(async () => {
 }
 .ctrl-btn {
   padding: 5px 14px;
-  background: linear-gradient(145deg, #f7e8b0, #edcfa0);
+  background: #f7e8b0;
   color: #7a5d2e;
   border: 1px solid #e6c88a;
   border-radius: 4px;
@@ -1304,19 +1275,15 @@ onMounted(async () => {
   white-space: nowrap;
 }
 .ctrl-btn:hover {
-  background: linear-gradient(145deg, #f1c40f, #d4ac0d);
+  background: #f1c40f;
   color: #fff;
   transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(180, 130, 30, 0.3);
-}
-.ctrl-btn:active {
-  transform: scale(0.96);
 }
 .jump-btn {
-  background: linear-gradient(145deg, #e8d5a0, #d4b880);
+  background: #e8d5a0;
 }
 .jump-btn:hover {
-  background: linear-gradient(145deg, #d4ac0d, #b8950a) !important;
+  background: #d4ac0d !important;
   color: #fff !important;
 }
 .ctrl-divider {
@@ -1340,7 +1307,6 @@ onMounted(async () => {
 .jump-input:focus {
   outline: none;
   border-color: #f1c40f;
-  box-shadow: 0 0 6px rgba(241, 196, 15, 0.3);
 }
 .jump-colon {
   color: #b8950a;
@@ -1373,7 +1339,7 @@ onMounted(async () => {
   right: 20px;
   width: 48px;
   height: 48px;
-  background: linear-gradient(145deg, #f7e8b0, #edcfa0);
+  background: #f7e8b0;
   color: #7a5d2e;
   border: 1px solid #e6c88a;
   border-radius: 50%;
@@ -1387,10 +1353,9 @@ onMounted(async () => {
   justify-content: center;
 }
 .back-to-top:hover {
-  background: linear-gradient(145deg, #f1c40f, #d4ac0d);
+  background: #f1c40f;
   color: #fff;
   transform: translateY(-3px);
-  box-shadow: 0 4px 16px rgba(180, 130, 30, 0.35);
 }
 .back-to-top:active {
   transform: scale(0.92);
