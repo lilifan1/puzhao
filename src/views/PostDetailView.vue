@@ -355,34 +355,16 @@ const extractAudioList = (retryCount = 0) => {
       el.style.display = 'none'
     })
   
-  // ===== 完全遮盖“更多精彩”目录 =====
-  // 方法1：通过“更多精彩请点击以下目录”找到整个容器
-  const allDivs = contentEl.querySelectorAll('div, section')
-  allDivs.forEach(el => {
-    const text = el.textContent || ''
-    // 如果包含“更多精彩请点击以下目录”，并且下面有列表项
-    if (text.includes('更多精彩请点击以下目录') && el.querySelectorAll('li').length > 3) {
-      el.style.display = 'none'
-      console.log('✅ 已遮盖“更多精彩”目录')
+  // ===== 遮盖"更多精彩"目录 =====
+  // 查找包含"更多精彩请点击以下目录"的容器
+  const moreContainer = contentEl.querySelector('div, section')
+  if (moreContainer && (moreContainer.textContent.includes('更多精彩请点击以下目录') || moreContainer.textContent.includes('更多精彩'))) {
+    // 确保不包含音频播放器
+    if (!moreContainer.querySelector('.sm2-bar-ui') && !moreContainer.querySelector('audio') && !moreContainer.querySelector('ul.sm2-playlist-bd')) {
+      moreContainer.style.display = 'none'
+      console.log('✅ 已遮盖"更多精彩"目录')
     }
-  })
-  
-  // 方法2：如果方法1没生效，用关键词逐个查找并隐藏
-  const hideKeywords = ['更多精彩请点击以下目录', '每日学习', '每日畅听', '白话佛法', '入门知识', '感动视频', '广播讲座', '睡前一听', '博客留言', '法会开示']
-  const allItems = contentEl.querySelectorAll('*')
-  allItems.forEach(el => {
-    const text = el.textContent || ''
-    for (const kw of hideKeywords) {
-      if (text.trim() === kw || (text.includes(kw) && el.children.length === 0)) {
-        // 如果找到的是纯文本节点，隐藏它的父元素
-        let parent = el.closest('li') || el.closest('ul') || el.closest('div') || el
-        if (parent && !parent.querySelector('.sm2-bar-ui')) {
-          parent.style.display = 'none'
-        }
-        break
-      }
-    }
-  })
+  }
   // ===== 遮盖结束 =====
 
     nextTick(() => {
