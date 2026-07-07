@@ -841,13 +841,41 @@ const loadPost = async (tid) => {
     }
 
     if (post.value && post.value.fid) {
-      const listRes = await fetch(`${baseUrl}?action=list&fid=${post.value.fid}&limit=100`)
+      const fid = parseInt(post.value.fid)
+      // 增加 limit 到 500，获取更多数据
+      const listRes = await fetch(`${baseUrl}?action=list&fid=${fid}&limit=500`)
       const listData = await listRes.json()
+      
       if (listData.code === 0) {
-        const posts = listData.data
-        const currentIndex = posts.findIndex(p => p.tid == tid)
-        prevPost.value = currentIndex > 0 ? posts[currentIndex - 1] : null
-        nextPost.value = currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null
+        const rawPosts = listData.data
+        console.log('📋 原始获取到帖子数量:', rawPosts.length)
+        
+        // 按发布时间倒序排列（最新的在前面）
+        const posts = rawPosts.sort((a, b) => b.dateline - a.dateline)
+        
+        console.log('📋 排序后第一篇:', posts[0]?.subject)
+        console.log('📋 排序后最后一篇:', posts[posts.length-1]?.subject)
+        
+        const currentTid = Number(tid)
+        const currentIndex = posts.findIndex(p => Number(p.tid) === currentTid)
+        
+        console.log('📍 当前帖子索引:', currentIndex, '总帖子数:', posts.length)
+        
+        if (currentIndex > 0) {
+          prevPost.value = posts[currentIndex - 1]
+          console.log('⬅️ 上一篇:', prevPost.value?.subject)
+        } else {
+          prevPost.value = null
+          console.log('⬅️ 已是第一篇')
+        }
+        
+        if (currentIndex < posts.length - 1 && currentIndex !== -1) {
+          nextPost.value = posts[currentIndex + 1]
+          console.log('➡️ 下一篇:', nextPost.value?.subject)
+        } else {
+          nextPost.value = null
+          console.log('➡️ 已是最后一篇')
+        }
       }
     }
   } catch (error) {
