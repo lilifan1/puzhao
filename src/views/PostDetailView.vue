@@ -815,59 +815,88 @@ const loadPost = async (tid) => {
     })
 
     // ===== 上下篇：分页循环获取全部帖子 =====
-    if (post.value && post.value.fid) {
-      const fid = post.value.fid
-      const currentTid = Number(tid)
-      
-      let allPosts = []
-      let page = 1
-      const limit = 50
-      let hasMore = true
-      let found = false
-      
-      while (hasMore && !found) {
-        try {
-          const listRes = await fetch(`${baseUrl}?action=list&fid=${fid}&limit=${limit}&page=${page}`)
-          const listData = await listRes.json()
+  if (post.value && post.value.fid) {
+    const fid = post.value.fid
+    const currentTid = Number(tid)
+    
+    let allPosts = []
+    let page = 1
+    const limit = 50
+    let hasMore = true
+    let found = false
+    
+    // 记录当前帖子所在页
+    let currentPage = 1
+    let foundPage = 1
+    
+    while (hasMore && !found) {
+      try {
+        const listRes = await fetch(`${baseUrl}?action=list&fid=${fid}&limit=${limit}&page=${page}`)
+        const listData = await listRes.json()
+        
+        if (listData.code === 0 && listData.data && listData.data.length > 0) {
+          const posts = listData.data
+          allPosts = allPosts.concat(posts)
           
-          if (listData.code === 0 && listData.data && listData.data.length > 0) {
-            const posts = listData.data
-            allPosts = allPosts.concat(posts)
+          const foundInPage = posts.findIndex(p => Number(p.tid) === currentTid)
+          if (foundInPage !== -1) {
+            found = true
+            foundPage = page
+            const sortedPosts = allPosts.sort((a, b) => b.dateline - a.dateline)
+            const currentIndex = sortedPosts.findIndex(p => Number(p.tid) === currentTid)
             
-            const foundInPage = posts.findIndex(p => Number(p.tid) === currentTid)
-            if (foundInPage !== -1) {
-              found = true
-              const sortedPosts = allPosts.sort((a, b) => b.dateline - a.dateline)
-              const currentIndex = sortedPosts.findIndex(p => Number(p.tid) === currentTid)
-              if (currentIndex !== -1) {
-                prevPost.value = currentIndex > 0 ? sortedPosts[currentIndex - 1] : null
-                nextPost.value = currentIndex < sortedPosts.length - 1 ? sortedPosts[currentIndex + 1] : null
+            if (currentIndex !== -1) {
+              // 上一篇
+              prevPost.value = currentIndex > 0 ? sortedPosts[currentIndex - 1] : null
+              
+              // 下一篇
+              if (currentIndex < sortedPosts.length - 1) {
+                // 当前页面还有下一篇
+                nextPost.value = sortedPosts[currentIndex + 1]
+              } else {
+                // ===== 当前页面最后一条，尝试加载下一页的第一条 =====
+                try {
+                  const nextPageRes = await fetch(`${baseUrl}?action=list&fid=${fid}&limit=${limit}&page=${page + 1}`)
+                  const nextPageData = await nextPageRes.json()
+                  if (nextPageData.code === 0 && nextPageData.data && nextPageData.data.length > 0) {
+                    // 取下一页的第一条作为下一篇
+                    const nextPagePosts = nextPageData.data.sort((a, b) => b.dateline - a.dateline)
+                    nextPost.value = nextPagePosts[0] || null
+                  } else {
+                    nextPost.value = null
+                  }
+                } catch (e) {
+                  nextPost.value = null
+                }
               }
-              break
             }
-            
-            page++
-            if (listData.data.length < limit) {
-              hasMore = false
-            }
-          } else {
+            break
+          }
+          
+          page++
+          if (listData.data.length < limit) {
             hasMore = false
           }
-        } catch (e) {
-          console.error('分页获取失败:', e)
+        } else {
           hasMore = false
         }
-      }
-      
-      if (!found && allPosts.length > 0) {
-        const sortedPosts = allPosts.sort((a, b) => b.dateline - a.dateline)
-        const currentIndex = sortedPosts.findIndex(p => Number(p.tid) === currentTid)
-        if (currentIndex !== -1) {
-          prevPost.value = currentIndex > 0 ? sortedPosts[currentIndex - 1] : null
-          nextPost.value = currentIndex < sortedPosts.length - 1 ? sortedPosts[currentIndex + 1] : null
-        }
+      } catch (e) {
+        console.error('分页获取失败:', e)
+        hasMore = false
       }
     }
+    
+    // 如果循环结束后还没找到
+    if (!found && allPosts.length > 0) {
+      const sortedPosts = allPosts.sort((a, b) => b.dateline - a.dateline)
+      const currentIndex = sortedPosts.findIndex(p => Number(p.tid) === currentTid)
+      if (currentIndex !== -1) {
+        prevPost.value = currentIndex > 0 ? sortedPosts[currentIndex - 1] : null
+        nextPost.value = currentIndex < sortedPosts.length - 1 ? sortedPosts[currentIndex + 1] : null
+      }
+    }
+  }
+}
   } catch (error) {
     console.error('获取帖子失败:', error)
     post.value = null
