@@ -354,7 +354,19 @@ const extractAudioList = (retryCount = 0) => {
     allPlayers.forEach(el => {
       el.style.display = 'none'
     })
-
+  
+  // ===== 遮盖“更多精彩”目录 =====
+  // 查找包含“温馨提醒”或“更多精彩”的容器
+  const allDivs = contentEl.querySelectorAll('div, section, p')
+  allDivs.forEach(el => {
+    const text = el.textContent || ''
+    if ((text.includes('温馨提醒') || text.includes('更多精彩') || text.includes('每日学习')) && 
+        !el.querySelector('.sm2-bar-ui') && !el.querySelector('audio')) {
+      el.style.display = 'none'
+    }
+  })
+  // ===== 遮盖结束 =====
+  
     nextTick(() => {
       moveAudioListAfterTitle()
     })
