@@ -355,6 +355,18 @@ const extractAudioList = (retryCount = 0) => {
       el.style.display = 'none'
     })
   
+  // ===== 遮盖“更多精彩”目录 =====
+// 查找包含“更多精彩”或“每日学习”的容器（不包含“温馨提醒”）
+const allDivs = contentEl.querySelectorAll('div, section, p')
+allDivs.forEach(el => {
+  const text = el.textContent || ''
+  if ((text.includes('更多精彩') || text.includes('每日学习')) && 
+      !el.querySelector('.sm2-bar-ui') && !el.querySelector('audio')) {
+    el.style.display = 'none'
+  }
+})
+// ===== 遮盖结束 =====
+
     nextTick(() => {
       moveAudioListAfterTitle()
     })
@@ -371,14 +383,17 @@ const moveAudioListAfterTitle = () => {
   let targetNode = null
   const allElements = contentEl.querySelectorAll('*')
   
+  // ===== 新增：针对“温馨提醒 点击标题即可收听”的精确查找 =====
   const keywords = [
     '温馨提醒 点击标题即可收听',
+    '温馨提醒 点击标题即可收听音频',
     '温馨提示：点击下面的标题即可收听音频',
     '温馨提示',
     '备用音频',
     '点击标题收听'
   ]
   
+  // 先查找包含完整关键词的元素
   for (const el of allElements) {
     const text = el.textContent || ''
     for (const kw of keywords) {
@@ -391,24 +406,31 @@ const moveAudioListAfterTitle = () => {
   }
   
   if (targetNode) {
-    let container = targetNode.closest('section')
+    // 向上查找包含此文本的容器
+    let container = targetNode.closest('section') || targetNode.closest('div') || targetNode.parentElement
+    
+    // 如果容器存在，把音频列表插入到它后面
     if (container) {
+      // 隐藏原始播放器
       const existingPlayer = container.querySelector('.sm2-bar-ui')
       if (existingPlayer) {
         existingPlayer.style.display = 'none'
       }
-      container.appendChild(audioSection)
-      console.log('✅ 音频列表已移动到关键词容器末尾')
+      
+      // 检查音频列表是否已经在容器内，如果是则不移
+      if (container.querySelector('#audio-list-container')) {
+        console.log('✅ 音频列表已在正确位置')
+        return
+      }
+      
+      // 把音频列表插入到容器后面
+      container.parentNode.insertBefore(audioSection, container.nextSibling)
+      console.log('✅ 音频列表已移动到"温馨提醒"容器后面')
       return
     }
   }
   
-  if (contentEl.firstChild) {
-    contentEl.insertBefore(audioSection, contentEl.firstChild)
-    console.log('✅ 音频列表已移动到内容开头')
-    return
-  }
-  
+  // 兜底：如果没找到，插入到内容开头
   if (contentEl.firstChild) {
     contentEl.insertBefore(audioSection, contentEl.firstChild)
     console.log('✅ 音频列表已移动到内容开头（兜底）')
