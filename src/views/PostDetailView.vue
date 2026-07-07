@@ -958,7 +958,8 @@ onMounted(async () => {
 .post-header h1 {
   flex: 1;
   min-width: 200px;
-  color: #7a5d2e;
+  color: #8B6B3E;
+  font-weight: 700;
   border-left: 4px solid #f1c40f;
   padding-left: 14px;
 }
