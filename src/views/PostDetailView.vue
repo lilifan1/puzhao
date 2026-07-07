@@ -24,16 +24,16 @@
         <h3>🎬 视频播放</h3>
         <div class="video-container">
           <video 
-  v-if="currentVideoUrl"
-  ref="videoPlayer"
-  controls 
-  :src="currentVideoUrl" 
-  poster="https://static.wixstatic.com/media/8dd7cb_777ac92550e94cf3824d803eaa3941d8~mv2.jpg"
-  style="width: 100%; max-height: 500px;"
-  controlslist="nodownload"
-  playsinline
-  @ended="onVideoEnded"
-></video>
+            v-if="currentVideoUrl"
+            ref="videoPlayer"
+            controls 
+            :src="currentVideoUrl" 
+            poster="https://static.wixstatic.com/media/8dd7cb_777ac92550e94cf3824d803eaa3941d8~mv2.jpg"
+            style="width: 100%; max-height: 500px;"
+            controlslist="nodownload"
+            playsinline
+            @ended="onVideoEnded"
+          ></video>
           <div v-else class="no-video">请从列表中选择一个视频</div>
         </div>
         <div class="video-info">
@@ -43,6 +43,19 @@
         <div class="video-nav">
           <button @click="prevVideo" :disabled="currentVideoIndex <= 0">◀ 上一个</button>
           <button @click="nextVideo" :disabled="currentVideoIndex >= videoList.length - 1">下一个 ▶</button>
+        </div>
+        <!-- 视频控制栏 -->
+        <div class="media-controls">
+          <button @click="videoFastUpdate(1)" class="ctrl-btn">⏪ 快退15秒</button>
+          <button @click="videoFastUpdate(2)" class="ctrl-btn">快进15秒 ⏩</button>
+          <span class="ctrl-divider">|</span>
+          <span class="ctrl-label">跳转：</span>
+          <input type="number" v-model.number="videoJumpHour" min="0" max="99" class="jump-input" placeholder="时">
+          <span class="jump-colon">:</span>
+          <input type="number" v-model.number="videoJumpMin" min="0" max="59" class="jump-input" placeholder="分">
+          <span class="jump-colon">:</span>
+          <input type="number" v-model.number="videoJumpSec" min="0" max="59" class="jump-input" placeholder="秒">
+          <button @click="videoFastUpdate(3)" class="ctrl-btn jump-btn">跳转</button>
         </div>
         <div class="video-list">
           <div 
@@ -86,6 +99,19 @@
             @ended="onAudioEnded"
           ></audio>
           <p>正在播放：{{ currentAudio.title }}</p>
+          <!-- 音频控制栏 -->
+          <div class="media-controls">
+            <button @click="audioFastUpdate(1)" class="ctrl-btn">⏪ 快退15秒</button>
+            <button @click="audioFastUpdate(2)" class="ctrl-btn">快进15秒 ⏩</button>
+            <span class="ctrl-divider">|</span>
+            <span class="ctrl-label">跳转：</span>
+            <input type="number" v-model.number="audioJumpHour" min="0" max="99" class="jump-input" placeholder="时">
+            <span class="jump-colon">:</span>
+            <input type="number" v-model.number="audioJumpMin" min="0" max="59" class="jump-input" placeholder="分">
+            <span class="jump-colon">:</span>
+            <input type="number" v-model.number="audioJumpSec" min="0" max="59" class="jump-input" placeholder="秒">
+            <button @click="audioFastUpdate(3)" class="ctrl-btn jump-btn">跳转</button>
+          </div>
           <p class="play-status" v-if="audioList.length > 1">⏭️ 播放完成后将自动播放下一个</p>
         </div>
         <ul>
@@ -139,6 +165,14 @@ const showBackToTop = ref(false)
 
 const videoPlayer = ref(null)
 const audioPlayer = ref(null)
+
+// 跳转输入框
+const audioJumpHour = ref(0)
+const audioJumpMin = ref(0)
+const audioJumpSec = ref(0)
+const videoJumpHour = ref(0)
+const videoJumpMin = ref(0)
+const videoJumpSec = ref(0)
 
 let observer = null
 
@@ -194,6 +228,60 @@ const handleScroll = () => {
 
 const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+// ==================== 播放器控制（快进/快退/跳转） ====================
+
+// 音频快进快退跳转
+const audioFastUpdate = (type) => {
+  const audio = audioPlayer.value
+  if (!audio) {
+    console.warn('音频播放器未找到')
+    return
+  }
+  
+  switch (type) {
+    case 1: // 后退15秒
+      audio.currentTime = Math.max(0, audio.currentTime - 15)
+      break
+    case 2: // 前进15秒
+      audio.currentTime = audio.currentTime + 15
+      break
+    case 3: // 自定义跳转
+      const h = parseInt(audioJumpHour.value) || 0
+      const m = parseInt(audioJumpMin.value) || 0
+      const s = parseInt(audioJumpSec.value) || 0
+      audio.currentTime = h * 3600 + m * 60 + s
+      break
+    default:
+      break
+  }
+}
+
+// 视频快进快退跳转
+const videoFastUpdate = (type) => {
+  const video = videoPlayer.value
+  if (!video) {
+    console.warn('视频播放器未找到')
+    return
+  }
+  
+  switch (type) {
+    case 1: // 后退15秒
+      video.currentTime = Math.max(0, video.currentTime - 15)
+      break
+    case 2: // 前进15秒
+      video.currentTime = video.currentTime + 15
+      break
+    case 3: // 自定义跳转
+      const h = parseInt(videoJumpHour.value) || 0
+      const m = parseInt(videoJumpMin.value) || 0
+      const s = parseInt(videoJumpSec.value) || 0
+      video.currentTime = h * 3600 + m * 60 + s
+      break
+    default:
+      break
+  }
 }
 
 // ==================== 音频 ====================
@@ -868,7 +956,6 @@ h1 { color: #2c3e50; }
   display: flex;
   align-items: center;
   justify-content: center;
-  /* ✅ 默认背景图片 */
   background-image: url('https://static.wixstatic.com/media/8dd7cb_777ac92550e94cf3824d803eaa3941d8~mv2.jpg');
   background-size: cover;
   background-position: center;
@@ -963,6 +1050,89 @@ h1 { color: #2c3e50; }
 .video-list-play {
   color: #42b983;
   font-size: 14px;
+}
+
+/* ===== 播放器控制按钮 ===== */
+.media-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 8px 0;
+  padding: 12px 16px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  border: 1px solid #e8e8e8;
+}
+
+.ctrl-btn {
+  padding: 6px 16px;
+  background: #42b983;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+.ctrl-btn:hover {
+  background: #359b6d;
+}
+.ctrl-btn:active {
+  transform: scale(0.96);
+}
+
+.jump-btn {
+  background: #3498db;
+}
+.jump-btn:hover {
+  background: #2c81b5;
+}
+
+.ctrl-divider {
+  color: #ccc;
+  margin: 0 4px;
+}
+.ctrl-label {
+  font-size: 13px;
+  color: #666;
+}
+
+.jump-input {
+  width: 45px;
+  padding: 4px 2px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 13px;
+}
+.jump-input:focus {
+  outline: none;
+  border-color: #42b983;
+}
+.jump-colon {
+  color: #999;
+  font-weight: bold;
+}
+
+@media (max-width: 600px) {
+  .media-controls {
+    gap: 6px;
+    padding: 10px 12px;
+  }
+  .ctrl-btn {
+    padding: 5px 12px;
+    font-size: 12px;
+  }
+  .jump-input {
+    width: 36px;
+    font-size: 12px;
+    padding: 3px 1px;
+  }
+  .ctrl-label {
+    font-size: 12px;
+  }
 }
 
 .back-to-top {
