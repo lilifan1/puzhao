@@ -464,8 +464,28 @@ onMounted(() => {
 
 <style scoped>
 .container { max-width: 800px; margin: 0 auto; padding: 20px; background: #fef9e7; min-height: 100vh; }
-.back { color: #42b983; text-decoration: none; display: inline-block; margin-bottom: 10px; }
-.back:hover { text-decoration: underline; }
+
+.back {
+  display: inline-block;
+  padding: 8px 18px;
+  background: linear-gradient(145deg, #f7e8b0, #edcfa0);
+  color: #7a5d2e;
+  border: 1px solid #e6c88a;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+}
+.back:hover {
+  background: linear-gradient(145deg, #f1c40f, #d4ac0d);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(180, 130, 30, 0.25);
+  text-decoration: none;
+}
+
 h1 { color: #2c3e50; border-bottom: 3px solid #42b983; padding-bottom: 10px; }
 ul { list-style: none; padding: 0; }
 li { padding: 12px 15px; background: white; margin-bottom: 8px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: 0.2s; }
@@ -494,7 +514,31 @@ a:hover { color: #42b983; }
 }
 .page-info { font-size: 14px; color: #888; }
 .nav-links { display: flex; gap: 20px; }
-.nav-links a { color: #42b983; text-decoration: none; font-size: 15px; padding: 5px 10px; border-radius: 4px; transition: background-color 0.2s; }
-.nav-links a:hover:not(.disabled) { background-color: #f0f0f0; }
-.nav-links a.disabled { color: #ccc; cursor: not-allowed; pointer-events: none; }
+.nav-links a {
+  display: inline-block;
+  padding: 8px 20px;
+  background: linear-gradient(145deg, #f7e8b0, #edcfa0);
+  color: #7a5d2e;
+  border: 1px solid #e6c88a;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+.nav-links a:hover:not(.disabled) {
+  background: linear-gradient(145deg, #f1c40f, #d4ac0d);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(180, 130, 30, 0.25);
+  text-decoration: none;
+}
+.nav-links a.disabled {
+  color: #ccc;
+  cursor: not-allowed;
+  pointer-events: none;
+  background: #f0f0f0;
+  border-color: #ddd;
+  transform: none !important;
+}
 </style>
