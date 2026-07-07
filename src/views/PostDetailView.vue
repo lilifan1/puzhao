@@ -958,11 +958,10 @@ onMounted(async () => {
 .post-header h1 {
   flex: 1;
   min-width: 200px;
-  color: #B8860B;
-  font-weight: 700;
+  color: #b8860b;
+  font-weight: 700; 
   border-left: 4px solid #f1c40f;
   padding-left: 14px;
-  text-shadow: 0 1px 4px rgba(184, 134, 11, 0.25);
 }
 .copy-btn {
   flex-shrink: 0;
