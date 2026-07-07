@@ -293,6 +293,7 @@ const extractAudioList = (retryCount = 0) => {
           let title = a.textContent.trim()
           title = title.replace(/\s+/g, ' ').trim()
           
+          // ===== 稳定版本的关键逻辑 =====
           if (!title || /^\d+$/.test(title)) {
             const clone = li.cloneNode(true)
             const aClone = clone.querySelector('a')
@@ -302,6 +303,7 @@ const extractAudioList = (retryCount = 0) => {
               title = extraText.replace(/\s+/g, ' ').trim()
             }
           }
+          // ===== 稳定版本逻辑结束 =====
           
           if (!title || /^\d+$/.test(title)) {
             title = `音频 ${list.length + 1}`
@@ -320,6 +322,22 @@ const extractAudioList = (retryCount = 0) => {
       if (url && !list.find(item => item.url === url)) {
         let title = a.textContent.trim()
         title = title.replace(/\s+/g, ' ').trim()
+        
+        // ===== 同样应用稳定版本的逻辑 =====
+        if (!title || /^\d+$/.test(title)) {
+          const li = a.closest('li')
+          if (li) {
+            const clone = li.cloneNode(true)
+            const aClone = clone.querySelector('a')
+            if (aClone) aClone.remove()
+            const extraText = clone.textContent.trim()
+            if (extraText) {
+              title = extraText.replace(/\s+/g, ' ').trim()
+            }
+          }
+        }
+        // ===== 稳定版本逻辑结束 =====
+        
         if (!title || /^\d+$/.test(title)) {
           title = `音频 ${list.length + 1}`
         }
