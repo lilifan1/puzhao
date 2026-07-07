@@ -428,6 +428,7 @@ const moveAudioListAfterTitle = () => {
     contentEl.appendChild(audioSection)
     console.log('✅ 音频列表已追加到内容中（兜底）')
   }
+}
 
 const playAudio = (index) => {
   if (index >= 0 && index < audioList.value.length) {
