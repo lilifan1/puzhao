@@ -340,27 +340,20 @@ const extractAudioList = (retryCount = 0) => {
       el.style.display = 'none'
     })
     
-    // 如果找到了，直接隐藏整个容器
-if (targetContainer) {
-  targetContainer.style.display = 'none'
-  console.log('✅ 已删除“更多精彩请点击以下目录”')
-} else {
-  // 备用方案：通过关键词查找
-  const keywords = ['更多精彩', '白话佛法', '广播讲座', '法會开示', '法会开示']
-  const allElements = contentEl.querySelectorAll('div, section')
-  allElements.forEach(el => {
-    const text = el.textContent || ''
-    let matchCount = 0
-    for (const kw of keywords) {
-      if (text.includes(kw)) matchCount++
-    }
-    // 如果包含3个以上关键词，且不包含音频播放器，隐藏
-    if (matchCount >= 3 && !el.querySelector('.sm2-bar-ui') && !el.querySelector('audio')) {
-      el.style.display = 'none'
-      console.log('✅ 已删除“更多精彩”目录（备用方案）')
-    }
-  })
-}
+    // ===== 删除“更多精彩”目录（加强版） =====
+const allElements = contentEl.querySelectorAll('*')
+const keywords = ['更多精彩请', '点击以下目录', '每日学习', '每日畅听', '白话佛法', '入门知识', '感动视频', '广播讲座', '睡前一听', '博客留言', '法會开示']
+allElements.forEach(el => {
+  const text = el.textContent || ''
+  let matchCount = 0
+  for (const kw of keywords) {
+    if (text.includes(kw)) matchCount++
+  }
+  // 如果包含3个以上关键词，说明是“更多精彩”目录
+  if (matchCount >= 3 && !el.querySelector('.sm2-bar-ui') && !el.querySelector('audio')) {
+    el.style.display = 'none'
+  }
+})
 // ===== 删除结束 =====
 
     nextTick(() => {
