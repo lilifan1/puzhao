@@ -814,50 +814,6 @@ const setupMediaObserver = () => {
   })
 }
 
-// ===== 新增：分页获取全部帖子 =====
-const fetchAllPosts = async (fid) => {
-  const baseUrl = 'https://www.dadaozjzhitojian.cloud/sina/ff/safe_api.php'
-  let allPosts = []
-  let page = 1
-  const limit = 100
-  let hasMore = true
-  
-  console.log('📂 开始分页获取帖子，fid:', fid)
-  
-  while (hasMore) {
-    try {
-      const res = await fetch(`${baseUrl}?action=list&fid=${fid}&limit=${limit}&page=${page}`)
-      const data = await res.json()
-      
-      if (data.code === 0 && data.data && data.data.length > 0) {
-        allPosts = allPosts.concat(data.data)
-        console.log(`📄 第 ${page} 页获取到 ${data.data.length} 条，累计 ${allPosts.length} 条`)
-        page++
-        if (data.data.length < limit) {
-          hasMore = false
-        }
-      } else {
-        hasMore = false
-      }
-    } catch (e) {
-      console.error('分页获取失败:', e)
-      hasMore = false
-    }
-      }
-  
-  console.log('✅ 分页完成，共获取到帖子:', allPosts.length, '条')
-  
-  // 按发布时间倒序排列（最新的在前面）
-  const sortedPosts = allPosts.sort((a, b) => b.dateline - a.dateline)
-  if (sortedPosts.length > 0) {
-    console.log('📋 排序后第一篇:', sortedPosts[0]?.subject, new Date(sortedPosts[0]?.dateline * 1000).toLocaleDateString())
-    console.log('📋 排序后最后一篇:', sortedPosts[sortedPosts.length-1]?.subject, new Date(sortedPosts[sortedPosts.length-1]?.dateline * 1000).toLocaleDateString())
-  }
-  
-  return sortedPosts
-}
-
-// ===== 修改 loadPost 函数 =====
 const loadPost = async (tid) => {
   loading.value = true
   videoList.value = []
@@ -884,45 +840,14 @@ const loadPost = async (tid) => {
       post.value = null
     }
 
-     if (post.value && post.value.fid) {
-      const fid = parseInt(post.value.fid)
-      // ===== 使用分页获取所有帖子 =====
-      const posts = await fetchAllPosts(fid)
-      // ===== 分页结束 =====
-      
-      if (posts.length > 0) {
-        console.log('📋 获取到全部帖子数量:', posts.length)
-        
-        const currentTid = Number(tid)
-        const currentIndex = posts.findIndex(p => Number(p.tid) === currentTid)
-        
-        console.log('📍 当前帖子索引:', currentIndex, '总帖子数:', posts.length)
-        if (currentIndex !== -1) {
-          console.log('📍 当前帖子:', posts[currentIndex]?.subject)
-        }
-
-        // 前后各取5条，验证排序
-        if (currentIndex !== -1) {
-          const start = Math.max(0, currentIndex - 5)
-          const end = Math.min(posts.length, currentIndex + 6)
-          console.log('📍 前后5条:', posts.slice(start, end).map(p => p.subject))
-        }
-        
-        if (currentIndex > 0) {
-          prevPost.value = posts[currentIndex - 1]
-          console.log('⬅️ 上一篇:', prevPost.value?.subject)
-        } else {
-          prevPost.value = null
-          console.log('⬅️ 已是第一篇')
-        }
-        
-        if (currentIndex < posts.length - 1 && currentIndex !== -1) {
-          nextPost.value = posts[currentIndex + 1]
-          console.log('➡️ 下一篇:', nextPost.value?.subject)
-        } else {
-          nextPost.value = null
-          console.log('➡️ 已是最后一篇')
-        }
+    if (post.value && post.value.fid) {
+      const listRes = await fetch(`${baseUrl}?action=list&fid=${post.value.fid}&limit=100`)
+      const listData = await listRes.json()
+      if (listData.code === 0) {
+        const posts = listData.data
+        const currentIndex = posts.findIndex(p => p.tid == tid)
+        prevPost.value = currentIndex > 0 ? posts[currentIndex - 1] : null
+        nextPost.value = currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null
       }
     }
   } catch (error) {
