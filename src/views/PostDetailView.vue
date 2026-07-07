@@ -366,7 +366,7 @@ const extractAudioList = (retryCount = 0) => {
     }
   })
   // ===== 遮盖结束 =====
-
+  
     nextTick(() => {
       moveAudioListAfterTitle()
     })
@@ -841,34 +841,13 @@ const loadPost = async (tid) => {
     }
 
     if (post.value && post.value.fid) {
-      const fid = parseInt(post.value.fid)
-      // ===== 使用分页获取所有帖子 =====
-      const posts = await fetchAllPosts(fid)
-      // ===== 分页结束 =====
-      
-      if (posts.length > 0) {
-        // 按发布时间倒序排列
-        const sortedPosts = posts.sort((a, b) => b.dateline - a.dateline)
-        console.log('📋 获取到全部帖子数量:', sortedPosts.length)
-        
-        const currentTid = Number(tid)
-        const currentIndex = sortedPosts.findIndex(p => Number(p.tid) === currentTid)
-        
-        console.log('📍 当前帖子索引:', currentIndex, '总帖子数:', sortedPosts.length)
-        
-        if (currentIndex > 0) {
-          prevPost.value = sortedPosts[currentIndex - 1]
-          console.log('⬅️ 上一篇:', prevPost.value.subject)
-        } else {
-          prevPost.value = null
-        }
-        
-        if (currentIndex < sortedPosts.length - 1) {
-          nextPost.value = sortedPosts[currentIndex + 1]
-          console.log('➡️ 下一篇:', nextPost.value.subject)
-        } else {
-          nextPost.value = null
-        }
+      const listRes = await fetch(`${baseUrl}?action=list&fid=${post.value.fid}&limit=100`)
+      const listData = await listRes.json()
+      if (listData.code === 0) {
+        const posts = listData.data
+        const currentIndex = posts.findIndex(p => p.tid == tid)
+        prevPost.value = currentIndex > 0 ? posts[currentIndex - 1] : null
+        nextPost.value = currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null
       }
     }
   } catch (error) {
