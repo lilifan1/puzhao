@@ -355,27 +355,20 @@ const extractAudioList = (retryCount = 0) => {
       el.style.display = 'none'
     })
   
-  // ===== 方案：把音频列表移到 section 外面，然后隐藏整个 section =====
-  const section = contentEl.querySelector('section._editor[data-support="96编辑器"]')
-  const audioSection = document.getElementById('audio-list-container')
-  
-  if (section && audioSection) {
-    // 把音频列表移到 section 外面（移到 section 的父容器中）
-    const parent = section.parentElement
-    if (parent) {
-      // 先把音频列表移到 section 后面
-      parent.insertBefore(audioSection, section.nextSibling)
-      // 然后隐藏整个 section（包含"更多精彩"目录）
-      section.style.display = 'none'
-      console.log('✅ 已隐藏包含"更多精彩"的 section，音频列表已移出')
+  // ===== 遮盖“更多精彩”目录 =====
+  // 查找包含“温馨提醒”或“更多精彩”的容器
+  const allDivs = contentEl.querySelectorAll('div, section, p')
+  allDivs.forEach(el => {
+    const text = el.textContent || ''
+    if ((text.includes('温馨提醒') || text.includes('更多精彩') || text.includes('每日学习')) && 
+        !el.querySelector('.sm2-bar-ui') && !el.querySelector('audio')) {
+      el.style.display = 'none'
     }
-  }
+  })
   // ===== 遮盖结束 =====
   
   nextTick(() => {
-    // 因为音频列表已经被移走了，这里不需要再移动
-    // 但为了防止其他地方调用，保留空判断
-    // moveAudioListAfterTitle()
+    moveAudioListAfterTitle()
   })
 }
 
