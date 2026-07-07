@@ -354,9 +354,36 @@ const extractAudioList = (retryCount = 0) => {
     allPlayers.forEach(el => {
       el.style.display = 'none'
     })
-
-  // ===== 移动“更多精彩”目录到音频列表下方 =====
-  moveMoreContentToAudioBottom(contentEl)
+  
+  // ===== 完全遮盖“更多精彩”目录 =====
+  // 方法1：通过“更多精彩请点击以下目录”找到整个容器
+  const allDivs = contentEl.querySelectorAll('div, section')
+  allDivs.forEach(el => {
+    const text = el.textContent || ''
+    // 如果包含“更多精彩请点击以下目录”，并且下面有列表项
+    if (text.includes('更多精彩请点击以下目录') && el.querySelectorAll('li').length > 3) {
+      el.style.display = 'none'
+      console.log('✅ 已遮盖“更多精彩”目录')
+    }
+  })
+  
+  // 方法2：如果方法1没生效，用关键词逐个查找并隐藏
+  const hideKeywords = ['更多精彩请点击以下目录', '每日学习', '每日畅听', '白话佛法', '入门知识', '感动视频', '广播讲座', '睡前一听', '博客留言', '法会开示']
+  const allItems = contentEl.querySelectorAll('*')
+  allItems.forEach(el => {
+    const text = el.textContent || ''
+    for (const kw of hideKeywords) {
+      if (text.trim() === kw || (text.includes(kw) && el.children.length === 0)) {
+        // 如果找到的是纯文本节点，隐藏它的父元素
+        let parent = el.closest('li') || el.closest('ul') || el.closest('div') || el
+        if (parent && !parent.querySelector('.sm2-bar-ui')) {
+          parent.style.display = 'none'
+        }
+        break
+      }
+    }
+  })
+  // ===== 遮盖结束 =====
 
     nextTick(() => {
       moveAudioListAfterTitle()
@@ -419,61 +446,6 @@ const moveAudioListAfterTitle = () => {
     contentEl.appendChild(audioSection)
     console.log('✅ 音频列表已追加到内容中（兜底）')
   }
-}
-
-// ==================== 移动“更多精彩”目录到音频列表下方 ====================
-const moveMoreContentToAudioBottom = (contentEl) => {
-  if (!contentEl) return
-  
-  // 查找“更多精彩”相关的容器
-  const allDivs = contentEl.querySelectorAll('div, section, p, ul')
-  let moreContainer = null
-  
-  allDivs.forEach(el => {
-    const text = el.textContent || ''
-    // 查找包含“更多精彩”或“温馨提醒”且包含列表项的容器
-    if ((text.includes('更多精彩请点击以下目录') || text.includes('更多精彩') || text.includes('温馨提醒')) &&
-        el.querySelector('li')) {
-      let parent = el.closest('section') || el.closest('div') || el
-      if (!parent.querySelector('.sm2-bar-ui') && !parent.querySelector('audio')) {
-        moreContainer = parent
-      }
-    }
-  })
-  
-  // 如果没找到，尝试通过“每日学习”等关键词查找
-  if (!moreContainer) {
-    allDivs.forEach(el => {
-      const text = el.textContent || ''
-      if ((text.includes('每日学习') || text.includes('每日畅听') || text.includes('白话佛法')) &&
-          el.querySelector('li') && el.children.length > 2) {
-        let parent = el.closest('section') || el.closest('div') || el
-        if (!parent.querySelector('.sm2-bar-ui') && !parent.querySelector('audio')) {
-          moreContainer = parent
-        }
-      }
-    })
-  }
-  
-  if (!moreContainer) {
-    console.log('⚠️ 未找到“更多精彩”目录')
-    return
-  }
-  
-  // 查找音频列表容器
-  const audioSection = document.getElementById('audio-list-container')
-  if (!audioSection) {
-    console.log('⚠️ 未找到音频列表容器')
-    return
-  }
-  
-  // 克隆“更多精彩”容器，然后隐藏原来的
-  const clonedMore = moreContainer.cloneNode(true)
-  moreContainer.style.display = 'none'
-  
-  // 在音频列表后面插入
-  audioSection.parentNode.insertBefore(clonedMore, audioSection.nextSibling)
-  console.log('✅ “更多精彩”目录已移动到音频列表下方')
 }
 
 const playAudio = (index) => {
