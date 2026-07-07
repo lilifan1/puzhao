@@ -44,6 +44,7 @@
           <button @click="prevVideo" :disabled="currentVideoIndex <= 0">◀ 上一个</button>
           <button @click="nextVideo" :disabled="currentVideoIndex >= videoList.length - 1">下一个 ▶</button>
         </div>
+        <p class="play-status" v-if="videoList.length > 1">⏭️ 播放完成后将自动播放下一个</p>
         <!-- 视频控制栏 -->
         <div class="media-controls">
           <button @click="videoFastUpdate(1)" class="ctrl-btn">⏪ 快退15秒</button>
@@ -175,6 +176,7 @@ const videoJumpMin = ref(0)
 const videoJumpSec = ref(0)
 
 let observer = null
+let mediaObserver = null
 
 const formatTime = (timestamp) => {
   const date = new Date(timestamp * 1000)
@@ -680,49 +682,123 @@ const bindLinkHandler = () => {
   }
 }
 
+// ==================== 绑定 v-html 中的媒体控制按钮 ====================
 const bindMediaControls = () => {
   const contentEl = document.querySelector('.content')
   if (!contentEl) return
 
-  // 找到所有包含视频/音频的容器
-  const mediaContainers = contentEl.querySelectorAll('section, div, p')
-  mediaContainers.forEach(container => {
-    const media = container.querySelector('video, audio')
-    if (!media) return
+  console.log('🔄 开始绑定媒体控制按钮...')
 
-    // 找这个容器里的所有按钮
+  // 找到所有包含 video 或 audio 的容器
+  const mediaElements = contentEl.querySelectorAll('video, audio')
+  if (mediaElements.length === 0) {
+    console.log('⚠️ 未找到 video/audio 元素')
+    return
+  }
+
+  mediaElements.forEach(media => {
+    // 向上查找包含此媒体的容器
+    let container = media.closest('section') || media.closest('div') || media.parentElement
+    if (!container) return
+
+    // 如果容器已经被处理过，跳过
+    if (container.dataset.mediaBound === 'true') return
+
+    // 找到这个容器里的所有按钮
     const btns = container.querySelectorAll('button')
     btns.forEach(btn => {
+      // 如果按钮已经被绑定，跳过
       if (btn.dataset.handled === 'true') return
-      const text = btn.textContent.trim()
 
+      const text = btn.textContent.trim()
       let type = 0
-      if (text.includes('快退') || text.includes('后退') || text.includes('退')) type = 1
-      else if (text.includes('快进') || text.includes('前进') || text.includes('进')) type = 2
-      else if (text.includes('跳转') || text.includes('转')) type = 3
+
+      if (text.includes('快退') || text.includes('后退') || text.includes('退')) {
+        type = 1
+      } else if (text.includes('快进') || text.includes('前进') || text.includes('进')) {
+        type = 2
+      } else if (text.includes('跳转') || text.includes('转')) {
+        type = 3
+      }
 
       if (type === 0) return
 
+      // 绑定点击事件
       btn.addEventListener('click', (e) => {
         e.preventDefault()
+        e.stopPropagation()
+
+        const mediaEl = container.querySelector('video, audio')
+        if (!mediaEl) return
+
         if (type === 1) {
-          media.currentTime = Math.max(0, media.currentTime - 15)
+          mediaEl.currentTime = Math.max(0, mediaEl.currentTime - 15)
+          console.log(`⏪ 后退15秒，当前: ${mediaEl.currentTime}`)
         } else if (type === 2) {
-          media.currentTime = media.currentTime + 15
+          mediaEl.currentTime = mediaEl.currentTime + 15
+          console.log(`⏩ 前进15秒，当前: ${mediaEl.currentTime}`)
         } else if (type === 3) {
+          // 查找输入框
           const inputs = container.querySelectorAll('input[type="number"]')
           let h = 0, m = 0, s = 0
           inputs.forEach((input, idx) => {
             const val = parseInt(input.value) || 0
-            if (idx === 0) h = val
-            else if (idx === 1) m = val
-            else if (idx === 2) s = val
+            if (idx === 0 || input.placeholder?.includes('时')) h = val
+            else if (idx === 1 || input.placeholder?.includes('分')) m = val
+            else if (idx === 2 || input.placeholder?.includes('秒')) s = val
           })
-          media.currentTime = h * 3600 + m * 60 + s
+          // 如果没找到 input[type="number"]，尝试找普通 input
+          if (inputs.length === 0) {
+            const allInputs = container.querySelectorAll('input')
+            allInputs.forEach((input, idx) => {
+              const val = parseInt(input.value) || 0
+              if (idx === 0) h = val
+              else if (idx === 1) m = val
+              else if (idx === 2) s = val
+            })
+          }
+          const targetTime = h * 3600 + m * 60 + s
+          mediaEl.currentTime = targetTime
+          console.log(`🎯 跳转到 ${h}:${m}:${s}，当前: ${mediaEl.currentTime}`)
         }
       })
+
       btn.dataset.handled = 'true'
+      console.log(`✅ 按钮已绑定: ${text}`)
     })
+
+    container.dataset.mediaBound = 'true'
+  })
+}
+
+// ==================== 使用 MutationObserver 监听 DOM 变化并自动绑定 ====================
+const setupMediaObserver = () => {
+  const contentEl = document.querySelector('.content')
+  if (!contentEl) return
+
+  // 如果已有 observer，先断开
+  if (mediaObserver) {
+    mediaObserver.disconnect()
+    mediaObserver = null
+  }
+
+  // 先立即绑定一次
+  setTimeout(() => bindMediaControls(), 100)
+
+  // 创建新的 observer
+  mediaObserver = new MutationObserver(() => {
+    // 检查是否有新的 media 元素或按钮出现
+    const hasMedia = contentEl.querySelector('video, audio')
+    const hasButtons = contentEl.querySelector('button')
+    if (hasMedia || hasButtons) {
+      // 延迟一点再绑定，确保 DOM 完全渲染
+      setTimeout(() => bindMediaControls(), 200)
+    }
+  })
+
+  mediaObserver.observe(contentEl, {
+    childList: true,
+    subtree: true
   })
 }
 
@@ -777,7 +853,7 @@ watch(post, () => {
         extractAudioList()
         extractVideoList()
         bindLinkHandler()
-        bindMediaControls()  // ← 添加这一行
+        setupMediaObserver()
       }, 500)
     })
   }
@@ -801,6 +877,10 @@ onBeforeUnmount(() => {
     observer.disconnect()
     observer = null
   }
+  if (mediaObserver) {
+    mediaObserver.disconnect()
+    mediaObserver = null
+  }
   window.removeEventListener('scroll', handleScroll)
 })
 
@@ -811,6 +891,11 @@ onMounted(async () => {
     await loadPost(tid)
   }
   window.addEventListener('scroll', handleScroll)
+  if (post.value) {
+    nextTick(() => {
+      setTimeout(() => setupMediaObserver(), 500)
+    })
+  }
 })
 </script>
 
