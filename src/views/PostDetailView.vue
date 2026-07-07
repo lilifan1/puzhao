@@ -24,16 +24,16 @@
         <h3>🎬 视频播放</h3>
         <div class="video-container">
           <video 
-            v-if="currentVideoUrl"
-            ref="videoPlayer"
-            controls 
-            :src="currentVideoUrl" 
-            poster="https://static.wixstatic.com/media/8dd7cb_777ac92550e94cf3824d803eaa3941d8~mv2.jpg"
-            style="width: 100%; max-height: 500px;"
-            controlslist="nodownload"
-            playsinline
-            @ended="onVideoEnded"
-          ></video>
+  v-if="currentVideoUrl"
+  ref="videoPlayer"
+  controls 
+  :src="currentVideoUrl" 
+  poster="https://static.wixstatic.com/media/8dd7cb_777ac92550e94cf3824d803eaa3941d8~mv2.jpg"
+  style="width: 100%; max-height: 500px;"
+  controlslist="nodownload"
+  playsinline
+  @ended="onVideoEnded"
+></video>
           <div v-else class="no-video">请从列表中选择一个视频</div>
         </div>
         <div class="video-info">
@@ -43,19 +43,6 @@
         <div class="video-nav">
           <button @click="prevVideo" :disabled="currentVideoIndex <= 0">◀ 上一个</button>
           <button @click="nextVideo" :disabled="currentVideoIndex >= videoList.length - 1">下一个 ▶</button>
-        </div>
-        <!-- ===== 视频快进快退（仅视频播放器） ===== -->
-        <div class="media-controls">
-          <button @click="videoFastUpdate(1)" class="ctrl-btn">⏪ 快退15秒</button>
-          <button @click="videoFastUpdate(2)" class="ctrl-btn">快进15秒 ⏩</button>
-          <span class="ctrl-divider">|</span>
-          <span class="ctrl-label">跳转：</span>
-          <input type="number" v-model.number="videoJumpHour" min="0" max="99" class="jump-input" placeholder="时">
-          <span class="jump-colon">:</span>
-          <input type="number" v-model.number="videoJumpMin" min="0" max="59" class="jump-input" placeholder="分">
-          <span class="jump-colon">:</span>
-          <input type="number" v-model.number="videoJumpSec" min="0" max="59" class="jump-input" placeholder="秒">
-          <button @click="videoFastUpdate(3)" class="ctrl-btn jump-btn">跳转</button>
         </div>
         <div class="video-list">
           <div 
@@ -80,11 +67,11 @@
         <router-link v-if="prevPost" :to="`/post/${prevPost.tid}`" class="nav-link">
           ← 上一篇：{{ prevPost.subject }}
         </router-link>
-        <span v-else class="nav-link disabled"></span>
+        <span v-else class="nav-link disabled">← 已是第一篇</span>
         <router-link v-if="nextPost" :to="`/post/${nextPost.tid}`" class="nav-link">
           下一篇：{{ nextPost.subject }} →
         </router-link>
-        <span v-else class="nav-link disabled"></span>
+        <span v-else class="nav-link disabled">已是最后一篇 →</span>
       </div>
 
       <!-- ===== 音频播放器 ===== -->
@@ -99,19 +86,6 @@
             @ended="onAudioEnded"
           ></audio>
           <p>正在播放：{{ currentAudio.title }}</p>
-          <!-- ===== 单独音频快进快退（仅当前播放的音频） ===== -->
-          <div class="media-controls">
-            <button @click="audioFastUpdate(1)" class="ctrl-btn">⏪ 快退15秒</button>
-            <button @click="audioFastUpdate(2)" class="ctrl-btn">快进15秒 ⏩</button>
-            <span class="ctrl-divider">|</span>
-            <span class="ctrl-label">跳转：</span>
-            <input type="number" v-model.number="audioJumpHour" min="0" max="99" class="jump-input" placeholder="时">
-            <span class="jump-colon">:</span>
-            <input type="number" v-model.number="audioJumpMin" min="0" max="59" class="jump-input" placeholder="分">
-            <span class="jump-colon">:</span>
-            <input type="number" v-model.number="audioJumpSec" min="0" max="59" class="jump-input" placeholder="秒">
-            <button @click="audioFastUpdate(3)" class="ctrl-btn jump-btn">跳转</button>
-          </div>
           <p class="play-status" v-if="audioList.length > 1">⏭️ 播放完成后将自动播放下一个</p>
         </div>
         <ul>
@@ -166,16 +140,7 @@ const showBackToTop = ref(false)
 const videoPlayer = ref(null)
 const audioPlayer = ref(null)
 
-// 跳转输入框
-const audioJumpHour = ref(0)
-const audioJumpMin = ref(0)
-const audioJumpSec = ref(0)
-const videoJumpHour = ref(0)
-const videoJumpMin = ref(0)
-const videoJumpSec = ref(0)
-
 let observer = null
-let mediaObserver = null
 
 const formatTime = (timestamp) => {
   const date = new Date(timestamp * 1000)
@@ -229,46 +194,6 @@ const handleScroll = () => {
 
 const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
-}
-
-// ==================== 播放器控制（快进/快退/跳转） ====================
-
-const audioFastUpdate = (type) => {
-  const audio = audioPlayer.value
-  if (!audio) return
-  switch (type) {
-    case 1:
-      audio.currentTime = Math.max(0, audio.currentTime - 15)
-      break
-    case 2:
-      audio.currentTime = audio.currentTime + 15
-      break
-    case 3:
-      const h = parseInt(audioJumpHour.value) || 0
-      const m = parseInt(audioJumpMin.value) || 0
-      const s = parseInt(audioJumpSec.value) || 0
-      audio.currentTime = h * 3600 + m * 60 + s
-      break
-  }
-}
-
-const videoFastUpdate = (type) => {
-  const video = videoPlayer.value
-  if (!video) return
-  switch (type) {
-    case 1:
-      video.currentTime = Math.max(0, video.currentTime - 15)
-      break
-    case 2:
-      video.currentTime = video.currentTime + 15
-      break
-    case 3:
-      const h = parseInt(videoJumpHour.value) || 0
-      const m = parseInt(videoJumpMin.value) || 0
-      const s = parseInt(videoJumpSec.value) || 0
-      video.currentTime = h * 3600 + m * 60 + s
-      break
-  }
 }
 
 // ==================== 音频 ====================
@@ -609,6 +534,7 @@ const handleLinkClick = (event) => {
   const href = target.getAttribute('href')
   if (!href) return
 
+  // 处理页面内锚点跳转
   if (href.startsWith('#')) {
     event.preventDefault()
     event.stopPropagation()
@@ -666,102 +592,6 @@ const bindLinkHandler = () => {
   }
 }
 
-// ==================== 绑定 v-html 中的媒体控制按钮 ====================
-const bindMediaControls = () => {
-  const contentEl = document.querySelector('.content')
-  if (!contentEl) return
-
-  const mediaElements = contentEl.querySelectorAll('video, audio')
-  if (mediaElements.length === 0) return
-
-  mediaElements.forEach(media => {
-    let container = media.closest('section') || media.closest('div') || media.parentElement
-    if (!container) return
-    if (container.dataset.mediaBound === 'true') return
-
-    const btns = container.querySelectorAll('button')
-    btns.forEach(btn => {
-      if (btn.dataset.handled === 'true') return
-
-      const text = btn.textContent.trim()
-      let type = 0
-
-      if (text.includes('快退') || text.includes('后退') || text.includes('退')) {
-        type = 1
-      } else if (text.includes('快进') || text.includes('前进') || text.includes('进')) {
-        type = 2
-      } else if (text.includes('跳转') || text.includes('转')) {
-        type = 3
-      }
-
-      if (type === 0) return
-
-      btn.addEventListener('click', (e) => {
-        e.preventDefault()
-        e.stopPropagation()
-
-        const mediaEl = container.querySelector('video, audio')
-        if (!mediaEl) return
-
-        if (type === 1) {
-          mediaEl.currentTime = Math.max(0, mediaEl.currentTime - 15)
-        } else if (type === 2) {
-          mediaEl.currentTime = mediaEl.currentTime + 15
-        } else if (type === 3) {
-          const inputs = container.querySelectorAll('input[type="number"]')
-          let h = 0, m = 0, s = 0
-          inputs.forEach((input, idx) => {
-            const val = parseInt(input.value) || 0
-            if (idx === 0 || input.placeholder?.includes('时')) h = val
-            else if (idx === 1 || input.placeholder?.includes('分')) m = val
-            else if (idx === 2 || input.placeholder?.includes('秒')) s = val
-          })
-          if (inputs.length === 0) {
-            const allInputs = container.querySelectorAll('input')
-            allInputs.forEach((input, idx) => {
-              const val = parseInt(input.value) || 0
-              if (idx === 0) h = val
-              else if (idx === 1) m = val
-              else if (idx === 2) s = val
-            })
-          }
-          const targetTime = h * 3600 + m * 60 + s
-          mediaEl.currentTime = targetTime
-        }
-      })
-
-      btn.dataset.handled = 'true'
-    })
-
-    container.dataset.mediaBound = 'true'
-  })
-}
-
-const setupMediaObserver = () => {
-  const contentEl = document.querySelector('.content')
-  if (!contentEl) return
-
-  if (mediaObserver) {
-    mediaObserver.disconnect()
-    mediaObserver = null
-  }
-
-  setTimeout(() => bindMediaControls(), 100)
-
-  mediaObserver = new MutationObserver(() => {
-    const hasMedia = contentEl.querySelector('video, audio')
-    const hasButtons = contentEl.querySelector('button')
-    if (hasMedia || hasButtons) {
-      setTimeout(() => bindMediaControls(), 200)
-    }
-  })
-
-  mediaObserver.observe(contentEl, {
-    childList: true,
-    subtree: true
-  })
-}
-
 const loadPost = async (tid) => {
   loading.value = true
   videoList.value = []
@@ -789,44 +619,13 @@ const loadPost = async (tid) => {
     }
 
     if (post.value && post.value.fid) {
-      const fid = post.value.fid
-      
-      let allPosts = []
-      let page = 1
-      const limit = 50
-      let hasMore = true
-      
-      while (hasMore) {
-        try {
-          const listRes = await fetch(`${baseUrl}?action=list&fid=${fid}&limit=${limit}&page=${page}`)
-          const listData = await listRes.json()
-          
-          if (listData.code === 0 && listData.data && listData.data.length > 0) {
-            allPosts = allPosts.concat(listData.data)
-            page++
-            if (listData.data.length < limit) {
-              hasMore = false
-            }
-          } else {
-            hasMore = false
-          }
-        } catch (e) {
-          console.error('分页获取失败:', e)
-          hasMore = false
-        }
-      }
-      
-      if (allPosts.length > 0) {
-        const posts = allPosts.sort((a, b) => b.dateline - a.dateline)
-        const currentIndex = posts.findIndex(p => Number(p.tid) === Number(tid))
-        
-        if (currentIndex !== -1) {
-          prevPost.value = currentIndex > 0 ? posts[currentIndex - 1] : null
-          nextPost.value = currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null
-        } else {
-          prevPost.value = null
-          nextPost.value = null
-        }
+      const listRes = await fetch(`${baseUrl}?action=list&fid=${post.value.fid}&limit=100`)
+      const listData = await listRes.json()
+      if (listData.code === 0) {
+        const posts = listData.data
+        const currentIndex = posts.findIndex(p => p.tid == tid)
+        prevPost.value = currentIndex > 0 ? posts[currentIndex - 1] : null
+        nextPost.value = currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null
       }
     }
   } catch (error) {
@@ -844,7 +643,6 @@ watch(post, () => {
         extractAudioList()
         extractVideoList()
         bindLinkHandler()
-        setupMediaObserver()
       }, 500)
     })
   }
@@ -868,10 +666,6 @@ onBeforeUnmount(() => {
     observer.disconnect()
     observer = null
   }
-  if (mediaObserver) {
-    mediaObserver.disconnect()
-    mediaObserver = null
-  }
   window.removeEventListener('scroll', handleScroll)
 })
 
@@ -882,11 +676,6 @@ onMounted(async () => {
     await loadPost(tid)
   }
   window.addEventListener('scroll', handleScroll)
-  if (post.value) {
-    nextTick(() => {
-      setTimeout(() => setupMediaObserver(), 500)
-    })
-  }
 })
 </script>
 
@@ -900,7 +689,6 @@ onMounted(async () => {
   border-radius: 8px;
 }
 
-/* ===== 导航栏 ===== */
 .nav-bar {
   display: flex;
   gap: 12px;
@@ -909,24 +697,21 @@ onMounted(async () => {
 }
 .nav-btn {
   display: inline-block;
-  padding: 8px 18px;
-  background: #f7e8b0;
-  color: #7a5d2e;
-  border: 1px solid #e6c88a;
+  padding: 8px 16px;
+  background: #f0f0f0;
+  color: #333;
+  border: none;
   border-radius: 6px;
   text-decoration: none;
   font-size: 14px;
-  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background 0.2s;
 }
 .nav-btn:hover {
-  background: #edcfa0;
-  transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(180, 130, 30, 0.25);
+  background: #42b983;
+  color: white;
 }
 
-/* ===== 帖子头部 ===== */
 .post-header {
   display: flex;
   align-items: center;
@@ -937,27 +722,23 @@ onMounted(async () => {
 .post-header h1 {
   flex: 1;
   min-width: 200px;
-  color: #7a5d2e;
-  border-left: 4px solid #f1c40f;
-  padding-left: 14px;
 }
 .copy-btn {
   flex-shrink: 0;
-  padding: 6px 16px;
-  background: #f7e8b0;
-  color: #7a5d2e;
-  border: 1px solid #e6c88a;
+  padding: 6px 14px;
+  background: #f1c40f;
+  color: #333;
+  border: none;
   border-radius: 6px;
   font-size: 14px;
-  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  white-space: nowrap;
+  transition: background 0.2s;
   height: fit-content;
+  font-weight: 500;
 }
 .copy-btn:hover {
-  background: #f1c40f;
-  color: #fff;
-  transform: translateY(-1px);
+  background: #d4ac0d;
 }
 
 @media (max-width: 600px) {
@@ -978,101 +759,65 @@ onMounted(async () => {
   }
 }
 
-.meta {
-  color: #a07d4a;
-  font-size: 14px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #f0e0b8;
-  margin-bottom: 20px;
-}
-
-.content {
-  line-height: 1.9;
-  font-size: 16px;
-  overflow-wrap: break-word;
-  color: #4a3a25;
-}
+h1 { color: #2c3e50; }
+.meta { color: #888; font-size: 14px; padding-bottom: 15px; border-bottom: 1px solid #eee; margin-bottom: 20px; }
+.content { line-height: 1.9; font-size: 16px; overflow-wrap: break-word; }
 .content img { max-width: 100%; }
-.content a { color: #b8860b; text-decoration: none; }
+.content a { color: #42b983; text-decoration: none; }
 .content a:hover { text-decoration: underline; }
+.error { color: #e74c3c; text-align: center; padding: 50px 0; }
 
-.error {
-  color: #c0392b;
-  text-align: center;
-  padding: 50px 0;
-}
-
-/* ===== 上下篇导航 ===== */
 .post-nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin: 20px 0;
-  padding: 12px 16px;
-  border-top: 1px solid #f0e0b8;
-  border-bottom: 1px solid #f0e0b8;
+  padding: 12px 0;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
   gap: 10px;
   flex-wrap: wrap;
-  background: rgba(255, 248, 220, 0.4);
-  border-radius: 8px;
 }
 .nav-link {
-  color: #b8860b;
+  color: #42b983;
   text-decoration: none;
   font-size: 14px;
-  font-weight: 500;
   max-width: 45%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  padding: 4px 10px;
-  border-radius: 4px;
-  transition: all 0.3s ease;
 }
 .nav-link:hover:not(.disabled) {
-  color: #7a5d2e;
-  background: rgba(241, 196, 15, 0.2);
   text-decoration: underline;
 }
 .nav-link.disabled {
-  color: transparent;
-  cursor: default;
+  color: #ccc;
+  cursor: not-allowed;
 }
 
-/* ===== 音频列表 ===== */
 .audio-list {
   margin-top: 30px;
   padding: 20px;
-  background: #fdf6e0;
-  border-radius: 10px;
-  border: 1px solid #f0e0b8;
+  background: #f8f8f8;
+  border-radius: 8px;
 }
-.audio-list h3 {
-  color: #7a5d2e;
-  margin-bottom: 15px;
-  border-bottom: 2px solid #f1c40f;
-  padding-bottom: 8px;
-}
-.audio-list ul {
-  list-style: none;
-  padding: 0;
-}
+.audio-list h3 { margin-bottom: 15px; }
+.audio-list ul { list-style: none; padding: 0; }
 .audio-item {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 12px 15px;
-  border-bottom: 1px solid #f5ecce;
+  border-bottom: 1px solid #eee;
   cursor: pointer;
-  transition: all 0.25s ease;
-  border-radius: 6px;
+  transition: background 0.2s;
+  border-radius: 4px;
 }
 .audio-item:hover {
-  background: rgba(241, 196, 15, 0.15);
+  background: #e8f5e9;
 }
 .audio-item.active {
-  background: rgba(241, 196, 15, 0.25);
-  border-left: 3px solid #f1c40f;
+  background: #c8e6c9;
 }
 .audio-index {
   width: 30px;
@@ -1080,63 +825,42 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f1c40f;
+  background: #42b983;
   color: white;
   border-radius: 50%;
   font-size: 13px;
-  font-weight: bold;
   flex-shrink: 0;
 }
 .audio-title {
   flex: 1;
   font-size: 16px;
-  color: #4a3a25;
+  color: #333;
   font-weight: 500;
 }
 .audio-play {
-  color: #b8860b;
+  color: #42b983;
   font-size: 16px;
-}
-.audio-item:hover .audio-play {
-  color: #d4a017;
 }
 
 .player {
   margin-bottom: 15px;
   padding: 15px;
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(180, 130, 30, 0.12);
-  border: 1px solid #f0e0b8;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 .player p {
   margin-top: 8px;
-  color: #7a5d2e;
+  color: #666;
   font-size: 14px;
-  font-weight: 500;
 }
 .play-status {
-  color: #b8860b !important;
+  color: #42b983 !important;
   font-size: 13px !important;
-  font-weight: 400 !important;
 }
 
-/* ===== 视频 ===== */
-.video-section {
-  margin: 20px 0;
-  padding: 18px;
-  background: #fdf6e0;
-  border-radius: 10px;
-  border: 1px solid #f0e0b8;
-}
-.video-section h3 {
-  color: #7a5d2e;
-  border-bottom: 2px solid #f1c40f;
-  padding-bottom: 8px;
-  margin-bottom: 12px;
-}
 .video-container {
-  background: #1a1a1a;
+  background: #000;
   border-radius: 8px;
   overflow: hidden;
   margin: 10px 0;
@@ -1144,11 +868,11 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  /* ✅ 默认背景图片 */
   background-image: url('https://static.wixstatic.com/media/8dd7cb_777ac92550e94cf3824d803eaa3941d8~mv2.jpg');
   background-size: cover;
   background-position: center;
   position: relative;
-  border: 2px solid #e6c88a;
 }
 .video-container video {
   display: block;
@@ -1169,10 +893,10 @@ onMounted(async () => {
 }
 .video-title {
   font-weight: 500;
-  color: #4a3a25;
+  color: #333;
 }
 .video-counter {
-  color: #a07d4a;
+  color: #888;
   font-size: 14px;
 }
 .video-nav {
@@ -1182,24 +906,20 @@ onMounted(async () => {
 }
 .video-nav button {
   padding: 8px 20px;
-  background: #f7e8b0;
-  color: #7a5d2e;
-  border: 1px solid #e6c88a;
+  background: #42b983;
+  color: white;
+  border: none;
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
-  font-weight: 500;
-  transition: all 0.3s ease;
+  transition: background 0.2s;
 }
 .video-nav button:hover:not(:disabled) {
-  background: #f1c40f;
-  color: #fff;
-  transform: translateY(-1px);
+  background: #359b6d;
 }
 .video-nav button:disabled {
-  opacity: 0.4;
+  opacity: 0.5;
   cursor: not-allowed;
-  transform: none !important;
 }
 .video-list {
   margin-top: 15px;
@@ -1211,17 +931,16 @@ onMounted(async () => {
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
-  border-bottom: 1px solid #f5ecce;
+  border-bottom: 1px solid #eee;
   cursor: pointer;
-  transition: all 0.25s ease;
-  border-radius: 6px;
+  transition: background 0.2s;
+  border-radius: 4px;
 }
 .video-list-item:hover {
-  background: rgba(241, 196, 15, 0.12);
+  background: #e8f5e9;
 }
 .video-list-item.active {
-  background: rgba(241, 196, 15, 0.22);
-  border-left: 3px solid #f1c40f;
+  background: #c8e6c9;
 }
 .video-list-index {
   width: 30px;
@@ -1229,136 +948,50 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f1c40f;
+  background: #42b983;
   color: white;
   border-radius: 50%;
   font-size: 12px;
-  font-weight: bold;
   flex-shrink: 0;
 }
 .video-list-title {
   flex: 1;
   font-size: 16px;
-  font-weight: 500;
-  color: #4a3a25;
+  font-weight: bold;
+  color: #333;
 }
 .video-list-play {
-  color: #b8860b;
+  color: #42b983;
   font-size: 14px;
 }
-.video-list-item:hover .video-list-play {
-  color: #d4a017;
-}
 
-/* ===== 快进快退控制栏 ===== */
-.media-controls {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 12px 0 8px 0;
-  padding: 10px 14px;
-  background: rgba(255, 248, 220, 0.6);
-  border-radius: 8px;
-  border: 1px solid #f0e0b8;
-}
-.ctrl-btn {
-  padding: 5px 14px;
-  background: #f7e8b0;
-  color: #7a5d2e;
-  border: 1px solid #e6c88a;
-  border-radius: 4px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  white-space: nowrap;
-}
-.ctrl-btn:hover {
-  background: #f1c40f;
-  color: #fff;
-  transform: translateY(-1px);
-}
-.jump-btn {
-  background: #e8d5a0;
-}
-.jump-btn:hover {
-  background: #d4ac0d !important;
-  color: #fff !important;
-}
-.ctrl-divider {
-  color: #d4b880;
-  margin: 0 4px;
-}
-.ctrl-label {
-  font-size: 13px;
-  color: #7a5d2e;
-}
-.jump-input {
-  width: 42px;
-  padding: 4px 2px;
-  border: 1px solid #e6c88a;
-  border-radius: 4px;
-  text-align: center;
-  font-size: 13px;
-  background: #fffcf0;
-  color: #4a3a25;
-}
-.jump-input:focus {
-  outline: none;
-  border-color: #f1c40f;
-}
-.jump-colon {
-  color: #b8950a;
-  font-weight: bold;
-}
-
-@media (max-width: 600px) {
-  .media-controls {
-    gap: 5px;
-    padding: 8px 10px;
-  }
-  .ctrl-btn {
-    padding: 4px 10px;
-    font-size: 12px;
-  }
-  .jump-input {
-    width: 32px;
-    font-size: 12px;
-    padding: 3px 1px;
-  }
-  .ctrl-label {
-    font-size: 12px;
-  }
-}
-
-/* ===== 返回顶部 ===== */
 .back-to-top {
   position: fixed;
   bottom: 30px;
   right: 20px;
   width: 48px;
   height: 48px;
-  background: #f7e8b0;
-  color: #7a5d2e;
-  border: 1px solid #e6c88a;
+  background: rgba(255, 255, 255, 0.6);
+  color: #555;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 50%;
   font-size: 24px;
   cursor: pointer;
-  box-shadow: 0 2px 12px rgba(180, 130, 30, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   transition: all 0.3s ease;
   z-index: 999;
   display: flex;
   align-items: center;
   justify-content: center;
+  backdrop-filter: blur(4px);
 }
 .back-to-top:hover {
-  background: #f1c40f;
-  color: #fff;
-  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 .back-to-top:active {
-  transform: scale(0.92);
+  transform: scale(0.95);
 }
 
 @media (max-width: 600px) {
