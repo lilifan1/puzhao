@@ -422,11 +422,10 @@ const moveAudioListAfterTitle = () => {
 const playAudio = (index) => {
   if (index >= 0 && index < audioList.value.length) {
     currentAudioIndex.value = index
-    currentAudio.value = { 
-      url: audioList.value[index].url, 
-      title: audioList.value[index].title 
+    currentAudio.value = {
+      url: audioList.value[index].url,
+      title: audioList.value[index].title
     }
-    // ===== 新增：自动播放 =====
     nextTick(() => {
       if (audioPlayer.value) {
         audioPlayer.value.play().catch(() => {})
@@ -440,7 +439,6 @@ const playVideo = (index) => {
     currentVideoIndex.value = index
     currentVideoUrl.value = videoList.value[index].url
     currentVideoTitle.value = videoList.value[index].title
-    // ===== 新增：自动播放 =====
     nextTick(() => {
       if (videoPlayer.value) {
         videoPlayer.value.play().catch(() => {})
