@@ -426,6 +426,11 @@ const playAudio = (index) => {
       url: audioList.value[index].url, 
       title: audioList.value[index].title 
     }
+  nextTick(() => {
+      if (audioPlayer.value) {
+        audioPlayer.value.play()
+      }
+    })
   }
 }
 
@@ -511,14 +516,18 @@ const extractVideoList = (retryCount = 0) => {
   })
 
   if (list.length > 0) {
-    videoList.value = list
-    if (currentVideoIndex.value === -1) {
-      currentVideoIndex.value = 0
-      currentVideoUrl.value = list[0].url
-      currentVideoTitle.value = list[0].title
-    }
-    hideOriginalVideo()
+  videoList.value = list
+  if (currentVideoIndex.value === -1) {
+    currentVideoIndex.value = 0
+    currentVideoUrl.value = list[0].url
+    currentVideoTitle.value = list[0].title
   }
+  hideOriginalVideo()
+  nextTick(() => {
+    if (videoPlayer.value) {
+      videoPlayer.value.play()
+    }
+  })
 }
 
 const hideOriginalVideo = () => {
