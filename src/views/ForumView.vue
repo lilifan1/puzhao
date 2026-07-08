@@ -13,7 +13,21 @@
         </button>
       </div>
     </div>
-    
+
+    <!-- ===== 顶部页码 ===== -->
+    <div v-if="pageNumbers.length > 1" class="top-page-numbers">
+      <button 
+        v-for="num in pageNumbers" 
+        :key="num"
+        @click="goToPageNum(num)"
+        class="page-num-btn"
+        :class="{ active: num === page }"
+      >
+        {{ num }}
+      </button>
+    </div>
+    <!-- ===== 顶部页码结束 ===== -->
+
     <div v-if="loading">⏳ 加载中...</div>
     <div v-else-if="posts.length === 0 && subForums.length === 0" class="empty">该版块暂无帖子</div>
     
@@ -40,11 +54,25 @@
     </ul>
     
     <div v-if="posts.length > 0" class="pagination-nav">
-      <span class="page-info">第 {{ page }} 页</span>
-      <div class="nav-links">
-        <a href="#" @click.prevent="prevPage" :class="{ disabled: page <= 1 }">‹ 上一篇</a>
-        <a href="#" @click.prevent="nextPage" :class="{ disabled: posts.length < perPage }">下一篇 ›</a>
+      <div class="pagination-left">
+        <a href="#" @click.prevent="prevPage" :class="{ disabled: page <= 1 }">‹ 上一页</a>
+        <span class="page-info">第 {{ page }} 页</span>
+        <a href="#" @click.prevent="nextPage" :class="{ disabled: posts.length < perPage }">下一页 ›</a>
       </div>
+      <!-- ===== 底部跳转输入 ===== -->
+      <div class="page-jump">
+        <span class="jump-label">跳转到</span>
+        <input 
+          type="number" 
+          v-model.number="jumpPage" 
+          min="1" 
+          class="jump-input"
+          @keyup.enter="goToPage"
+        />
+        <span class="jump-label">页</span>
+        <button @click="goToPage" class="jump-btn">GO</button>
+      </div>
+      <!-- ===== 底部跳转结束 ===== -->
     </div>
   </div>
 </template>
@@ -62,6 +90,8 @@ const fid = ref(0)
 const perPage = 50
 const subForums = ref([])
 const sortOrder = ref('desc')
+const jumpPage = ref(1)
+const pageNumbers = ref([])
 
 const forumNames = {
   '1326': '每日学习',
@@ -418,6 +448,14 @@ const loadPosts = async () => {
         posts.value = [...rawData].sort((a, b) => b.dateline - a.dateline)
       }
       
+      // ===== 生成页码列表（固定显示 6 页） =====
+      const totalPages = 6
+      pageNumbers.value = []
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.value.push(i)
+      }
+      // ===== 页码生成结束 =====
+      
       if (posts.value.length === 0) {
         await loadSubForums()
       }
@@ -452,6 +490,22 @@ const prevPage = () => {
 const nextPage = () => {
   if (posts.value.length >= perPage) {
     page.value++
+    loadPosts()
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+}
+
+const goToPage = () => {
+  if (jumpPage.value >= 1) {
+    page.value = jumpPage.value
+    loadPosts()
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+}
+
+const goToPageNum = (num) => {
+  if (num >= 1 && num !== page.value) {
+    page.value = num
     loadPosts()
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -553,6 +607,36 @@ h1 {
   box-shadow: 0 3px 8px rgba(180, 130, 30, 0.25);
 }
 
+/* ===== 顶部页码 ===== */
+.top-page-numbers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px 0 10px 0;
+  border-bottom: 1px solid #f0e0b8;
+  margin-bottom: 12px;
+}
+.top-page-numbers .page-num-btn {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  background: #f5f5f5;
+  color: #7a5d2e;
+  border: 1px solid #e6c88a;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.top-page-numbers .page-num-btn:hover {
+  background: #f7e8b0;
+}
+.top-page-numbers .page-num-btn.active {
+  background: linear-gradient(145deg, #f1c40f, #d4ac0d);
+  color: #fff;
+  border-color: #d4ac0d;
+}
+
 ul { list-style: none; padding: 0; }
 li { padding: 12px 15px; background: white; margin-bottom: 8px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: 0.2s; }
 li:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
@@ -577,6 +661,13 @@ a:hover { color: #42b983; }
   margin-top: 25px;
   padding: 12px 0;
   border-top: 1px solid #eee;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.pagination-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 .page-info { font-size: 14px; color: #888; }
 .nav-links { display: flex; gap: 20px; }
@@ -606,5 +697,68 @@ a:hover { color: #42b983; }
   background: #f0f0f0;
   border-color: #ddd;
   transform: none !important;
+}
+
+/* ===== 底部跳转 ===== */
+.page-jump {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.jump-label {
+  font-size: 13px;
+  color: #7a5d2e;
+}
+.jump-input {
+  width: 50px;
+  padding: 4px 6px;
+  border: 1px solid #e6c88a;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 14px;
+  background: #fffcf0;
+  color: #4a3a25;
+}
+.jump-input:focus {
+  outline: none;
+  border-color: #f1c40f;
+}
+.jump-btn {
+  padding: 4px 14px;
+  background: linear-gradient(145deg, #f7e8b0, #edcfa0);
+  color: #7a5d2e;
+  border: 1px solid #e6c88a;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.jump-btn:hover {
+  background: linear-gradient(145deg, #f1c40f, #d4ac0d);
+  color: #fff;
+}
+
+@media (max-width: 600px) {
+  .top-page-numbers {
+    justify-content: center;
+  }
+  .top-page-numbers .page-num-btn {
+    min-width: 30px;
+    height: 30px;
+    font-size: 12px;
+    padding: 0 4px;
+  }
+  .pagination-nav {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .pagination-left {
+    justify-content: center;
+  }
+  .page-jump {
+    justify-content: center;
+  }
 }
 </style>
