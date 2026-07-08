@@ -448,13 +448,28 @@ const loadPosts = async () => {
         posts.value = [...rawData].sort((a, b) => b.dateline - a.dateline)
       }
       
-      // ===== 生成页码列表（固定显示 6 页） =====
-      const totalPages = 6
+      // ===== 生成页码列表（显示前6页） =====
       pageNumbers.value = []
-      for (let i = 1; i <= totalPages; i++) {
-        pageNumbers.value.push(i)
+      // 如果当前页有数据，显示1-6；如果没数据，说明超出范围
+      if (posts.value.length > 0) {
+        // 当前页有数据，从1开始显示6页
+        for (let i = 1; i <= 6; i++) {
+          pageNumbers.value.push(i)
+        }
+      } else {
+        // 当前页没数据，尝试显示前6页（用户自己判断哪些页有数据）
+        for (let i = 1; i <= 6; i++) {
+          pageNumbers.value.push(i)
+        }
       }
       // ===== 页码生成结束 =====
+      
+      if (posts.value.length === 0 && page.value > 1) {
+        // 如果当前页没数据，说明超出范围，回退到第一页
+        page.value = 1
+        await loadPosts()
+        return
+      }
       
       if (posts.value.length === 0) {
         await loadSubForums()
