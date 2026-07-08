@@ -426,11 +426,14 @@ const playAudio = (index) => {
       url: audioList.value[index].url, 
       title: audioList.value[index].title 
     }
+    // 必须用 setTimeout 确保 DOM 更新后再播放
     setTimeout(() => {
       if (audioPlayer.value) {
-        audioPlayer.value.play().catch(() => {})
+        audioPlayer.value.play().catch(err => {
+          console.log('自动播放被阻止:', err)
+        })
       }
-    }, 150)
+    }, 200)
   }
 }
 
@@ -596,6 +599,13 @@ const playVideo = (index) => {
     currentVideoIndex.value = index
     currentVideoUrl.value = videoList.value[index].url
     currentVideoTitle.value = videoList.value[index].title
+    setTimeout(() => {
+      if (videoPlayer.value) {
+        videoPlayer.value.play().catch(err => {
+          console.log('自动播放被阻止:', err)
+        })
+      }
+    }, 200)
   }
 }
 
