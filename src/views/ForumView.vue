@@ -44,10 +44,10 @@
     
     <!-- 分页 -->
     <div v-if="posts.length > 0" class="pagination-nav">
-      <span class="page-info">第 {{ page }} 页</span>
+      <span class="page-info">第 {{ page }} 页 / 共 {{ totalPages }} 页</span>
       <div class="nav-links">
         <a href="#" @click.prevent="prevPage" :class="{ disabled: page <= 1 }">‹ 上一篇</a>
-        <a href="#" @click.prevent="nextPage" :class="{ disabled: posts.length < perPage }">下一篇 ›</a>
+        <a href="#" @click.prevent="nextPage" :class="{ disabled: page >= totalPages }">下一篇 ›</a>
       </div>
     </div>
   </div>
@@ -65,6 +65,7 @@ const page = ref(1)
 const fid = ref(0)
 const perPage = 50
 const subForums = ref([])
+const totalPages = ref(1)
 
 // ===== 排序状态 =====
 const sortOrder = ref('desc') // 'desc' 倒序（最新在前），'asc' 正序（最早在前）
@@ -408,8 +409,8 @@ const formatTime = (timestamp) => {
 // ===== 切换排序方式 =====
 const toggleSortOrder = () => {
   sortOrder.value = sortOrder.value === 'desc' ? 'asc' : 'desc'
-  // 保存到 localStorage
   localStorage.setItem(`forum_sort_${fid.value}`, sortOrder.value)
+  page.value = 1
   loadPosts()
 }
 
@@ -417,18 +418,30 @@ const loadPosts = async () => {
   loading.value = true
   subForums.value = []
   try {
-    const url = `${baseUrl}?action=list&fid=${fid.value}&page=${page.value}`
+    // 先获取总页数
+    const countRes = await fetch(`${baseUrl}?action=list&fid=${fid.value}&page=1&limit=${perPage}`)
+    const countData = await countRes.json()
+    if (countData.code === 0 && countData.total_pages) {
+      totalPages.value = countData.total_pages
+    }
+    
+    // 计算实际请求的页码
+    let actualPage = page.value
+    if (sortOrder.value === 'asc' && totalPages.value > 1) {
+      actualPage = totalPages.value - page.value + 1
+      if (actualPage < 1) actualPage = 1
+    }
+    
+    const url = `${baseUrl}?action=list&fid=${fid.value}&page=${actualPage}&limit=${perPage}`
     const res = await fetch(url)
     const data = await res.json()
     if (data.code === 0) {
-      let postData = data.data || []
-      // ===== 根据排序方式排序 =====
+      const rawData = data.data || []
       if (sortOrder.value === 'asc') {
-        postData = postData.sort((a, b) => a.dateline - b.dateline)
+        posts.value = [...rawData].sort((a, b) => a.dateline - b.dateline)
       } else {
-        postData = postData.sort((a, b) => b.dateline - a.dateline)
+        posts.value = [...rawData].sort((a, b) => b.dateline - a.dateline)
       }
-      posts.value = postData
       
       if (posts.value.length === 0) {
         await loadSubForums()
@@ -462,10 +475,11 @@ const prevPage = () => {
 }
 
 const nextPage = () => {
-  if (posts.value.length < perPage) return
-  page.value++
-  loadPosts()
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  if (page.value < totalPages.value) {
+    page.value++
+    loadPosts()
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 }
 
 watch(
@@ -475,7 +489,6 @@ watch(
       fid.value = parseInt(newFid)
       page.value = 1
       forumName.value = forumNames[newFid] || `版块 ${newFid}`
-      // ===== 读取该栏目的排序设置 =====
       const savedSort = localStorage.getItem(`forum_sort_${fid.value}`)
       sortOrder.value = savedSort || 'desc'
       loadPosts()
@@ -488,7 +501,6 @@ onMounted(() => {
   if (fidParam) {
     fid.value = parseInt(fidParam)
     forumName.value = forumNames[fidParam] || `版块 ${fidParam}`
-    // ===== 读取该栏目的排序设置 =====
     const savedSort = localStorage.getItem(`forum_sort_${fid.value}`)
     sortOrder.value = savedSort || 'desc'
     loadPosts()
@@ -545,7 +557,6 @@ h1 {
   flex: 1;
 }
 
-/* ===== 排序按钮 ===== */
 .sort-btn {
   padding: 6px 16px;
   background: linear-gradient(145deg, #f7e8b0, #edcfa0);
