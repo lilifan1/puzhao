@@ -1,7 +1,20 @@
 <template>
   <div class="container">
-    <router-link to="/" class="back">← 返回资料集首页</router-link>
-    <h1>{{ forumName }}</h1>
+    <div class="forum-header">
+      <router-link to="/" class="back">← 返回资料集首页</router-link>
+      <div class="forum-title-row">
+        <h1>{{ forumName }}</h1>
+        <!-- ===== 排序切换按钮 ===== -->
+        <button 
+          @click="toggleSortOrder" 
+          class="sort-btn"
+          :title="sortOrder === 'desc' ? '点击切换为正序（从旧到新）' : '点击切换为倒序（从新到旧）'"
+        >
+          {{ sortOrder === 'desc' ? '📅 倒序' : '📅 正序' }}
+        </button>
+      </div>
+    </div>
+    
     <div v-if="loading">⏳ 加载中...</div>
     <div v-else-if="posts.length === 0 && subForums.length === 0" class="empty">该版块暂无帖子</div>
     
@@ -52,6 +65,9 @@ const page = ref(1)
 const fid = ref(0)
 const perPage = 50
 const subForums = ref([])
+
+// ===== 排序状态 =====
+const sortOrder = ref('desc') // 'desc' 倒序（最新在前），'asc' 正序（最早在前）
 
 // ==================== 版块名称映射 ====================
 const forumNames = {
@@ -389,6 +405,14 @@ const formatTime = (timestamp) => {
   return date.toLocaleDateString() + ' ' + date.toLocaleTimeString()
 }
 
+// ===== 切换排序方式 =====
+const toggleSortOrder = () => {
+  sortOrder.value = sortOrder.value === 'desc' ? 'asc' : 'desc'
+  // 保存到 localStorage
+  localStorage.setItem(`forum_sort_${fid.value}`, sortOrder.value)
+  loadPosts()
+}
+
 const loadPosts = async () => {
   loading.value = true
   subForums.value = []
@@ -397,9 +421,15 @@ const loadPosts = async () => {
     const res = await fetch(url)
     const data = await res.json()
     if (data.code === 0) {
-      posts.value = data.data
+      let postData = data.data || []
+      // ===== 根据排序方式排序 =====
+      if (sortOrder.value === 'asc') {
+        postData = postData.sort((a, b) => a.dateline - b.dateline)
+      } else {
+        postData = postData.sort((a, b) => b.dateline - a.dateline)
+      }
+      posts.value = postData
       
-      // 如果帖子为空，自动获取子版块
       if (posts.value.length === 0) {
         await loadSubForums()
       }
@@ -445,6 +475,9 @@ watch(
       fid.value = parseInt(newFid)
       page.value = 1
       forumName.value = forumNames[newFid] || `版块 ${newFid}`
+      // ===== 读取该栏目的排序设置 =====
+      const savedSort = localStorage.getItem(`forum_sort_${fid.value}`)
+      sortOrder.value = savedSort || 'desc'
       loadPosts()
     }
   }
@@ -455,6 +488,9 @@ onMounted(() => {
   if (fidParam) {
     fid.value = parseInt(fidParam)
     forumName.value = forumNames[fidParam] || `版块 ${fidParam}`
+    // ===== 读取该栏目的排序设置 =====
+    const savedSort = localStorage.getItem(`forum_sort_${fid.value}`)
+    sortOrder.value = savedSort || 'desc'
     loadPosts()
   } else {
     loading.value = false
@@ -464,6 +500,21 @@ onMounted(() => {
 
 <style scoped>
 .container { max-width: 800px; margin: 0 auto; padding: 20px; background: #fef9e7; min-height: 100vh; }
+
+.forum-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.forum-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
 
 .back {
   display: inline-block;
@@ -475,8 +526,8 @@ onMounted(() => {
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
-  margin-bottom: 16px;
   transition: all 0.3s ease;
+  align-self: flex-start;
 }
 .back:hover {
   background: linear-gradient(145deg, #f1c40f, #d4ac0d);
@@ -486,7 +537,36 @@ onMounted(() => {
   text-decoration: none;
 }
 
-h1 { color: #2c3e50; border-bottom: 3px solid #f1c40f; padding-bottom: 10px; }
+h1 { 
+  color: #2c3e50; 
+  border-bottom: 3px solid #f1c40f; 
+  padding-bottom: 6px; 
+  margin: 0;
+  flex: 1;
+}
+
+/* ===== 排序按钮 ===== */
+.sort-btn {
+  padding: 6px 16px;
+  background: linear-gradient(145deg, #f7e8b0, #edcfa0);
+  color: #7a5d2e;
+  border: 1px solid #e6c88a;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-bottom: 4px;
+}
+.sort-btn:hover {
+  background: linear-gradient(145deg, #f1c40f, #d4ac0d);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(180, 130, 30, 0.25);
+}
+
 ul { list-style: none; padding: 0; }
 li { padding: 12px 15px; background: white; margin-bottom: 8px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: 0.2s; }
 li:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
