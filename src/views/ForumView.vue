@@ -4,7 +4,6 @@
       <router-link to="/" class="back">← 返回资料集首页</router-link>
       <div class="forum-title-row">
         <h1>{{ forumName }}</h1>
-        <!-- ===== 排序切换按钮 ===== -->
         <button 
           @click="toggleSortOrder" 
           class="sort-btn"
@@ -18,7 +17,6 @@
     <div v-if="loading">⏳ 加载中...</div>
     <div v-else-if="posts.length === 0 && subForums.length === 0" class="empty">该版块暂无帖子</div>
     
-    <!-- 子版块列表 -->
     <div v-if="subForums.length > 0" class="sub-forums">
       <h3>📂 子版块</h3>
       <ul>
@@ -31,7 +29,6 @@
       </ul>
     </div>
     
-    <!-- 帖子列表 -->
     <ul v-else-if="posts.length > 0">
       <li v-for="post in posts" :key="post.tid">
         <router-link :to="`/post/${post.tid}`">
@@ -42,12 +39,11 @@
       </li>
     </ul>
     
-    <!-- 分页 -->
     <div v-if="posts.length > 0" class="pagination-nav">
-      <span class="page-info">第 {{ page }} 页 / 共 {{ totalPages }} 页</span>
+      <span class="page-info">第 {{ page }} 页</span>
       <div class="nav-links">
         <a href="#" @click.prevent="prevPage" :class="{ disabled: page <= 1 }">‹ 上一篇</a>
-        <a href="#" @click.prevent="nextPage" :class="{ disabled: page >= totalPages }">下一篇 ›</a>
+        <a href="#" @click.prevent="nextPage" :class="{ disabled: !hasMore }">下一篇 ›</a>
       </div>
     </div>
   </div>
@@ -65,12 +61,9 @@ const page = ref(1)
 const fid = ref(0)
 const perPage = 50
 const subForums = ref([])
-const totalPages = ref(1)
+const hasMore = ref(true)
+const sortOrder = ref('desc')
 
-// ===== 排序状态 =====
-const sortOrder = ref('desc') // 'desc' 倒序（最新在前），'asc' 正序（最早在前）
-
-// ==================== 版块名称映射 ====================
 const forumNames = {
   '1326': '每日学习',
   '1335': '每日畅听',
@@ -397,8 +390,6 @@ const forumNames = {
   '1098': '精彩专题',
 }
 
-// =====================================================
-
 const baseUrl = 'https://www.dadaozjzhitojian.cloud/sina/ff/safe_api.php'
 
 const formatTime = (timestamp) => {
@@ -406,7 +397,6 @@ const formatTime = (timestamp) => {
   return date.toLocaleDateString() + ' ' + date.toLocaleTimeString()
 }
 
-// ===== 切换排序方式 =====
 const toggleSortOrder = () => {
   sortOrder.value = sortOrder.value === 'desc' ? 'asc' : 'desc'
   localStorage.setItem(`forum_sort_${fid.value}`, sortOrder.value)
@@ -418,18 +408,29 @@ const loadPosts = async () => {
   loading.value = true
   subForums.value = []
   try {
-    // 先获取总页数
-    const countRes = await fetch(`${baseUrl}?action=list&fid=${fid.value}&page=1&limit=${perPage}`)
-    const countData = await countRes.json()
-    if (countData.code === 0 && countData.total_pages) {
-      totalPages.value = countData.total_pages
-    }
-    
-    // 计算实际请求的页码
     let actualPage = page.value
-    if (sortOrder.value === 'asc' && totalPages.value > 1) {
-      actualPage = totalPages.value - page.value + 1
-      if (actualPage < 1) actualPage = 1
+    if (sortOrder.value === 'asc') {
+      const countRes = await fetch(`${baseUrl}?action=count&fid=${fid.value}`)
+      const countData = await countRes.json()
+      if (countData.code === 0 && countData.total) {
+        const totalPages = Math.ceil(countData.total / perPage)
+        actualPage = totalPages - page.value + 1
+        if (actualPage < 1) actualPage = 1
+        hasMore.value = page.value < totalPages
+      } else {
+        const url = `${baseUrl}?action=list&fid=${fid.value}&page=1&limit=${perPage}`
+        const res = await fetch(url)
+        const data = await res.json()
+        if (data.code === 0) {
+          const rawData = data.data || []
+          posts.value = [...rawData].sort((a, b) => a.dateline - b.dateline)
+          hasMore.value = rawData.length >= perPage
+        }
+        loading.value = false
+        return
+      }
+    } else {
+      hasMore.value = true
     }
     
     const url = `${baseUrl}?action=list&fid=${fid.value}&page=${actualPage}&limit=${perPage}`
@@ -441,6 +442,7 @@ const loadPosts = async () => {
         posts.value = [...rawData].sort((a, b) => a.dateline - b.dateline)
       } else {
         posts.value = [...rawData].sort((a, b) => b.dateline - a.dateline)
+        hasMore.value = rawData.length >= perPage
       }
       
       if (posts.value.length === 0) {
@@ -475,7 +477,7 @@ const prevPage = () => {
 }
 
 const nextPage = () => {
-  if (page.value < totalPages.value) {
+  if (hasMore.value) {
     page.value++
     loadPosts()
     window.scrollTo({ top: 0, behavior: 'smooth' })
