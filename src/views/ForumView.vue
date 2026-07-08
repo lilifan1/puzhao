@@ -43,7 +43,7 @@
       <span class="page-info">第 {{ page }} 页</span>
       <div class="nav-links">
         <a href="#" @click.prevent="prevPage" :class="{ disabled: page <= 1 }">‹ 上一篇</a>
-        <a href="#" @click.prevent="nextPage" :class="{ disabled: !hasMore }">下一篇 ›</a>
+        <a href="#" @click.prevent="nextPage" :class="{ disabled: posts.length < perPage }">下一篇 ›</a>
       </div>
     </div>
   </div>
@@ -61,7 +61,6 @@ const page = ref(1)
 const fid = ref(0)
 const perPage = 50
 const subForums = ref([])
-const hasMore = ref(true)
 const sortOrder = ref('desc')
 
 const forumNames = {
@@ -408,32 +407,7 @@ const loadPosts = async () => {
   loading.value = true
   subForums.value = []
   try {
-    let actualPage = page.value
-    if (sortOrder.value === 'asc') {
-      const countRes = await fetch(`${baseUrl}?action=count&fid=${fid.value}`)
-      const countData = await countRes.json()
-      if (countData.code === 0 && countData.total) {
-        const totalPages = Math.ceil(countData.total / perPage)
-        actualPage = totalPages - page.value + 1
-        if (actualPage < 1) actualPage = 1
-        hasMore.value = page.value < totalPages
-      } else {
-        const url = `${baseUrl}?action=list&fid=${fid.value}&page=1&limit=${perPage}`
-        const res = await fetch(url)
-        const data = await res.json()
-        if (data.code === 0) {
-          const rawData = data.data || []
-          posts.value = [...rawData].sort((a, b) => a.dateline - b.dateline)
-          hasMore.value = rawData.length >= perPage
-        }
-        loading.value = false
-        return
-      }
-    } else {
-      hasMore.value = true
-    }
-    
-    const url = `${baseUrl}?action=list&fid=${fid.value}&page=${actualPage}&limit=${perPage}`
+    const url = `${baseUrl}?action=list&fid=${fid.value}&page=${page.value}&limit=${perPage}`
     const res = await fetch(url)
     const data = await res.json()
     if (data.code === 0) {
@@ -442,7 +416,6 @@ const loadPosts = async () => {
         posts.value = [...rawData].sort((a, b) => a.dateline - b.dateline)
       } else {
         posts.value = [...rawData].sort((a, b) => b.dateline - a.dateline)
-        hasMore.value = rawData.length >= perPage
       }
       
       if (posts.value.length === 0) {
@@ -477,7 +450,7 @@ const prevPage = () => {
 }
 
 const nextPage = () => {
-  if (hasMore.value) {
+  if (posts.value.length >= perPage) {
     page.value++
     loadPosts()
     window.scrollTo({ top: 0, behavior: 'smooth' })
