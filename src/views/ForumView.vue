@@ -53,26 +53,27 @@
       </li>
     </ul>
     
-    <div class="pagination-left">
-  <a href="#" @click.prevent="prevPage" :class="{ disabled: page <= 1 }">‹ 上一页</a>
-  <span class="page-info">第 {{ page }} 页</span>
-  <a href="#" @click.prevent="nextPage" :class="{ disabled: !hasMore }">下一页 ›</a>
+    <div v-if="posts.length > 0" class="pagination-nav">
+  <div class="pagination-left">
+    <a href="#" @click.prevent="prevPage" :class="{ disabled: page <= 1 }">‹ 上一页</a>
+    <span class="page-info">第 {{ page }} 页</span>
+    <a href="#" @click.prevent="nextPage" :class="{ disabled: !hasMore }">下一页 ›</a>
+  </div>
+  <!-- ===== 底部跳转输入 ===== -->
+  <div class="page-jump">
+    <span class="jump-label">跳转到</span>
+    <input 
+      type="number" 
+      v-model.number="jumpPage" 
+      min="1" 
+      class="jump-input"
+      @keyup.enter="goToPage"
+    />
+    <span class="jump-label">页</span>
+    <button @click="goToPage" class="jump-btn">GO</button>
+  </div>
+  <!-- ===== 底部跳转结束 ===== -->
 </div>
-      <!-- ===== 底部跳转输入 ===== -->
-      <div class="page-jump">
-        <span class="jump-label">跳转到</span>
-        <input 
-          type="number" 
-          v-model.number="jumpPage" 
-          min="1" 
-          class="jump-input"
-          @keyup.enter="goToPage"
-        />
-        <span class="jump-label">页</span>
-        <button @click="goToPage" class="jump-btn">GO</button>
-      </div>
-      <!-- ===== 底部跳转结束 ===== -->
-    </div>
   </div>
 </template>
 
