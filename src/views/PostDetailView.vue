@@ -595,14 +595,6 @@ const setupVideoListObserver = () => {
   }, 8000)
 }
 
-const playVideo = (index) => {
-  if (index >= 0 && index < videoList.value.length) {
-    currentVideoIndex.value = index
-    currentVideoUrl.value = videoList.value[index].url
-    currentVideoTitle.value = videoList.value[index].title
-  }
-}
-
 const prevVideo = () => {
   if (currentVideoIndex.value > 0) {
     playVideo(currentVideoIndex.value - 1)
