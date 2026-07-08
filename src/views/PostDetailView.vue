@@ -421,19 +421,26 @@ const moveAudioListAfterTitle = () => {
 
 const playAudio = (index) => {
   if (index >= 0 && index < audioList.value.length) {
+    // 先保存当前播放状态
+    const wasPlaying = audioPlayer.value && !audioPlayer.value.paused
+    
     currentAudioIndex.value = index
     currentAudio.value = { 
       url: audioList.value[index].url, 
       title: audioList.value[index].title 
     }
-    // 必须用 setTimeout 确保 DOM 更新后再播放
-    setTimeout(() => {
-      if (audioPlayer.value) {
-        audioPlayer.value.play().catch(err => {
-          console.log('自动播放被阻止:', err)
-        })
+    
+    nextTick(() => {
+      const player = audioPlayer.value
+      if (player) {
+        // 先暂停再播放，确保触发
+        player.pause()
+        player.currentTime = 0
+        setTimeout(() => {
+          player.play().catch(() => {})
+        }, 100)
       }
-    }, 200)
+    })
   }
 }
 
