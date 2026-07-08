@@ -92,6 +92,7 @@ const subForums = ref([])
 const sortOrder = ref('desc')
 const jumpPage = ref(1)
 const pageNumbers = ref([])
+const hasMore = ref(true)
 
 const forumNames = {
   '1326': '每日学习',
@@ -448,24 +449,14 @@ const loadPosts = async () => {
         posts.value = [...rawData].sort((a, b) => b.dateline - a.dateline)
       }
       
-      // ===== 生成页码列表（显示前6页） =====
+      hasMore.value = rawData.length >= perPage
+      
       pageNumbers.value = []
-      // 如果当前页有数据，显示1-6；如果没数据，说明超出范围
-      if (posts.value.length > 0) {
-        // 当前页有数据，从1开始显示6页
-        for (let i = 1; i <= 6; i++) {
-          pageNumbers.value.push(i)
-        }
-      } else {
-        // 当前页没数据，尝试显示前6页（用户自己判断哪些页有数据）
-        for (let i = 1; i <= 6; i++) {
-          pageNumbers.value.push(i)
-        }
+      for (let i = 1; i <= 6; i++) {
+        pageNumbers.value.push(i)
       }
-      // ===== 页码生成结束 =====
       
       if (posts.value.length === 0 && page.value > 1) {
-        // 如果当前页没数据，说明超出范围，回退到第一页
         page.value = 1
         await loadPosts()
         return
@@ -503,7 +494,7 @@ const prevPage = () => {
 }
 
 const nextPage = () => {
-  if (posts.value.length >= perPage) {
+  if (hasMore.value) {
     page.value++
     loadPosts()
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -622,7 +613,6 @@ h1 {
   box-shadow: 0 3px 8px rgba(180, 130, 30, 0.25);
 }
 
-/* ===== 顶部页码 ===== */
 .top-page-numbers {
   display: flex;
   flex-wrap: wrap;
@@ -685,8 +675,7 @@ a:hover { color: #42b983; }
   gap: 12px;
 }
 .page-info { font-size: 14px; color: #888; }
-.nav-links { display: flex; gap: 20px; }
-.nav-links a {
+.pagination-left a {
   display: inline-block;
   padding: 8px 20px;
   background: linear-gradient(145deg, #f7e8b0, #edcfa0);
@@ -698,23 +687,23 @@ a:hover { color: #42b983; }
   font-weight: 500;
   transition: all 0.3s ease;
 }
-.nav-links a:hover:not(.disabled) {
+.pagination-left a:hover:not(.disabled) {
   background: linear-gradient(145deg, #f1c40f, #d4ac0d);
   color: #fff;
   transform: translateY(-1px);
   box-shadow: 0 3px 8px rgba(180, 130, 30, 0.25);
   text-decoration: none;
 }
-.nav-links a.disabled {
-  color: #ccc;
+.pagination-left a.disabled {
+  color: #ccc !important;
   cursor: not-allowed;
   pointer-events: none;
-  background: #f0f0f0;
-  border-color: #ddd;
+  background: #f0f0f0 !important;
+  border-color: #ddd !important;
   transform: none !important;
+  opacity: 0.6;
 }
 
-/* ===== 底部跳转 ===== */
 .page-jump {
   display: flex;
   align-items: center;
