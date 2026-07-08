@@ -447,15 +447,10 @@ const playVideo = (index) => {
   }
 }
 
-const onAudioEnded = () => {
+ const onAudioEnded = () => {
   if (currentAudioIndex.value < audioList.value.length - 1) {
     const nextIndex = currentAudioIndex.value + 1
     playAudio(nextIndex)
-    setTimeout(() => {
-      if (audioPlayer.value) {
-        audioPlayer.value.play()
-      }
-    }, 300)
   }
 }
 
@@ -624,11 +619,6 @@ const onVideoEnded = () => {
   if (currentVideoIndex.value < videoList.value.length - 1) {
     const nextIndex = currentVideoIndex.value + 1
     playVideo(nextIndex)
-    setTimeout(() => {
-      if (videoPlayer.value) {
-        videoPlayer.value.play()
-      }
-    }, 500)
   }
 }
 
