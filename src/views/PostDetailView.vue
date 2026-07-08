@@ -426,11 +426,11 @@ const playAudio = (index) => {
       url: audioList.value[index].url, 
       title: audioList.value[index].title 
     }
-  nextTick(() => {
+    setTimeout(() => {
       if (audioPlayer.value) {
-        audioPlayer.value.play()
+        audioPlayer.value.play().catch(() => {})
       }
-    })
+    }, 150)
   }
 }
 
