@@ -421,26 +421,11 @@ const moveAudioListAfterTitle = () => {
 
 const playAudio = (index) => {
   if (index >= 0 && index < audioList.value.length) {
-    // 先保存当前播放状态
-    const wasPlaying = audioPlayer.value && !audioPlayer.value.paused
-    
     currentAudioIndex.value = index
     currentAudio.value = { 
       url: audioList.value[index].url, 
       title: audioList.value[index].title 
     }
-    
-    nextTick(() => {
-      const player = audioPlayer.value
-      if (player) {
-        // 先暂停再播放，确保触发
-        player.pause()
-        player.currentTime = 0
-        setTimeout(() => {
-          player.play().catch(() => {})
-        }, 100)
-      }
-    })
   }
 }
 
@@ -526,18 +511,14 @@ const extractVideoList = (retryCount = 0) => {
   })
 
   if (list.length > 0) {
-  videoList.value = list
-  if (currentVideoIndex.value === -1) {
-    currentVideoIndex.value = 0
-    currentVideoUrl.value = list[0].url
-    currentVideoTitle.value = list[0].title
-  }
-  hideOriginalVideo()
-  nextTick(() => {
-    if (videoPlayer.value) {
-      videoPlayer.value.play()
+    videoList.value = list
+    if (currentVideoIndex.value === -1) {
+      currentVideoIndex.value = 0
+      currentVideoUrl.value = list[0].url
+      currentVideoTitle.value = list[0].title
     }
-  })
+    hideOriginalVideo()
+  }
 }
 
 const hideOriginalVideo = () => {
@@ -606,13 +587,6 @@ const playVideo = (index) => {
     currentVideoIndex.value = index
     currentVideoUrl.value = videoList.value[index].url
     currentVideoTitle.value = videoList.value[index].title
-    setTimeout(() => {
-      if (videoPlayer.value) {
-        videoPlayer.value.play().catch(err => {
-          console.log('自动播放被阻止:', err)
-        })
-      }
-    }, 200)
   }
 }
 
@@ -830,6 +804,7 @@ const loadPost = async (tid) => {
       post.value = null
     }
 
+    // ===== 先提取音频列表 =====
     nextTick(() => {
       setTimeout(() => {
         extractAudioList()
@@ -839,6 +814,7 @@ const loadPost = async (tid) => {
       }, 300)
     })
 
+    // ===== 上下篇：分页循环获取全部帖子 =====
     if (post.value && post.value.fid) {
       const fid = post.value.fid
       const currentTid = Number(tid)
