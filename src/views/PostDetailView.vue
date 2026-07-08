@@ -419,34 +419,6 @@ const moveAudioListAfterTitle = () => {
   }
 }
 
-const playAudio = (index) => {
-  if (index >= 0 && index < audioList.value.length) {
-    currentAudioIndex.value = index
-    currentAudio.value = {
-      url: audioList.value[index].url,
-      title: audioList.value[index].title
-    }
-    nextTick(() => {
-      if (audioPlayer.value) {
-        audioPlayer.value.play().catch(() => {})
-      }
-    })
-  }
-}
-
-const playVideo = (index) => {
-  if (index >= 0 && index < videoList.value.length) {
-    currentVideoIndex.value = index
-    currentVideoUrl.value = videoList.value[index].url
-    currentVideoTitle.value = videoList.value[index].title
-    nextTick(() => {
-      if (videoPlayer.value) {
-        videoPlayer.value.play().catch(() => {})
-      }
-    })
-  }
-}
-
  const onAudioEnded = () => {
   if (currentAudioIndex.value < audioList.value.length - 1) {
     const nextIndex = currentAudioIndex.value + 1
@@ -950,6 +922,35 @@ onMounted(async () => {
     })
   }
 })
+
+// ===== 新加的放这里 =====
+const playAudio = (index) => {
+  if (index >= 0 && index < audioList.value.length) {
+    currentAudioIndex.value = index
+    currentAudio.value = { 
+      url: audioList.value[index].url, 
+      title: audioList.value[index].title 
+    }
+    nextTick(() => {
+      if (audioPlayer.value) {
+        audioPlayer.value.play().catch(() => {})
+      }
+    })
+  }
+}
+
+const playVideo = (index) => {
+  if (index >= 0 && index < videoList.value.length) {
+    currentVideoIndex.value = index
+    currentVideoUrl.value = videoList.value[index].url
+    currentVideoTitle.value = videoList.value[index].title
+    nextTick(() => {
+      if (videoPlayer.value) {
+        videoPlayer.value.play().catch(() => {})
+      }
+    })
+  }
+}
 </script>
 
 <style scoped>
