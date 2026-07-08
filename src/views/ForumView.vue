@@ -53,12 +53,11 @@
       </li>
     </ul>
     
-    <div v-if="posts.length > 0" class="pagination-nav">
-      <div class="pagination-left">
-        <a href="#" @click.prevent="prevPage" :class="{ disabled: page <= 1 }">‹ 上一页</a>
-        <span class="page-info">第 {{ page }} 页</span>
-        <a href="#" @click.prevent="nextPage" :class="{ disabled: posts.length < perPage }">下一页 ›</a>
-      </div>
+    <div class="pagination-left">
+  <a href="#" @click.prevent="prevPage" :class="{ disabled: page <= 1 }">‹ 上一页</a>
+  <span class="page-info">第 {{ page }} 页</span>
+  <a href="#" @click.prevent="nextPage" :class="{ disabled: !hasMore }">下一页 ›</a>
+</div>
       <!-- ===== 底部跳转输入 ===== -->
       <div class="page-jump">
         <span class="jump-label">跳转到</span>
@@ -92,6 +91,7 @@ const subForums = ref([])
 const sortOrder = ref('desc')
 const jumpPage = ref(1)
 const pageNumbers = ref([])
+const hasMore = ref(true)
 
 const forumNames = {
   '1326': '每日学习',
@@ -448,24 +448,18 @@ const loadPosts = async () => {
         posts.value = [...rawData].sort((a, b) => b.dateline - a.dateline)
       }
       
-      // ===== 生成页码列表（显示前6页） =====
+      // ===== 判断是否还有下一页 =====
+      hasMore.value = rawData.length >= perPage
+      // ===== 判断结束 =====
+      
+      // ===== 生成页码列表 =====
       pageNumbers.value = []
-      // 如果当前页有数据，显示1-6；如果没数据，说明超出范围
-      if (posts.value.length > 0) {
-        // 当前页有数据，从1开始显示6页
-        for (let i = 1; i <= 6; i++) {
-          pageNumbers.value.push(i)
-        }
-      } else {
-        // 当前页没数据，尝试显示前6页（用户自己判断哪些页有数据）
-        for (let i = 1; i <= 6; i++) {
-          pageNumbers.value.push(i)
-        }
+      for (let i = 1; i <= 6; i++) {
+        pageNumbers.value.push(i)
       }
       // ===== 页码生成结束 =====
       
       if (posts.value.length === 0 && page.value > 1) {
-        // 如果当前页没数据，说明超出范围，回退到第一页
         page.value = 1
         await loadPosts()
         return
@@ -503,7 +497,7 @@ const prevPage = () => {
 }
 
 const nextPage = () => {
-  if (posts.value.length >= perPage) {
+  if (hasMore.value) {
     page.value++
     loadPosts()
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -706,12 +700,13 @@ a:hover { color: #42b983; }
   text-decoration: none;
 }
 .nav-links a.disabled {
-  color: #ccc;
+  color: #ccc !important;
   cursor: not-allowed;
   pointer-events: none;
-  background: #f0f0f0;
-  border-color: #ddd;
+  background: #f0f0f0 !important;
+  border-color: #ddd !important;
   transform: none !important;
+  opacity: 0.6;
 }
 
 /* ===== 底部跳转 ===== */
