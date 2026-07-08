@@ -830,7 +830,6 @@ const loadPost = async (tid) => {
       post.value = null
     }
 
-    // ===== 先提取音频列表 =====
     nextTick(() => {
       setTimeout(() => {
         extractAudioList()
@@ -840,7 +839,6 @@ const loadPost = async (tid) => {
       }, 300)
     })
 
-    // ===== 上下篇：分页循环获取全部帖子 =====
     if (post.value && post.value.fid) {
       const fid = post.value.fid
       const currentTid = Number(tid)
