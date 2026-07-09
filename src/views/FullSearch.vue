@@ -32,6 +32,10 @@ onMounted(() => {
     sessionStorage.setItem('fullSearchKeyword', route.query.q)
     keyword.value = route.query.q
   }
+  // 记录进入迅搜页面时的来源
+  if (!sessionStorage.getItem('fullSearchFrom')) {
+    sessionStorage.setItem('fullSearchFrom', document.referrer || '/')
+  }
 })
 
 const iframeSrc = computed(() => {
@@ -41,12 +45,15 @@ const iframeSrc = computed(() => {
 
 // 回到首页
 const goHome = () => {
+  sessionStorage.removeItem('fullSearchFrom')
+  sessionStorage.removeItem('fullSearchKeyword')
   router.push('/')
 }
 
-// 返回上一页
+// 返回迅搜页面（保留搜索状态）
 const goBack = () => {
-  router.back()
+  const q = keyword.value || ''
+  router.push(`/fullsearch?q=${encodeURIComponent(q)}`)
 }
 </script>
 
