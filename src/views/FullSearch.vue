@@ -5,12 +5,7 @@
       <span class="title">全文搜索</span>
       <button @click="goBack" class="back-btn">← 返回</button>
     </div>
-    <div v-if="!keyword" class="empty-tip">
-      <p>🔍 请输入搜索关键词</p>
-      <p class="sub-tip">在首页搜索框输入关键词后点击“全文”</p>
-    </div>
     <iframe 
-      v-else
       ref="iframeRef"
       :src="iframeSrc" 
       class="full-search-iframe"
@@ -29,6 +24,7 @@ const router = useRouter()
 const iframeRef = ref(null)
 const keyword = ref(route.query.q || '')
 
+// 监听路由参数变化
 watch(
   () => route.query.q,
   (newQ) => {
@@ -40,16 +36,19 @@ watch(
 )
 
 onMounted(() => {
-  // 1. 从 sessionStorage 恢复关键词
   const savedKeyword = sessionStorage.getItem('fullSearchKeyword')
-  if (savedKeyword && !route.query.q) {
+  const urlKeyword = route.query.q
+  
+  if (urlKeyword) {
+    keyword.value = urlKeyword
+    sessionStorage.setItem('fullSearchKeyword', urlKeyword)
+  } else if (savedKeyword) {
+    // 如果有保存的关键词，但没有 URL 参数，更新 URL
     keyword.value = savedKeyword
     router.replace(`/fullsearch?q=${encodeURIComponent(savedKeyword)}`)
-  }
-  // 2. 从 URL 参数获取
-  if (route.query.q) {
-    keyword.value = route.query.q
-    sessionStorage.setItem('fullSearchKeyword', route.query.q)
+  } else {
+    // 没有关键词，显示空页面
+    keyword.value = ''
   }
 })
 
@@ -64,11 +63,19 @@ const goHome = () => {
 }
 
 const goBack = () => {
-  const q = keyword.value || ''
-  if (q) {
-    router.push(`/fullsearch?q=${encodeURIComponent(q)}`)
+  // 如果有关键词，回到迅搜页面并保留关键词
+  if (keyword.value) {
+    router.push(`/fullsearch?q=${encodeURIComponent(keyword.value)}`)
   } else {
+    // 如果没有关键词，回到迅搜页面（空状态）
     router.push('/fullsearch')
+  }
+}
+
+// 刷新 iframe（保留当前关键词）
+const refreshIframe = () => {
+  if (iframeRef.value && keyword.value) {
+    iframeRef.value.src = iframeSrc.value
   }
 }
 </script>
@@ -125,24 +132,5 @@ const goBack = () => {
   flex: 1;
   width: 100%;
   border: none;
-}
-
-/* ===== 空状态提示 ===== */
-.empty-tip {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: #fef9e7;
-  color: #7a5d2e;
-}
-.empty-tip p {
-  font-size: 18px;
-  margin: 6px 0;
-}
-.empty-tip .sub-tip {
-  font-size: 14px;
-  color: #a07d4a;
 }
 </style>
