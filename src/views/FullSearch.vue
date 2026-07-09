@@ -16,67 +16,53 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
 const iframeRef = ref(null)
+
+// 从 URL 参数获取关键词
 const keyword = ref(route.query.q || '')
 
-// 监听路由参数变化
-watch(
-  () => route.query.q,
-  (newQ) => {
-    if (newQ) {
-      keyword.value = newQ
-      sessionStorage.setItem('fullSearchKeyword', newQ)
-    }
-  }
-)
-
 onMounted(() => {
-  const savedKeyword = sessionStorage.getItem('fullSearchKeyword')
-  const urlKeyword = route.query.q
-  
-  if (urlKeyword) {
-    keyword.value = urlKeyword
-    sessionStorage.setItem('fullSearchKeyword', urlKeyword)
-  } else if (savedKeyword) {
-    // 如果有保存的关键词，但没有 URL 参数，更新 URL
-    keyword.value = savedKeyword
-    router.replace(`/fullsearch?q=${encodeURIComponent(savedKeyword)}`)
+  // 如果 URL 有 q 参数，保存到 sessionStorage
+  if (route.query.q) {
+    sessionStorage.setItem('fullSearchKeyword', route.query.q)
+    keyword.value = route.query.q
   } else {
-    // 没有关键词，显示空页面
-    keyword.value = ''
+    // 从 sessionStorage 恢复
+    const saved = sessionStorage.getItem('fullSearchKeyword')
+    if (saved) {
+      keyword.value = saved
+      // 更新 URL，方便分享
+      router.replace(`/fullsearch?q=${encodeURIComponent(saved)}`)
+    }
   }
 })
 
+// iframe 地址
 const iframeSrc = computed(() => {
   const q = keyword.value || ''
   return `https://xuexi.pzyuanman.space/sina/ff/plugin.php?id=twpx_xunsearch&q=${encodeURIComponent(q)}&s=relevance&syn=yes&mod=forum&searchsubmit=yes`
 })
 
+// 返回上一页
+const goBack = () => {
+  if (keyword.value) {
+    // 有关键词：回到迅搜页面并保留
+    router.push(`/fullsearch?q=${encodeURIComponent(keyword.value)}`)
+  } else {
+    // 没有关键词：直接返回上一页
+    router.back()
+  }
+}
+
+// 回到首页
 const goHome = () => {
   sessionStorage.removeItem('fullSearchKeyword')
   router.push('/')
-}
-
-const goBack = () => {
-  // 如果有关键词，回到迅搜页面并保留关键词
-  if (keyword.value) {
-    router.push(`/fullsearch?q=${encodeURIComponent(keyword.value)}`)
-  } else {
-    // 如果没有关键词，回到迅搜页面（空状态）
-    router.push('/fullsearch')
-  }
-}
-
-// 刷新 iframe（保留当前关键词）
-const refreshIframe = () => {
-  if (iframeRef.value && keyword.value) {
-    iframeRef.value.src = iframeSrc.value
-  }
 }
 </script>
 
