@@ -22,41 +22,29 @@ import { useRoute, useRouter } from 'vue-router'
 const route = useRoute()
 const router = useRouter()
 const iframeRef = ref(null)
-
-// 从 URL 参数获取关键词
 const keyword = ref(route.query.q || '')
 
 onMounted(() => {
-  // 如果 URL 有 q 参数，保存到 sessionStorage
   if (route.query.q) {
     sessionStorage.setItem('fullSearchKeyword', route.query.q)
     keyword.value = route.query.q
   } else {
-    // 从 sessionStorage 恢复
     const saved = sessionStorage.getItem('fullSearchKeyword')
     if (saved) {
       keyword.value = saved
-      // 更新 URL，方便分享
       router.replace(`/fullsearch?q=${encodeURIComponent(saved)}`)
     }
   }
 })
 
-// iframe 地址
 const iframeSrc = computed(() => {
   const q = keyword.value || ''
   return `https://xuexi.pzyuanman.space/sina/ff/plugin.php?id=twpx_xunsearch&q=${encodeURIComponent(q)}&s=relevance&syn=yes&mod=forum&searchsubmit=yes`
 })
 
-// 返回上一页
+// 返回上一页（浏览器历史）
 const goBack = () => {
-  if (keyword.value) {
-    // 有关键词：回到迅搜页面并保留
-    router.push(`/fullsearch?q=${encodeURIComponent(keyword.value)}`)
-  } else {
-    // 没有关键词：直接返回上一页
-    router.back()
-  }
+  router.back()
 }
 
 // 回到首页
