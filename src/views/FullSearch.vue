@@ -5,11 +5,17 @@
       <span class="title">全文搜索</span>
       <button @click="goBack" class="back-btn">← 返回</button>
     </div>
+    <div v-if="!keyword" class="empty-tip">
+      <p>🔍 请输入搜索关键词</p>
+      <p class="sub-tip">在首页搜索框输入关键词后点击“全文”</p>
+    </div>
     <iframe 
+      v-else
       ref="iframeRef"
       :src="iframeSrc" 
       class="full-search-iframe"
       frameborder="0"
+      allow="fullscreen; autoplay; encrypted-media"
     ></iframe>
   </div>
 </template>
@@ -23,7 +29,6 @@ const router = useRouter()
 const iframeRef = ref(null)
 const keyword = ref(route.query.q || '')
 
-// 监听路由参数变化，更新关键词
 watch(
   () => route.query.q,
   (newQ) => {
@@ -35,13 +40,13 @@ watch(
 )
 
 onMounted(() => {
-  // 从 sessionStorage 恢复关键词
+  // 1. 从 sessionStorage 恢复关键词
   const savedKeyword = sessionStorage.getItem('fullSearchKeyword')
   if (savedKeyword && !route.query.q) {
     keyword.value = savedKeyword
-    // 更新 URL，避免刷新后丢失
     router.replace(`/fullsearch?q=${encodeURIComponent(savedKeyword)}`)
   }
+  // 2. 从 URL 参数获取
   if (route.query.q) {
     keyword.value = route.query.q
     sessionStorage.setItem('fullSearchKeyword', route.query.q)
@@ -53,24 +58,18 @@ const iframeSrc = computed(() => {
   return `https://xuexi.pzyuanman.space/sina/ff/plugin.php?id=twpx_xunsearch&q=${encodeURIComponent(q)}&s=relevance&syn=yes&mod=forum&searchsubmit=yes`
 })
 
-// 回到首页（清除所有状态）
 const goHome = () => {
   sessionStorage.removeItem('fullSearchKeyword')
   router.push('/')
 }
 
-// 返回迅搜页面（保留搜索状态）
 const goBack = () => {
   const q = keyword.value || ''
-  // 如果当前 URL 已经是 /fullsearch，刷新 iframe
-  if (route.path === '/fullsearch') {
-    if (iframeRef.value) {
-      iframeRef.value.src = iframeSrc.value
-    }
-    return
+  if (q) {
+    router.push(`/fullsearch?q=${encodeURIComponent(q)}`)
+  } else {
+    router.push('/fullsearch')
   }
-  // 否则跳转到迅搜页面
-  router.push(`/fullsearch?q=${encodeURIComponent(q)}`)
 }
 </script>
 
@@ -126,5 +125,24 @@ const goBack = () => {
   flex: 1;
   width: 100%;
   border: none;
+}
+
+/* ===== 空状态提示 ===== */
+.empty-tip {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #fef9e7;
+  color: #7a5d2e;
+}
+.empty-tip p {
+  font-size: 18px;
+  margin: 6px 0;
+}
+.empty-tip .sub-tip {
+  font-size: 14px;
+  color: #a07d4a;
 }
 </style>
