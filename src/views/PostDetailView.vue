@@ -6,7 +6,17 @@
       <button @click="goBack" class="nav-btn">← 返回上一级</button>
     </div>
 
-    <div v-if="loading">⏳ 加载中...</div>
+    <!-- ===== 骨架屏 ===== -->
+    <div v-if="loading" class="skeleton">
+      <div class="skeleton-header"></div>
+      <div class="skeleton-line"></div>
+      <div class="skeleton-line" style="width: 80%;"></div>
+      <div class="skeleton-line" style="width: 60%;"></div>
+      <div class="skeleton-line"></div>
+      <div class="skeleton-line" style="width: 70%;"></div>
+      <div class="skeleton-line" style="width: 50%;"></div>
+    </div>
+
     <div v-else-if="post">
       <div class="post-header">
         <h1>{{ post.subject }}</h1>
@@ -33,6 +43,7 @@
             controlslist="nodownload"
             playsinline
             @ended="onVideoEnded"
+            @timeupdate="saveVideoProgress"
           ></video>
           <div v-else class="no-video">请从列表中选择一个视频</div>
         </div>
@@ -97,6 +108,7 @@
             :src="currentAudio.url" 
             style="width: 100%;"
             @ended="onAudioEnded"
+            @timeupdate="saveAudioProgress"
           ></audio>
           <p>正在播放：{{ currentAudio.title }}</p>
           <!-- ===== 单独音频快进快退（仅当前播放的音频） ===== -->
@@ -229,6 +241,19 @@ const handleScroll = () => {
 
 const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+// ==================== 记忆播放 ====================
+const saveAudioProgress = () => {
+  if (audioPlayer.value && currentAudioIndex.value >= 0) {
+    localStorage.setItem(`audio_progress_${currentAudioIndex.value}`, audioPlayer.value.currentTime)
+  }
+}
+
+const saveVideoProgress = () => {
+  if (videoPlayer.value && currentVideoIndex.value >= 0) {
+    localStorage.setItem(`video_progress_${currentVideoIndex.value}`, videoPlayer.value.currentTime)
+  }
 }
 
 // ==================== 播放器控制（快进/快退/跳转） ====================
@@ -428,6 +453,11 @@ const playAudio = (index) => {
     }
     nextTick(() => {
       if (audioPlayer.value) {
+        // 恢复上次播放进度
+        const savedTime = localStorage.getItem(`audio_progress_${index}`)
+        if (savedTime) {
+          audioPlayer.value.currentTime = parseFloat(savedTime)
+        }
         audioPlayer.value.play().catch(() => {})
       }
     })
@@ -441,6 +471,11 @@ const playVideo = (index) => {
     currentVideoTitle.value = videoList.value[index].title
     nextTick(() => {
       if (videoPlayer.value) {
+        // 恢复上次播放进度
+        const savedTime = localStorage.getItem(`video_progress_${index}`)
+        if (savedTime) {
+          videoPlayer.value.currentTime = parseFloat(savedTime)
+        }
         videoPlayer.value.play().catch(() => {})
       }
     })
@@ -954,6 +989,29 @@ onMounted(async () => {
   border-radius: 8px;
 }
 
+/* ===== 骨架屏 ===== */
+.skeleton {
+  padding: 20px 0;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.skeleton-header {
+  width: 60%;
+  height: 28px;
+  background: #e8dcc8;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+.skeleton-line {
+  height: 16px;
+  background: #e8dcc8;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 /* ===== 导航栏 ===== */
 .nav-bar {
   display: flex;
@@ -1041,15 +1099,26 @@ onMounted(async () => {
   margin-bottom: 20px;
 }
 
+/* ===== 帖子内容 ===== */
 .content {
   line-height: 1.9;
   font-size: 16px;
   overflow-wrap: break-word;
   color: #4a3a25;
 }
-.content img { max-width: 100%; }
-.content a { color: #b8860b; text-decoration: none; }
-.content a:hover { text-decoration: underline; }
+.content img {
+  max-width: 100%;
+}
+.content a {
+  color: #b8860b;
+  text-decoration: none;
+  border-bottom: 1px dashed #e6c88a;
+}
+.content a:hover {
+  color: #7a5d2e;
+  border-bottom-color: #7a5d2e;
+  text-decoration: none;
+}
 
 .error {
   color: #c0392b;
@@ -1076,7 +1145,7 @@ onMounted(async () => {
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
-  max-width: 45%;
+  max-width: 42%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
