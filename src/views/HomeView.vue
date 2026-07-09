@@ -18,7 +18,6 @@
     
     <!-- ===== 搜索建议下拉 ===== -->
     <div v-if="suggestions.length > 0" class="suggestions">
-      <!-- 关键词标签模式 -->
       <div v-if="isKeywordSuggestion" class="suggestion-tags">
         <span 
           v-for="item in suggestions" 
@@ -29,7 +28,6 @@
           {{ item }}
         </span>
       </div>
-      <!-- 搜索历史列表模式 -->
       <div v-else>
         <div 
           v-for="item in suggestions" 
@@ -53,6 +51,7 @@
           </router-link>
           <span class="author"> - {{ post.author }}</span>
           <span class="meta">{{ formatTime(post.dateline) }}</span>
+          <span class="views">👁 {{ post.views || 0 }}</span>
         </li>
       </ul>
       
@@ -86,9 +85,9 @@ const totalResults = ref(0)
 // ===== 搜索建议 =====
 const suggestions = ref([])
 const suggestionTimer = ref(null)
-const isKeywordSuggestion = ref(false) // 是否显示关键词标签模式
+const isKeywordSuggestion = ref(false)
 
-// ===== 预置热门关键词 =====
+// ===== 预置热门关键词（15个） =====
 const hotKeywords = [
   '放生', '小房子', '经文', '功课', '许愿', 
   '佛台', '礼佛', '忏悔', '念经', '打坐',
@@ -110,10 +109,9 @@ const onSearchInput = () => {
     suggestions.value = []
     return
   }
-  isKeywordSuggestion.value = false // 输入时使用列表模式
+  isKeywordSuggestion.value = false
   clearTimeout(suggestionTimer.value)
   suggestionTimer.value = setTimeout(() => {
-    // 从搜索历史中匹配
     const history = JSON.parse(localStorage.getItem('searchHistory') || '[]')
     const matchedHistory = history.filter(item => item.includes(kw))
     const matchedHot = hotKeywords.filter(item => item.includes(kw))
@@ -129,9 +127,8 @@ const onSearchFocus = () => {
     onSearchInput()
     return
   }
-  // 显示预置热门关键词，使用标签模式
   isKeywordSuggestion.value = true
-  suggestions.value = hotKeywords.slice(0, 12)
+  suggestions.value = hotKeywords.slice(0, 20) // 改为20个
 }
 
 const selectSuggestion = (item) => {
@@ -149,7 +146,6 @@ const doSearch = async () => {
     return
   }
   
-  // 保存搜索历史
   let history = JSON.parse(localStorage.getItem('searchHistory') || '[]')
   history = history.filter(item => item !== kw)
   history.unshift(kw)
@@ -160,7 +156,9 @@ const doSearch = async () => {
     const res = await fetch(`${API_BASE}?action=search&keyword=${encodeURIComponent(kw)}&page=${currentPage.value}`)
     const data = await res.json()
     if (data.code === 0) {
-      searchResults.value = data.data
+      // ===== 按浏览量降序排列 =====
+      const sortedData = (data.data || []).sort((a, b) => (b.views || 0) - (a.views || 0))
+      searchResults.value = sortedData
       totalResults.value = data.total || 0
       totalPages.value = data.total_pages || 0
       router.replace(`/?from=search&keyword=${encodeURIComponent(kw)}&page=${currentPage.value}`)
@@ -318,6 +316,7 @@ onMounted(() => {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  justify-content: center;
 }
 .suggestion-tag {
   display: inline-block;
@@ -397,7 +396,11 @@ onMounted(() => {
 .search-results .meta {
   color: #b8950a;
   font-size: 12px;
-  float: right;
+}
+.search-results .views {
+  color: #b8950a;
+  font-size: 12px;
+  margin-left: 10px;
 }
 
 .pagination {
@@ -434,5 +437,15 @@ onMounted(() => {
 .pagination .page-info {
   font-size: 14px;
   color: #7a5d2e;
+}
+
+@media (max-width: 600px) {
+  .suggestion-tag {
+    font-size: 12px;
+    padding: 3px 10px;
+  }
+  .suggestions {
+    padding: 10px 14px;
+  }
 }
 </style>
