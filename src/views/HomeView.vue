@@ -51,7 +51,6 @@
           </router-link>
           <span class="author"> - {{ post.author }}</span>
           <span class="meta">{{ formatTime(post.dateline) }}</span>
-          <span class="views">👁 {{ post.views || 0 }}</span>
         </li>
       </ul>
       
