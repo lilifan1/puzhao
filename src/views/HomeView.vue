@@ -291,7 +291,7 @@ onMounted(() => {
 
 /* ===== 全文搜索按钮 ===== */
 .full-search-link {
-  padding: 10px 20px;
+  padding: 10px 18px;
   background: #e8d5a0;
   color: #7a5d2e;
   border: 1px solid #e6c88a;
@@ -486,7 +486,7 @@ onMounted(() => {
     padding: 10px 14px;
   }
   .full-search-link {
-    padding: 8px 14px;
+    padding: 8px 12px;
     font-size: 13px;
   }
 }
