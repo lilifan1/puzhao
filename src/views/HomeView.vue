@@ -18,13 +18,27 @@
     
     <!-- ===== 搜索建议下拉 ===== -->
     <div v-if="suggestions.length > 0" class="suggestions">
-      <div 
-        v-for="item in suggestions" 
-        :key="item"
-        @click="selectSuggestion(item)"
-        class="suggestion-item"
-      >
-        <span class="suggestion-title">🔍 {{ item }}</span>
+      <!-- 关键词标签模式 -->
+      <div v-if="isKeywordSuggestion" class="suggestion-tags">
+        <span 
+          v-for="item in suggestions" 
+          :key="item"
+          @click="selectSuggestion(item)"
+          class="suggestion-tag"
+        >
+          {{ item }}
+        </span>
+      </div>
+      <!-- 搜索历史列表模式 -->
+      <div v-else>
+        <div 
+          v-for="item in suggestions" 
+          :key="item"
+          @click="selectSuggestion(item)"
+          class="suggestion-item"
+        >
+          <span class="suggestion-title">🕐 {{ item }}</span>
+        </div>
       </div>
     </div>
     <!-- ===== 搜索建议结束 ===== -->
@@ -72,8 +86,9 @@ const totalResults = ref(0)
 // ===== 搜索建议 =====
 const suggestions = ref([])
 const suggestionTimer = ref(null)
+const isKeywordSuggestion = ref(false) // 是否显示关键词标签模式
 
-// ===== 预置热门关键词（可根据需要增删） =====
+// ===== 预置热门关键词 =====
 const hotKeywords = [
   '放生', '小房子', '经文', '功课', '许愿', 
   '佛台', '礼佛', '忏悔', '念经', '打坐',
@@ -95,8 +110,10 @@ const onSearchInput = () => {
     suggestions.value = []
     return
   }
+  isKeywordSuggestion.value = false // 输入时使用列表模式
   clearTimeout(suggestionTimer.value)
   suggestionTimer.value = setTimeout(() => {
+    // 从搜索历史中匹配
     const history = JSON.parse(localStorage.getItem('searchHistory') || '[]')
     const matchedHistory = history.filter(item => item.includes(kw))
     const matchedHot = hotKeywords.filter(item => item.includes(kw))
@@ -106,14 +123,15 @@ const onSearchInput = () => {
   }, 200)
 }
 
-// ===== 输入框获得焦点时，显示热门关键词 =====
+// ===== 输入框获得焦点时，显示热门关键词（标签模式） =====
 const onSearchFocus = () => {
   if (keyword.value.trim()) {
     onSearchInput()
     return
   }
-  // 显示预置热门关键词
-  suggestions.value = hotKeywords.slice(0, 6)
+  // 显示预置热门关键词，使用标签模式
+  isKeywordSuggestion.value = true
+  suggestions.value = hotKeywords.slice(0, 12)
 }
 
 const selectSuggestion = (item) => {
@@ -285,19 +303,44 @@ onMounted(() => {
 .suggestions {
   max-width: 800px;
   margin: -8px auto 0 auto;
-  padding: 0 20px;
+  padding: 12px 20px;
   background: #fffcf0;
   border: 1px solid #e6c88a;
   border-top: none;
   border-radius: 0 0 8px 8px;
   box-shadow: 0 4px 12px rgba(180, 130, 30, 0.15);
-  max-height: 300px;
-  overflow-y: auto;
   position: relative;
   z-index: 10;
 }
+
+/* ===== 关键词标签模式 ===== */
+.suggestion-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.suggestion-tag {
+  display: inline-block;
+  padding: 4px 14px;
+  background: #f7e8b0;
+  color: #7a5d2e;
+  border: 1px solid #e6c88a;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.suggestion-tag:hover {
+  background: #f1c40f;
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(180, 130, 30, 0.25);
+}
+
+/* ===== 搜索历史列表模式 ===== */
 .suggestion-item {
-  padding: 10px 16px;
+  padding: 8px 16px;
   cursor: pointer;
   border-bottom: 1px solid #f5ecce;
   transition: background 0.2s;
