@@ -90,7 +90,7 @@ const isKeywordSuggestion = ref(false)
 // ===== 预置热门关键词（15个） =====
 const hotKeywords = [
   '放生', '小房子', '经文', '功课', '许愿', 
-  '佛台', '礼佛', '忏悔', '念经', '打坐',
+  '佛台', '礼佛', '忏悔', '念经',
   '吃素', '戒杀', '度人', '共修', '法会',
   '梦到', '看图腾', '自修', '组合', '超度'
 ]
@@ -128,7 +128,7 @@ const onSearchFocus = () => {
     return
   }
   isKeywordSuggestion.value = true
-  suggestions.value = hotKeywords.slice(0, 20) // 改为20个
+  suggestions.value = hotKeywords.slice(0, 19) // 改为19个
 }
 
 const selectSuggestion = (item) => {
