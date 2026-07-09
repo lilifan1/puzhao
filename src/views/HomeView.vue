@@ -2,19 +2,27 @@
   <div>
     <!-- 搜索栏 -->
     <div class="search-bar">
-      <input 
-        v-model="keyword" 
-        @keyup.enter="doSearch" 
-        @input="onSearchInput"
-        @focus="onSearchFocus"
-        placeholder="🔍 搜索帖子标题..."
-        class="search-input"
-        ref="searchInput"
-        autocomplete="off"
-      />
-      <button @click="doSearch" class="search-btn">搜索</button>
-      <button v-if="searchResults.length > 0 || keyword" @click="clearSearch" class="clear-btn">× 清除</button>
-    </div>
+  <input 
+    v-model="keyword" 
+    @keyup.enter="doSearch" 
+    @input="onSearchInput"
+    @focus="onSearchFocus"
+    placeholder="🔍 搜索帖子标题..."
+    class="search-input"
+    ref="searchInput"
+    autocomplete="off"
+  />
+  <button @click="doSearch" class="search-btn">搜索</button>
+  <a 
+    :href="`https://xuexi.pzyuanman.space/sina/ff/plugin.php?id=twpx_xunsearch&q=${encodeURIComponent(keyword)}&s=relevance&syn=yes&mod=forum&searchsubmit=yes`" 
+    target="_blank" 
+    class="full-search-link"
+    title="全文搜索（在新窗口打开）"
+  >
+    📚 全文
+  </a>
+  <button v-if="searchResults.length > 0 || keyword" @click="clearSearch" class="clear-btn">× 清除</button>
+</div>
     
     <!-- ===== 搜索建议下拉 ===== -->
     <div v-if="suggestions.length > 0" class="suggestions">
@@ -280,6 +288,37 @@ onMounted(() => {
   transform: translateY(-1px);
   box-shadow: 0 3px 8px rgba(180, 130, 30, 0.25);
 }
+
+/* ===== 全文搜索按钮 ===== */
+.full-search-link {
+  padding: 10px 18px;
+  background: #e8d5a0;
+  color: #7a5d2e;
+  border: 1px solid #e6c88a;
+  border-radius: 8px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+.full-search-link:hover {
+  background: #d4ac0d;
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(180, 130, 30, 0.25);
+}
+
+.clear-btn {
+  padding: 10px 16px;
+  background: #e8d5a0;
+  color: #7a5d2e;
+  border: 1px solid #e6c88a;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
 .clear-btn {
   padding: 10px 16px;
   background: #e8d5a0;
@@ -445,6 +484,10 @@ onMounted(() => {
   }
   .suggestions {
     padding: 10px 14px;
+  }
+  .full-search-link {
+    padding: 8px 12px;
+    font-size: 13px;
   }
 }
 </style>
