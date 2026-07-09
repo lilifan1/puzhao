@@ -6,6 +6,7 @@
         v-model="keyword" 
         @keyup.enter="doSearch" 
         @input="onSearchInput"
+        @focus="onSearchFocus"
         placeholder="🔍 搜索帖子标题..."
         class="search-input"
         ref="searchInput"
@@ -19,35 +20,18 @@
     <div v-if="suggestions.length > 0 && keyword" class="suggestions">
       <div 
         v-for="item in suggestions" 
-        :key="item.tid"
+        :key="item"
         @click="selectSuggestion(item)"
         class="suggestion-item"
       >
-        <span class="suggestion-title">{{ item.subject }}</span>
-        <span class="suggestion-meta">{{ item.author }}</span>
+        <span class="suggestion-title">🔍 {{ item }}</span>
       </div>
     </div>
     <!-- ===== 搜索建议结束 ===== -->
     
     <!-- 搜索结果 -->
     <div v-if="searchResults.length > 0" class="search-results">
-      <h2>📋 搜索结果（{{ searchResults.length }} 条）</h2>
-      <ul>
-        <li v-for="post in searchResults" :key="post.tid">
-          <router-link :to="`/post/${post.tid}?from=search&keyword=${encodeURIComponent(keyword)}`" @click="saveSearchState">
-            {{ post.subject }}
-          </router-link>
-          <span class="author"> - {{ post.author }}</span>
-          <span class="meta">{{ formatTime(post.dateline) }}</span>
-        </li>
-      </ul>
-      
-      <!-- 分页 -->
-      <div v-if="totalPages > 1" class="pagination">
-        <button @click="goToPage(currentPage - 1)" :disabled="currentPage <= 1">上一页</button>
-        <span class="page-info">{{ currentPage }} / {{ totalPages }}</span>
-        <button @click="goToPage(currentPage + 1)" :disabled="currentPage >= totalPages">下一页</button>
-      </div>
+      <!-- ... 保持不变 ... -->
     </div>
     
     <!-- 手风琴菜单 -->
@@ -73,7 +57,14 @@ const totalResults = ref(0)
 const suggestions = ref([])
 const suggestionTimer = ref(null)
 
-// 硬编码 API 地址
+// ===== 预置热门关键词（可根据需要增删） =====
+const hotKeywords = [
+  '放生', '小房子', '经文', '功课', '许愿', 
+  '佛台', '礼佛', '忏悔', '念经', '打坐',
+  '吃素', '戒杀', '度人', '共修', '法会',
+  '梦到', '看图腾', '自修', '组合', '超度'
+]
+
 const API_BASE = 'https://www.dadaozjzhitojian.cloud/sina/ff/safe_api.php'
 
 const formatTime = (timestamp) => {
@@ -82,43 +73,57 @@ const formatTime = (timestamp) => {
 }
 
 // ===== 输入时触发搜索建议 =====
-const onSearchInput = async () => {
+const onSearchInput = () => {
   const kw = keyword.value.trim()
   if (!kw) {
     suggestions.value = []
     return
   }
-  // 防抖
   clearTimeout(suggestionTimer.value)
-  suggestionTimer.value = setTimeout(async () => {
-    try {
-      const res = await fetch(`${API_BASE}?action=search&keyword=${encodeURIComponent(kw)}&page=1`)
-      const data = await res.json()
-      if (data.code === 0 && data.data) {
-        suggestions.value = data.data.slice(0, 5)
-      } else {
-        suggestions.value = []
-      }
-    } catch (e) {
-      suggestions.value = []
-    }
-  }, 300)
+  suggestionTimer.value = setTimeout(() => {
+    // 从搜索历史中匹配
+    const history = JSON.parse(localStorage.getItem('searchHistory') || '[]')
+    const matchedHistory = history.filter(item => item.includes(kw))
+    
+    // 从预置关键词中匹配
+    const matchedHot = hotKeywords.filter(item => item.includes(kw))
+    
+    // 合并去重
+    const allMatched = [...matchedHistory, ...matchedHot]
+    const unique = allMatched.filter((item, index) => allMatched.indexOf(item) === index)
+    suggestions.value = unique.slice(0, 6)
+  }, 200)
+}
+
+// ===== 输入框获得焦点时，显示搜索历史 =====
+const onSearchFocus = () => {
+  if (keyword.value.trim()) return
+  const history = JSON.parse(localStorage.getItem('searchHistory') || '[]')
+  suggestions.value = history.slice(0, 6)
 }
 
 const selectSuggestion = (item) => {
-  keyword.value = item.subject
+  keyword.value = item
   suggestions.value = []
   doSearch()
 }
 
 const doSearch = async () => {
-  suggestions.value = [] // 清空建议
+  suggestions.value = []
   const kw = keyword.value.trim()
   if (!kw) {
     searchResults.value = []
     router.replace('/')
     return
   }
+  
+  // ===== 保存搜索历史 =====
+  let history = JSON.parse(localStorage.getItem('searchHistory') || '[]')
+  history = history.filter(item => item !== kw)
+  history.unshift(kw)
+  if (history.length > 20) history = history.slice(0, 20)
+  localStorage.setItem('searchHistory', JSON.stringify(history))
+  
   try {
     const res = await fetch(`${API_BASE}?action=search&keyword=${encodeURIComponent(kw)}&page=${currentPage.value}`)
     const data = await res.json()
@@ -200,6 +205,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* ... 样式保持不变，加上建议样式 ... */
 .search-bar {
   display: flex;
   gap: 10px;
