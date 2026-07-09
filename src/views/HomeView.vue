@@ -14,7 +14,7 @@
   />
   <button @click="doSearch" class="search-btn">搜索</button>
   <a 
-    :href="`https://xuexi.pzyuanman.space/sina/ff/plugin.php?id=twpx_xunsearch&q=${encodeURIComponent(keyword)}&s=relevance&syn=yes&mod=forum&searchsubmit=yes`" 
+    :href="`https://xuexi.pzyuanman.space/sina/ff/article.html#/`" 
     target="_blank" 
     class="full-search-link"
     title="全文搜索（在新窗口打开）"
@@ -291,7 +291,7 @@ onMounted(() => {
 
 /* ===== 全文搜索按钮 ===== */
 .full-search-link {
-  padding: 10px 18px;
+  padding: 10px 28px;
   background: #e8d5a0;
   color: #7a5d2e;
   border: 1px solid #e6c88a;
@@ -486,7 +486,7 @@ onMounted(() => {
     padding: 10px 14px;
   }
   .full-search-link {
-    padding: 8px 12px;
+    padding: 8px 16px;
     font-size: 13px;
   }
 }
