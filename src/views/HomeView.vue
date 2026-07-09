@@ -13,14 +13,12 @@
     autocomplete="off"
   />
   <button @click="doSearch" class="search-btn">搜索</button>
-  <a 
-    :href="`https://xuexi.pzyuanman.space/sina/ff/article.html#/`" 
-    target="_blank" 
-    class="full-search-link"
-    title="全文搜索（在新窗口打开）"
-  >
-    📚全文
-  </a>
+  <router-link 
+  :to="`/fullsearch?q=${encodeURIComponent(keyword)}`" 
+  class="full-search-link"
+>
+  📚全文
+</router-link>
   <button v-if="searchResults.length > 0 || keyword" @click="clearSearch" class="clear-btn">× 清除</button>
 </div>
     

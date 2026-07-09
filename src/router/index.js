@@ -1,7 +1,8 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import PostDetailView from '../views/PostDetailView.vue'
-import ForumView from '../views/ForumView.vue'  // 新增
+import ForumView from '../views/ForumView.vue'
+import FullSearch from '../views/FullSearch.vue'
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -17,9 +18,14 @@ const router = createRouter({
       component: PostDetailView
     },
     {
-      path: '/forum/:fid',   // 新增：版块帖子列表
+      path: '/forum/:fid',
       name: 'forum',
       component: ForumView
+    },
+    {
+      path: '/fullsearch',
+      name: 'fullsearch',
+      component: FullSearch
     }
   ]
 })
