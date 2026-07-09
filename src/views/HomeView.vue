@@ -106,15 +106,14 @@ const onSearchInput = () => {
   }, 200)
 }
 
-// ===== 输入框获得焦点时，显示搜索历史 =====
+// ===== 输入框获得焦点时，显示热门关键词 =====
 const onSearchFocus = () => {
   if (keyword.value.trim()) {
-    // 如果有输入内容，触发建议
     onSearchInput()
     return
   }
-  const history = JSON.parse(localStorage.getItem('searchHistory') || '[]')
-  suggestions.value = history.slice(0, 6)
+  // 显示预置热门关键词
+  suggestions.value = hotKeywords.slice(0, 6)
 }
 
 const selectSuggestion = (item) => {
