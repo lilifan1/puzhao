@@ -42,15 +42,10 @@ const iframeSrc = computed(() => {
   return `https://xuexi.pzyuanman.space/sina/ff/plugin.php?id=twpx_xunsearch&q=${encodeURIComponent(q)}&s=relevance&syn=yes&mod=forum&searchsubmit=yes`
 })
 
-// 返回上一页 - 强制跳转，跳过 iframe 历史
+// 返回：刷新当前页面，回到搜索结果页
 const goBack = () => {
-  // 方法1：如果有关键词，直接回到迅搜页面
-  if (keyword.value) {
-    window.location.hash = `#/fullsearch?q=${encodeURIComponent(keyword.value)}`
-    return
-  }
-  // 方法2：没有关键词，直接回到首页
-  window.location.hash = '#/'
+  // 刷新整个页面，保持当前URL
+  window.location.reload()
 }
 
 // 回到首页
