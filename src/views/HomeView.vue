@@ -19,7 +19,7 @@
     class="full-search-link"
     title="全文搜索（在新窗口打开）"
   >
-    📚 全文
+    全文
   </a>
   <button v-if="searchResults.length > 0 || keyword" @click="clearSearch" class="clear-btn">× 清除</button>
 </div>
