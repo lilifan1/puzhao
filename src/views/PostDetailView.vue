@@ -457,21 +457,25 @@ const playAudio = (index) => {
       if (player) {
         const savedTime = localStorage.getItem(`audio_progress_${index}`)
         
-        player.removeEventListener('loadedmetadata', player._onLoadedMetadata)
-        player._onLoadedMetadata = () => {
+        // 监听 loadedmetadata
+        const setProgress = () => {
           if (savedTime && !isNaN(parseFloat(savedTime)) && parseFloat(savedTime) > 0) {
             player.currentTime = parseFloat(savedTime)
             console.log(`🎵 恢复音频进度: ${parseFloat(savedTime).toFixed(1)}秒`)
           }
+          player.removeEventListener('loadedmetadata', setProgress)
         }
-        player.addEventListener('loadedmetadata', player._onLoadedMetadata)
+        player.addEventListener('loadedmetadata', setProgress)
         
-        if (player.readyState >= 1) {
+        // 兜底延迟
+        setTimeout(() => {
           if (savedTime && !isNaN(parseFloat(savedTime)) && parseFloat(savedTime) > 0) {
-            player.currentTime = parseFloat(savedTime)
-            console.log(`🎵 恢复音频进度: ${parseFloat(savedTime).toFixed(1)}秒`)
+            if (player.currentTime === 0) {
+              player.currentTime = parseFloat(savedTime)
+              console.log(`🎵 兜底恢复音频进度: ${parseFloat(savedTime).toFixed(1)}秒`)
+            }
           }
-        }
+        }, 500)
         
         player.play().catch(() => {})
       }
@@ -488,27 +492,25 @@ const playVideo = (index) => {
     nextTick(() => {
       const player = videoPlayer.value
       if (player) {
-        // ===== 先暂停加载，等元数据加载后再恢复进度 =====
         const savedTime = localStorage.getItem(`video_progress_${index}`)
         
-        // 移除旧监听器，避免重复
-        player.removeEventListener('loadedmetadata', player._onLoadedMetadata)
-        
-        player._onLoadedMetadata = () => {
+        const setProgress = () => {
           if (savedTime && !isNaN(parseFloat(savedTime)) && parseFloat(savedTime) > 0) {
             player.currentTime = parseFloat(savedTime)
             console.log(`🎬 恢复视频进度: ${parseFloat(savedTime).toFixed(1)}秒`)
           }
+          player.removeEventListener('loadedmetadata', setProgress)
         }
-        player.addEventListener('loadedmetadata', player._onLoadedMetadata)
+        player.addEventListener('loadedmetadata', setProgress)
         
-        // 如果视频已经加载完成，直接设置
-        if (player.readyState >= 1) {
+        setTimeout(() => {
           if (savedTime && !isNaN(parseFloat(savedTime)) && parseFloat(savedTime) > 0) {
-            player.currentTime = parseFloat(savedTime)
-            console.log(`🎬 恢复视频进度: ${parseFloat(savedTime).toFixed(1)}秒`)
+            if (player.currentTime === 0) {
+              player.currentTime = parseFloat(savedTime)
+              console.log(`🎬 兜底恢复视频进度: ${parseFloat(savedTime).toFixed(1)}秒`)
+            }
           }
-        }
+        }, 500)
         
         player.play().catch(() => {})
       }
