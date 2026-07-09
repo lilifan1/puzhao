@@ -245,14 +245,18 @@ const scrollToTop = () => {
 
 // ==================== 记忆播放 ====================
 const saveAudioProgress = () => {
-  if (audioPlayer.value && currentAudioIndex.value >= 0) {
-    localStorage.setItem(`audio_progress_${currentAudioIndex.value}`, audioPlayer.value.currentTime)
+  const player = audioPlayer.value
+  if (player && currentAudio.value?.url && player.currentTime > 0) {
+    const key = `audio_progress_${currentAudio.value.url}`
+    localStorage.setItem(key, player.currentTime)
   }
 }
 
 const saveVideoProgress = () => {
-  if (videoPlayer.value && currentVideoIndex.value >= 0) {
-    localStorage.setItem(`video_progress_${currentVideoIndex.value}`, videoPlayer.value.currentTime)
+  const player = videoPlayer.value
+  if (player && currentVideoUrl.value && player.currentTime > 0) {
+    const key = `video_progress_${currentVideoUrl.value}`
+    localStorage.setItem(key, player.currentTime)
   }
 }
 
@@ -446,22 +450,23 @@ const moveAudioListAfterTitle = () => {
 
 const playAudio = (index) => {
   if (index >= 0 && index < audioList.value.length) {
+    const item = audioList.value[index]
     currentAudioIndex.value = index
     currentAudio.value = { 
-      url: audioList.value[index].url, 
-      title: audioList.value[index].title 
+      url: item.url, 
+      title: item.title 
     }
     
-    const savedTime = localStorage.getItem(`audio_progress_${index}`)
-    console.log('🎵 播放音频索引:', index, '保存的进度:', savedTime)
+    const key = `audio_progress_${item.url}`
+    const savedTime = localStorage.getItem(key)
+    console.log('🎵 播放音频:', item.title, '保存的进度:', savedTime)
     
     nextTick(() => {
       const player = audioPlayer.value
       if (player) {
-        // 先设置进度再播放
         if (savedTime && !isNaN(parseFloat(savedTime)) && parseFloat(savedTime) > 0) {
           player.currentTime = parseFloat(savedTime)
-          console.log('🎵 设置进度:', player.currentTime)
+          console.log('🎵 恢复进度:', player.currentTime)
         }
         player.play().catch(() => {})
       }
@@ -471,19 +476,21 @@ const playAudio = (index) => {
 
 const playVideo = (index) => {
   if (index >= 0 && index < videoList.value.length) {
+    const item = videoList.value[index]
     currentVideoIndex.value = index
-    currentVideoUrl.value = videoList.value[index].url
-    currentVideoTitle.value = videoList.value[index].title
+    currentVideoUrl.value = item.url
+    currentVideoTitle.value = item.title
     
-    const savedTime = localStorage.getItem(`video_progress_${index}`)
-    console.log('🎬 播放视频索引:', index, '保存的进度:', savedTime)
+    const key = `video_progress_${item.url}`
+    const savedTime = localStorage.getItem(key)
+    console.log('🎬 播放视频:', item.title, '保存的进度:', savedTime)
     
     nextTick(() => {
       const player = videoPlayer.value
       if (player) {
         if (savedTime && !isNaN(parseFloat(savedTime)) && parseFloat(savedTime) > 0) {
           player.currentTime = parseFloat(savedTime)
-          console.log('🎬 设置进度:', player.currentTime)
+          console.log('🎬 恢复进度:', player.currentTime)
         }
         player.play().catch(() => {})
       }
@@ -1136,6 +1143,7 @@ onMounted(async () => {
 }
 
 /* ===== 上下篇导航 ===== */
+/* ===== 上下篇导航 ===== */
 .post-nav {
   display: flex;
   justify-content: space-between;
@@ -1144,8 +1152,8 @@ onMounted(async () => {
   padding: 12px 16px;
   border-top: 1px solid #f0e0b8;
   border-bottom: 1px solid #f0e0b8;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 8px;
+  flex-wrap: nowrap;
   background: rgba(255, 248, 220, 0.4);
   border-radius: 8px;
 }
@@ -1154,11 +1162,11 @@ onMounted(async () => {
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
-  max-width: 42%;
+  max-width: 48%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  padding: 4px 10px;
+  padding: 4px 6px;
   border-radius: 4px;
   transition: all 0.3s ease;
 }
@@ -1170,6 +1178,19 @@ onMounted(async () => {
 .nav-link.disabled {
   color: transparent;
   cursor: default;
+}
+
+/* ===== 手机端适配 ===== */
+@media (max-width: 600px) {
+  .post-nav {
+    padding: 12px 14px;
+    gap: 6px;
+  }
+  .nav-link {
+    max-width: 48%;
+    font-size: 13px;
+    padding: 4px 4px;
+  }
 }
 
 /* ===== 音频列表 ===== */
