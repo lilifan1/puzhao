@@ -5,13 +5,29 @@
       <input 
         v-model="keyword" 
         @keyup.enter="doSearch" 
+        @input="onSearchInput"
         placeholder="🔍 搜索帖子标题..."
         class="search-input"
         ref="searchInput"
+        autocomplete="off"
       />
       <button @click="doSearch" class="search-btn">搜索</button>
       <button v-if="searchResults.length > 0 || keyword" @click="clearSearch" class="clear-btn">× 清除</button>
     </div>
+    
+    <!-- ===== 搜索建议下拉 ===== -->
+    <div v-if="suggestions.length > 0 && keyword" class="suggestions">
+      <div 
+        v-for="item in suggestions" 
+        :key="item.tid"
+        @click="selectSuggestion(item)"
+        class="suggestion-item"
+      >
+        <span class="suggestion-title">{{ item.subject }}</span>
+        <span class="suggestion-meta">{{ item.author }}</span>
+      </div>
+    </div>
+    <!-- ===== 搜索建议结束 ===== -->
     
     <!-- 搜索结果 -->
     <div v-if="searchResults.length > 0" class="search-results">
@@ -53,6 +69,10 @@ const currentPage = ref(1)
 const totalPages = ref(0)
 const totalResults = ref(0)
 
+// ===== 搜索建议 =====
+const suggestions = ref([])
+const suggestionTimer = ref(null)
+
 // 硬编码 API 地址
 const API_BASE = 'https://www.dadaozjzhitojian.cloud/sina/ff/safe_api.php'
 
@@ -61,7 +81,38 @@ const formatTime = (timestamp) => {
   return date.toLocaleDateString() + ' ' + date.toLocaleTimeString()
 }
 
+// ===== 输入时触发搜索建议 =====
+const onSearchInput = async () => {
+  const kw = keyword.value.trim()
+  if (!kw) {
+    suggestions.value = []
+    return
+  }
+  // 防抖
+  clearTimeout(suggestionTimer.value)
+  suggestionTimer.value = setTimeout(async () => {
+    try {
+      const res = await fetch(`${API_BASE}?action=search&keyword=${encodeURIComponent(kw)}&page=1`)
+      const data = await res.json()
+      if (data.code === 0 && data.data) {
+        suggestions.value = data.data.slice(0, 5)
+      } else {
+        suggestions.value = []
+      }
+    } catch (e) {
+      suggestions.value = []
+    }
+  }, 300)
+}
+
+const selectSuggestion = (item) => {
+  keyword.value = item.subject
+  suggestions.value = []
+  doSearch()
+}
+
 const doSearch = async () => {
+  suggestions.value = [] // 清空建议
   const kw = keyword.value.trim()
   if (!kw) {
     searchResults.value = []
@@ -101,6 +152,7 @@ const saveSearchState = () => {
 const clearSearch = () => {
   keyword.value = ''
   searchResults.value = []
+  suggestions.value = []
   currentPage.value = 1
   totalPages.value = 0
   totalResults.value = 0
@@ -208,6 +260,45 @@ onMounted(() => {
 .clear-btn:hover {
   background: #d4ac0d;
   color: #fff;
+}
+
+/* ===== 搜索建议下拉 ===== */
+.suggestions {
+  max-width: 800px;
+  margin: -8px auto 0 auto;
+  padding: 0 20px;
+  background: #fffcf0;
+  border: 1px solid #e6c88a;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 4px 12px rgba(180, 130, 30, 0.15);
+  max-height: 300px;
+  overflow-y: auto;
+  position: relative;
+  z-index: 10;
+}
+.suggestion-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid #f5ecce;
+  transition: background 0.2s;
+}
+.suggestion-item:hover {
+  background: rgba(241, 196, 15, 0.15);
+}
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+.suggestion-title {
+  color: #4a3a25;
+  font-weight: 500;
+}
+.suggestion-meta {
+  color: #a07d4a;
+  font-size: 13px;
 }
 
 .search-results {
