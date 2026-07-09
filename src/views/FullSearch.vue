@@ -3,7 +3,7 @@
     <div class="nav-bar">
       <button @click="goBack" class="back-btn">← 返回</button>
       <span class="title">全文搜索</span>
-      <button @click="refreshIframe" class="refresh-btn">🔄 刷新</button>
+      <button @click="goHome" class="home-btn">🏠 首页</button>
     </div>
     <iframe 
       ref="iframeRef"
@@ -23,13 +23,11 @@ const router = useRouter()
 const iframeRef = ref(null)
 const keyword = ref(route.query.q || '')
 
-// 从 sessionStorage 恢复搜索关键词
 onMounted(() => {
   const savedKeyword = sessionStorage.getItem('fullSearchKeyword')
   if (savedKeyword && !keyword.value) {
     keyword.value = savedKeyword
   }
-  // 如果路由有参数，保存到 sessionStorage
   if (route.query.q) {
     sessionStorage.setItem('fullSearchKeyword', route.query.q)
     keyword.value = route.query.q
@@ -41,12 +39,13 @@ const iframeSrc = computed(() => {
   return `https://xuexi.pzyuanman.space/sina/ff/plugin.php?id=twpx_xunsearch&q=${encodeURIComponent(q)}&s=relevance&syn=yes&mod=forum&searchsubmit=yes`
 })
 
+// 返回上一页
 const goBack = () => {
-  // 如果有搜索关键词，回到迅搜页面并保留搜索状态
-  if (keyword.value) {
-    router.push(`/fullsearch?q=${encodeURIComponent(keyword.value)}`)
-    return
-  }
+  router.back()
+}
+
+// 回到首页
+const goHome = () => {
   router.push('/')
 }
 
@@ -91,18 +90,18 @@ const refreshIframe = () => {
   color: #7a5d2e;
   flex: 1;
 }
-.refresh-btn {
-  padding: 6px 14px;
-  background: #e8d5a0;
-  color: #7a5d2e;
-  border: 1px solid #e6c88a;
+.home-btn {
+  padding: 6px 16px;
+  background: #f1c40f;
+  color: #fff;
+  border: 1px solid #d4ac0d;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 500;
 }
-.refresh-btn:hover {
+.home-btn:hover {
   background: #d4ac0d;
-  color: #fff;
 }
 .full-search-iframe {
   flex: 1;
