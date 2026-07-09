@@ -742,6 +742,23 @@ const bindMediaControls = () => {
   if (mediaElements.length === 0) return
 
   mediaElements.forEach(media => {
+    // ===== 记忆播放 =====
+    const src = media.src || media.getAttribute('src')
+    if (src) {
+      const key = `media_progress_${src}`
+      const savedTime = localStorage.getItem(key)
+      if (savedTime && !isNaN(parseFloat(savedTime)) && parseFloat(savedTime) > 0) {
+        media.currentTime = parseFloat(savedTime)
+        console.log(`📺 恢复媒体进度: ${parseFloat(savedTime).toFixed(1)}秒`)
+      }
+      media.addEventListener('timeupdate', () => {
+        if (media.currentTime > 0) {
+          localStorage.setItem(key, media.currentTime)
+        }
+      })
+    }
+    // ===== 记忆播放结束 =====
+
     let container = media.closest('section') || media.closest('div') || media.parentElement
     if (!container) return
     if (container.dataset.mediaBound === 'true') return
