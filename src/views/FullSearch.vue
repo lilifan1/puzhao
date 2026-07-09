@@ -1,7 +1,7 @@
 <template>
   <div class="full-search-container">
     <div class="nav-bar">
-      <button @click="goBack" class="back-btn">🏠 首页</button>
+      <button @click="goBack" class="back-btn">← 首页</button>
       <span class="title">全文搜索</span>
       <button @click="refreshIframe" class="refresh-btn">🔄 返回</button>
     </div>
