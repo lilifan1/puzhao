@@ -42,15 +42,15 @@ const iframeSrc = computed(() => {
   return `https://xuexi.pzyuanman.space/sina/ff/plugin.php?id=twpx_xunsearch&q=${encodeURIComponent(q)}&s=relevance&syn=yes&mod=forum&searchsubmit=yes`
 })
 
-// 返回上一页（浏览器历史）
+// 返回上一页 - 用 window.history
 const goBack = () => {
-  router.back()
+  window.history.back()
 }
 
 // 回到首页
 const goHome = () => {
   sessionStorage.removeItem('fullSearchKeyword')
-  router.push('/')
+  window.location.hash = '#/'
 }
 </script>
 
