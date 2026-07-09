@@ -17,7 +17,7 @@
     </div>
     
     <!-- ===== 搜索建议下拉 ===== -->
-    <div v-if="suggestions.length > 0 && keyword" class="suggestions">
+    <div v-if="suggestions.length > 0" class="suggestions">
       <div 
         v-for="item in suggestions" 
         :key="item"
@@ -31,7 +31,23 @@
     
     <!-- 搜索结果 -->
     <div v-if="searchResults.length > 0" class="search-results">
-      <!-- ... 保持不变 ... -->
+      <h2>📋 搜索结果（{{ searchResults.length }} 条）</h2>
+      <ul>
+        <li v-for="post in searchResults" :key="post.tid">
+          <router-link :to="`/post/${post.tid}?from=search&keyword=${encodeURIComponent(keyword)}`" @click="saveSearchState">
+            {{ post.subject }}
+          </router-link>
+          <span class="author"> - {{ post.author }}</span>
+          <span class="meta">{{ formatTime(post.dateline) }}</span>
+        </li>
+      </ul>
+      
+      <!-- 分页 -->
+      <div v-if="totalPages > 1" class="pagination">
+        <button @click="goToPage(currentPage - 1)" :disabled="currentPage <= 1">上一页</button>
+        <span class="page-info">{{ currentPage }} / {{ totalPages }}</span>
+        <button @click="goToPage(currentPage + 1)" :disabled="currentPage >= totalPages">下一页</button>
+      </div>
     </div>
     
     <!-- 手风琴菜单 -->
@@ -81,14 +97,9 @@ const onSearchInput = () => {
   }
   clearTimeout(suggestionTimer.value)
   suggestionTimer.value = setTimeout(() => {
-    // 从搜索历史中匹配
     const history = JSON.parse(localStorage.getItem('searchHistory') || '[]')
     const matchedHistory = history.filter(item => item.includes(kw))
-    
-    // 从预置关键词中匹配
     const matchedHot = hotKeywords.filter(item => item.includes(kw))
-    
-    // 合并去重
     const allMatched = [...matchedHistory, ...matchedHot]
     const unique = allMatched.filter((item, index) => allMatched.indexOf(item) === index)
     suggestions.value = unique.slice(0, 6)
@@ -97,7 +108,11 @@ const onSearchInput = () => {
 
 // ===== 输入框获得焦点时，显示搜索历史 =====
 const onSearchFocus = () => {
-  if (keyword.value.trim()) return
+  if (keyword.value.trim()) {
+    // 如果有输入内容，触发建议
+    onSearchInput()
+    return
+  }
   const history = JSON.parse(localStorage.getItem('searchHistory') || '[]')
   suggestions.value = history.slice(0, 6)
 }
@@ -117,7 +132,7 @@ const doSearch = async () => {
     return
   }
   
-  // ===== 保存搜索历史 =====
+  // 保存搜索历史
   let history = JSON.parse(localStorage.getItem('searchHistory') || '[]')
   history = history.filter(item => item !== kw)
   history.unshift(kw)
@@ -205,7 +220,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ... 样式保持不变，加上建议样式 ... */
 .search-bar {
   display: flex;
   gap: 10px;
@@ -284,9 +298,6 @@ onMounted(() => {
   z-index: 10;
 }
 .suggestion-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   padding: 10px 16px;
   cursor: pointer;
   border-bottom: 1px solid #f5ecce;
@@ -301,10 +312,6 @@ onMounted(() => {
 .suggestion-title {
   color: #4a3a25;
   font-weight: 500;
-}
-.suggestion-meta {
-  color: #a07d4a;
-  font-size: 13px;
 }
 
 .search-results {
