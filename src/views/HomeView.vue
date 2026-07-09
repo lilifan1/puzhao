@@ -19,7 +19,7 @@
     class="full-search-link"
     title="全文搜索（在新窗口打开）"
   >
-    全文
+    📚全文
   </a>
   <button v-if="searchResults.length > 0 || keyword" @click="clearSearch" class="clear-btn">× 清除</button>
 </div>
@@ -291,7 +291,7 @@ onMounted(() => {
 
 /* ===== 全文搜索按钮 ===== */
 .full-search-link {
-  padding: 10px 28px;
+  padding: 10px 20px;
   background: #e8d5a0;
   color: #7a5d2e;
   border: 1px solid #e6c88a;
@@ -486,7 +486,7 @@ onMounted(() => {
     padding: 10px 14px;
   }
   .full-search-link {
-    padding: 8px 16px;
+    padding: 8px 14px;
     font-size: 13px;
   }
 }
