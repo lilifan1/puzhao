@@ -1025,7 +1025,6 @@ onMounted(async () => {
 /* ===== 骨架屏 ===== */
 .skeleton {
   padding: 20px 0;
-  animation: pulse 0.8s ease-in-out infinite;
 }
 .skeleton-header {
   width: 60%;
