@@ -1009,11 +1009,6 @@ onMounted(async () => {
     await loadPost(tid)
   }
   window.addEventListener('scroll', handleScroll)
-  if (post.value) {
-    nextTick(() => {
-      setTimeout(() => setupMediaObserver(), 500)
-    })
-  }
 })
 </script>
 
