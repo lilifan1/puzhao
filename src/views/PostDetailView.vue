@@ -846,8 +846,13 @@ const setupMediaObserver = () => {
   })
 }
 
+let isLoading = false
+
 const loadPost = async (tid) => {
+  if (isLoading) return
+  isLoading = true
   loading.value = true
+  
   videoList.value = []
   currentVideoIndex.value = -1
   currentVideoUrl.value = ''
@@ -872,7 +877,6 @@ const loadPost = async (tid) => {
       post.value = null
     }
 
-    // ===== 先提取音频列表 =====
     nextTick(() => {
       setTimeout(() => {
         extractAudioList()
@@ -958,6 +962,7 @@ const loadPost = async (tid) => {
     post.value = null
   } finally {
     loading.value = false
+    isLoading = false
   }
 }
 
@@ -1025,7 +1030,7 @@ onMounted(async () => {
 /* ===== 骨架屏 ===== */
 .skeleton {
   padding: 20px 0;
-  animation: pulse 1.5s ease-in-out infinite;
+  animation: pulse 0.8s ease-in-out infinite;
 }
 .skeleton-header {
   width: 60%;
@@ -1042,7 +1047,7 @@ onMounted(async () => {
 }
 @keyframes pulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  50% { opacity: 0.4; }
 }
 
 /* ===== 导航栏 ===== */
