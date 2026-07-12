@@ -642,22 +642,85 @@ h1 {
   border-color: #d4ac0d;
 }
 
-ul { list-style: none; padding: 0; }
-li { padding: 12px 15px; background: white; margin-bottom: 8px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: 0.2s; }
-li:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
-a { text-decoration: none; color: #2c3e50; font-weight: 600; font-size: 17px; }  /* 加大 */
-a:hover { color: #42b983; }
-.author { color: #888; font-size: 10px; }
-.meta { color: #aaa; font-size: 8px; float: right; }
+/* 帖子列表 - 与搜索结果样式统一 */
+ul { 
+  list-style: none; 
+  padding: 0; 
+}
+ul li { 
+  padding: 12px 15px; 
+  background: #fdf6e0; 
+  margin-bottom: 8px; 
+  border-radius: 6px; 
+  border: 1px solid #f0e0b8; 
+  transition: all 0.2s; 
+}
+ul li:hover { 
+  box-shadow: 0 2px 8px rgba(180, 130, 30, 0.15); 
+  border-color: #e6c88a; 
+}
+ul li a { 
+  text-decoration: none; 
+  color: #5a3f1e; 
+  font-weight: 600; 
+  font-size: 17px; 
+}
+ul li a:hover { 
+  color: #b8860b; 
+}
+.author { 
+  color: #a07d4a; 
+  font-size: 12px; 
+  margin-left: 4px; 
+}
+.meta { 
+  color: #b8950a; 
+  font-size: 10px; 
+  float: right; 
+}
 .empty { color: #999; text-align: center; padding: 40px 0; }
 
-.sub-forums { margin: 20px 0; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-.sub-forums h3 { color: #785635; margin-bottom: 15px; font-size: 17px; }
-.sub-forums ul { list-style: none; padding: 0; }
-.sub-forums li { padding: 10px 15px; border-bottom: 1px solid #f0f0f0; background: transparent; box-shadow: none; margin: 0; border-radius: 0; }
-.sub-forums li:last-child { border-bottom: none; }
-.sub-forums a { font-weight: 500; font-size: 18px; }
-.sub-meta { color: #999; font-size: 14px; margin-left: 8px; }
+.sub-forums {
+  margin: 20px 0;
+  padding: 15px;
+  background: #fdf6e0;
+  border-radius: 8px;
+  border: 1px solid #f0e0b8;
+}
+.sub-forums h3 {
+  color: #7a5d2e;
+  margin-bottom: 15px;
+  font-size: 17px;
+}
+.sub-forums ul {
+  list-style: none;
+  padding: 0;
+}
+.sub-forums li {
+  padding: 10px 15px;
+  border-bottom: 1px solid #f0f0f0;
+  background: transparent;
+  box-shadow: none;
+  margin: 0;
+  border-radius: 0;
+}
+.sub-forums li:last-child {
+  border-bottom: none;
+}
+.sub-forums a {
+  font-weight: 600;
+  font-size: 17px;
+  color: #5a3f1e;
+  text-decoration: none;
+}
+.sub-forums a:hover {
+  color: #b8860b;
+}
+.sub-meta {
+  color: #a07d4a;
+  font-size: 10px;
+  margin-left: 8px;
+}
 
 .pagination-nav {
   display: flex;
