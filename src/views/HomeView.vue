@@ -421,6 +421,7 @@ onMounted(() => {
   text-decoration: none;
   color: #7a5d2e;
   font-weight: 500;
+  font-size: 17px;
 }
 .search-results a:hover {
   color: #b8860b;
