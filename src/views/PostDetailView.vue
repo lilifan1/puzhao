@@ -1244,14 +1244,13 @@ onMounted(async () => {
 /* ===== 上下篇导航 ===== */
 .post-nav {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;  /* 改为纵向排列 */
+  align-items: stretch;
   margin: 20px 0;
   padding: 12px 16px;
   border-top: 1px solid #f0e0b8;
   border-bottom: 1px solid #f0e0b8;
-  gap: 10px;
-  flex-wrap: nowrap;
+  gap: 6px;
   background: rgba(255, 248, 220, 0.4);
   border-radius: 8px;
 }
@@ -1260,13 +1259,14 @@ onMounted(async () => {
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
-  max-width: 48%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  padding: 4px 10px;
+  padding: 4px 6px;
   border-radius: 4px;
   transition: all 0.3s ease;
+  display: block;  /* 块级显示 */
+  width: 100%;
 }
 .nav-link:hover:not(.disabled) {
   color: #7a5d2e;
@@ -1276,6 +1276,15 @@ onMounted(async () => {
 .nav-link.disabled {
   color: transparent;
   cursor: default;
+}
+
+/* ===== 上一篇和下一篇之间的分隔 ===== */
+.post-nav .nav-link:first-child {
+  border-bottom: 1px dashed #f0e0b8;
+  padding-bottom: 6px;
+}
+.post-nav .nav-link:last-child {
+  padding-top: 6px;
 }
 
 @media (max-width: 600px) {
