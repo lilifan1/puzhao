@@ -849,10 +849,7 @@ const setupMediaObserver = () => {
 let isLoading = false
 
 const loadPost = async (tid) => {
-  if (isLoading) return
-  isLoading = true
   loading.value = true
-  
   videoList.value = []
   currentVideoIndex.value = -1
   currentVideoUrl.value = ''
@@ -877,6 +874,7 @@ const loadPost = async (tid) => {
       post.value = null
     }
 
+    // ===== 先提取音频列表 =====
     nextTick(() => {
       setTimeout(() => {
         extractAudioList()
@@ -886,84 +884,33 @@ const loadPost = async (tid) => {
       }, 300)
     })
 
-    // ===== 上下篇：分页循环获取全部帖子 =====
+    // ===== 上下篇：一次性获取 1000 条 =====
     if (post.value && post.value.fid) {
       const fid = post.value.fid
       const currentTid = Number(tid)
 
-      let allPosts = []
-      let page = 1
-      const limit = 50
-      const maxPages = 26  // ← 新增：限制最多26页
-      let hasMore = true
-      let found = false
-
-      while (hasMore && !found && page <= maxPages) {
-        try {
-          const listRes = await fetch(`${baseUrl}?action=list&fid=${fid}&limit=${limit}&page=${page}`)
-          const listData = await listRes.json()
-
-          if (listData.code === 0 && listData.data && listData.data.length > 0) {
-            const posts = listData.data
-            allPosts = allPosts.concat(posts)
-
-            const foundInPage = posts.findIndex(p => Number(p.tid) === currentTid)
-            if (foundInPage !== -1) {
-              found = true
-              const sortedPosts = allPosts.sort((a, b) => b.dateline - a.dateline)
-              const currentIndex = sortedPosts.findIndex(p => Number(p.tid) === currentTid)
-
-              if (currentIndex !== -1) {
-                prevPost.value = currentIndex > 0 ? sortedPosts[currentIndex - 1] : null
-
-                if (currentIndex < sortedPosts.length - 1) {
-                  nextPost.value = sortedPosts[currentIndex + 1]
-                } else {
-                  try {
-                    const nextPageRes = await fetch(`${baseUrl}?action=list&fid=${fid}&limit=${limit}&page=${page + 1}`)
-                    const nextPageData = await nextPageRes.json()
-                    if (nextPageData.code === 0 && nextPageData.data && nextPageData.data.length > 0) {
-                      const nextPagePosts = nextPageData.data.sort((a, b) => b.dateline - a.dateline)
-                      nextPost.value = nextPagePosts[0] || null
-                    } else {
-                      nextPost.value = null
-                    }
-                  } catch (e) {
-                    nextPost.value = null
-                  }
-                }
-              }
-              break
-            }
-
-            page++
-            if (listData.data.length < limit) {
-              hasMore = false
-            }
-          } else {
-            hasMore = false
+      try {
+        const listRes = await fetch(`${baseUrl}?action=list&fid=${fid}&limit=1000`)
+        const listData = await listRes.json()
+        if (listData.code === 0) {
+          const posts = listData.data.sort((a, b) => b.dateline - a.dateline)
+          const currentIndex = posts.findIndex(p => Number(p.tid) === currentTid)
+          if (currentIndex !== -1) {
+            prevPost.value = currentIndex > 0 ? posts[currentIndex - 1] : null
+            nextPost.value = currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null
           }
-        } catch (e) {
-          console.error('分页获取失败:', e)
-          hasMore = false
         }
-      }
-
-      if (!found && allPosts.length > 0) {
-        const sortedPosts = allPosts.sort((a, b) => b.dateline - a.dateline)
-        const currentIndex = sortedPosts.findIndex(p => Number(p.tid) === currentTid)
-        if (currentIndex !== -1) {
-          prevPost.value = currentIndex > 0 ? sortedPosts[currentIndex - 1] : null
-          nextPost.value = currentIndex < sortedPosts.length - 1 ? sortedPosts[currentIndex + 1] : null
-        }
+      } catch (e) {
+        console.error('获取上下篇失败:', e)
       }
     }
+    // ===== 上下篇结束 =====
+
   } catch (error) {
     console.error('获取帖子失败:', error)
     post.value = null
   } finally {
     loading.value = false
-    isLoading = false
   }
 }
 
