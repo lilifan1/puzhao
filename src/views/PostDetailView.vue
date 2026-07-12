@@ -1047,7 +1047,7 @@ onMounted(async () => {
   display: flex;
   gap: 12px;
   margin-bottom: 20px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
 }
 .nav-btn {
