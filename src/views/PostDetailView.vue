@@ -894,7 +894,7 @@ const loadPost = async (tid) => {
       let allPosts = []
       let page = 1
       const limit = 50
-      const maxPages = 6  // ← 新增：限制最多6页
+      const maxPages = 26  // ← 新增：限制最多26页
       let hasMore = true
       let found = false
 
