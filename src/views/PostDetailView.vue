@@ -4,9 +4,19 @@
     <div class="nav-bar">
       <router-link to="/" class="nav-btn">🏠 资料集首页</router-link>
       <button @click="goBack" class="nav-btn">← 返回上一级</button>
+      <!-- ===== 搜索框 ===== -->
+      <div class="nav-search">
+        <input 
+          v-model="searchKeyword" 
+          @keyup.enter="doNavSearch" 
+          placeholder="搜索..." 
+          class="nav-search-input"
+        />
+        <button @click="doNavSearch" class="nav-search-btn">🔍</button>
+      </div>
     </div>
 
-    <!-- ===== 骨架屏 ===== -->
+    <!-- 骨架屏 -->
     <div v-if="loading" class="skeleton">
       <div class="skeleton-header"></div>
       <div class="skeleton-line"></div>
@@ -55,7 +65,6 @@
           <button @click="prevVideo" :disabled="currentVideoIndex <= 0">◀ 上一个</button>
           <button @click="nextVideo" :disabled="currentVideoIndex >= videoList.length - 1">下一个 ▶</button>
         </div>
-        <!-- ===== 视频快进快退（仅视频播放器） ===== -->
         <div class="media-controls">
           <button @click="videoFastUpdate(1)" class="ctrl-btn">⏪ 快退15秒</button>
           <button @click="videoFastUpdate(2)" class="ctrl-btn">快进15秒 ⏩</button>
@@ -111,7 +120,6 @@
             @timeupdate="saveAudioProgress"
           ></audio>
           <p>正在播放：{{ currentAudio.title }}</p>
-          <!-- ===== 单独音频快进快退（仅当前播放的音频） ===== -->
           <div class="media-controls">
             <button @click="audioFastUpdate(1)" class="ctrl-btn">⏪ 快退15秒</button>
             <button @click="audioFastUpdate(2)" class="ctrl-btn">快进15秒 ⏩</button>
@@ -178,6 +186,9 @@ const showBackToTop = ref(false)
 const videoPlayer = ref(null)
 const audioPlayer = ref(null)
 
+// 导航栏搜索
+const searchKeyword = ref('')
+
 // 跳转输入框
 const audioJumpHour = ref(0)
 const audioJumpMin = ref(0)
@@ -200,6 +211,13 @@ const goBack = () => {
     return
   }
   window.history.back()
+}
+
+// 导航栏搜索跳转
+const doNavSearch = () => {
+  const kw = searchKeyword.value.trim()
+  if (!kw) return
+  router.push(`/?from=search&keyword=${encodeURIComponent(kw)}`)
 }
 
 const copyLink = async () => {
@@ -260,7 +278,7 @@ const saveVideoProgress = () => {
   }
 }
 
-// ==================== 播放器控制（快进/快退/跳转） ====================
+// ==================== 播放器控制 ====================
 
 const audioFastUpdate = (type) => {
   const audio = audioPlayer.value
@@ -369,21 +387,20 @@ const extractAudioList = (retryCount = 0) => {
       el.style.display = 'none'
     })
     
-    // ===== 删除“更多精彩”目录（加强版） =====
-const allElements = contentEl.querySelectorAll('*')
-const keywords = ['更多精彩请点击以下目录', '更多精彩', '每日学习', '每日畅听', '白话佛法', '入门知识', '感动视频', '广播讲座', '睡前一听', '博客留言', '法會开示']
-allElements.forEach(el => {
-  const text = el.textContent || ''
-  let matchCount = 0
-  for (const kw of keywords) {
-    if (text.includes(kw)) matchCount++
-  }
-  // 如果包含3个以上关键词，说明是“更多精彩”目录
-  if (matchCount >= 3 && !el.querySelector('.sm2-bar-ui') && !el.querySelector('audio')) {
-    el.style.display = 'none'
-  }
-})
-// ===== 删除结束 =====
+    // ===== 删除“更多精彩”目录 =====
+    const allElements = contentEl.querySelectorAll('*')
+    const keywords = ['更多精彩请点击以下目录', '更多精彩', '每日学习', '每日畅听', '白话佛法', '入门知识', '感动视频', '广播讲座', '睡前一听', '博客留言', '法會开示']
+    allElements.forEach(el => {
+      const text = el.textContent || ''
+      let matchCount = 0
+      for (const kw of keywords) {
+        if (text.includes(kw)) matchCount++
+      }
+      if (matchCount >= 3 && !el.querySelector('.sm2-bar-ui') && !el.querySelector('audio')) {
+        el.style.display = 'none'
+      }
+    })
+    // ===== 删除结束 =====
 
     nextTick(() => {
       moveAudioListAfterTitle()
@@ -459,14 +476,13 @@ const playAudio = (index) => {
     
     const key = `audio_progress_${item.url}`
     const savedTime = localStorage.getItem(key)
-    console.log('🎵 播放音频:', item.title, '保存的进度:', savedTime)
     
     nextTick(() => {
       const player = audioPlayer.value
       if (player) {
         if (savedTime && !isNaN(parseFloat(savedTime)) && parseFloat(savedTime) > 0) {
           player.currentTime = parseFloat(savedTime)
-          console.log('🎵 恢复进度:', player.currentTime)
+          console.log(`🎵 恢复进度: ${parseFloat(savedTime).toFixed(1)}秒`)
         }
         player.play().catch(() => {})
       }
@@ -483,14 +499,13 @@ const playVideo = (index) => {
     
     const key = `video_progress_${item.url}`
     const savedTime = localStorage.getItem(key)
-    console.log('🎬 播放视频:', item.title, '保存的进度:', savedTime)
     
     nextTick(() => {
       const player = videoPlayer.value
       if (player) {
         if (savedTime && !isNaN(parseFloat(savedTime)) && parseFloat(savedTime) > 0) {
           player.currentTime = parseFloat(savedTime)
-          console.log('🎬 恢复进度:', player.currentTime)
+          console.log(`🎬 恢复进度: ${parseFloat(savedTime).toFixed(1)}秒`)
         }
         player.play().catch(() => {})
       }
@@ -498,7 +513,7 @@ const playVideo = (index) => {
   }
 }
 
- const onAudioEnded = () => {
+const onAudioEnded = () => {
   if (currentAudioIndex.value < audioList.value.length - 1) {
     const nextIndex = currentAudioIndex.value + 1
     playAudio(nextIndex)
@@ -846,8 +861,6 @@ const setupMediaObserver = () => {
   })
 }
 
-let isLoading = false
-
 const loadPost = async (tid) => {
   loading.value = true
   videoList.value = []
@@ -884,58 +897,45 @@ const loadPost = async (tid) => {
       }, 300)
     })
 
-    // ===== 上下篇：一次性获取 1000 条 =====
+    // ===== 上下篇 =====
     if (post.value && post.value.fid) {
-  const fid = post.value.fid
-  const currentTid = Number(tid)
+      const fid = post.value.fid
+      const currentTid = Number(tid)
 
-  let allPosts = []
-  let page = 1
-  const limit = 50
-  const maxPages = 15
-  let found = false
+      let allPosts = []
+      let page = 1
+      const limit = 50
+      const maxPages = 15
+      let found = false
 
-  while (!found && page <= maxPages) {
-    try {
-      const listRes = await fetch(`${baseUrl}?action=list&fid=${fid}&limit=${limit}&page=${page}`)
-      const listData = await listRes.json()
-      if (listData.code === 0 && listData.data && listData.data.length > 0) {
-        const posts = listData.data
-        allPosts = allPosts.concat(posts)
-        const foundInPage = posts.findIndex(p => Number(p.tid) === currentTid)
-        if (foundInPage !== -1) {
-          found = true
-          const sortedPosts = allPosts.sort((a, b) => b.dateline - a.dateline)
-          const currentIndex = sortedPosts.findIndex(p => Number(p.tid) === currentTid)
-          if (currentIndex !== -1) {
-            prevPost.value = currentIndex > 0 ? sortedPosts[currentIndex - 1] : null
-            nextPost.value = currentIndex < sortedPosts.length - 1 ? sortedPosts[currentIndex + 1] : null
+      while (!found && page <= maxPages) {
+        try {
+          const listRes = await fetch(`${baseUrl}?action=list&fid=${fid}&limit=${limit}&page=${page}`)
+          const listData = await listRes.json()
+          if (listData.code === 0 && listData.data && listData.data.length > 0) {
+            allPosts = allPosts.concat(listData.data)
+            page++
+            if (listData.data.length < limit) {
+              break
+            }
+          } else {
+            break
           }
+        } catch (e) {
+          console.error('获取上下篇失败:', e)
           break
         }
-        page++
-        if (listData.data.length < limit) {
-          break
-        }
-      } else {
-        break
       }
-    } catch (e) {
-      console.error('获取上下篇失败:', e)
-      break
-    }
-  }
 
-  // 所有数据获取完后，统一排序查找
-if (allPosts.length > 0) {
-  const sortedPosts = allPosts.sort((a, b) => b.dateline - a.dateline)
-  const currentIndex = sortedPosts.findIndex(p => Number(p.tid) === currentTid)
-  if (currentIndex !== -1) {
-    prevPost.value = currentIndex > 0 ? sortedPosts[currentIndex - 1] : null
-    nextPost.value = currentIndex < sortedPosts.length - 1 ? sortedPosts[currentIndex + 1] : null
-  }
-}
-    // ===== 上下篇结束 =====
+      if (allPosts.length > 0) {
+        const sortedPosts = allPosts.sort((a, b) => b.dateline - a.dateline)
+        const currentIndex = sortedPosts.findIndex(p => Number(p.tid) === currentTid)
+        if (currentIndex !== -1) {
+          prevPost.value = currentIndex > 0 ? sortedPosts[currentIndex - 1] : null
+          nextPost.value = currentIndex < sortedPosts.length - 1 ? sortedPosts[currentIndex + 1] : null
+        }
+      }
+    }
 
   } catch (error) {
     console.error('获取帖子失败:', error)
@@ -1001,34 +1001,13 @@ onMounted(async () => {
   border-radius: 8px;
 }
 
-/* ===== 骨架屏 ===== */
-.skeleton {
-  padding: 20px 0;
-}
-.skeleton-header {
-  width: 60%;
-  height: 28px;
-  background: #e8dcc8;
-  border-radius: 4px;
-  margin-bottom: 16px;
-}
-.skeleton-line {
-  height: 16px;
-  background: #e8dcc8;
-  border-radius: 4px;
-  margin-bottom: 10px;
-}
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
 /* ===== 导航栏 ===== */
 .nav-bar {
   display: flex;
   gap: 12px;
   margin-bottom: 20px;
   flex-wrap: wrap;
+  align-items: center;
 }
 .nav-btn {
   display: inline-block;
@@ -1047,6 +1026,74 @@ onMounted(async () => {
   background: #edcfa0;
   transform: translateY(-1px);
   box-shadow: 0 3px 8px rgba(180, 130, 30, 0.25);
+}
+
+/* ===== 导航栏搜索 ===== */
+.nav-search {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+.nav-search-input {
+  padding: 6px 12px;
+  border: 1px solid #e6c88a;
+  border-radius: 4px;
+  font-size: 13px;
+  background: #fffcf0;
+  color: #4a3a25;
+  width: 120px;
+  transition: border-color 0.3s;
+}
+.nav-search-input:focus {
+  outline: none;
+  border-color: #f1c40f;
+}
+.nav-search-input::placeholder {
+  color: #b8950a;
+}
+.nav-search-btn {
+  padding: 6px 10px;
+  background: #f7e8b0;
+  color: #7a5d2e;
+  border: 1px solid #e6c88a;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+.nav-search-btn:hover {
+  background: #f1c40f;
+  color: #fff;
+}
+
+@media (max-width: 600px) {
+  .nav-search {
+    margin-left: 0;
+    width: 100%;
+  }
+  .nav-search-input {
+    flex: 1;
+    width: auto;
+  }
+}
+
+/* ===== 骨架屏 ===== */
+.skeleton {
+  padding: 20px 0;
+}
+.skeleton-header {
+  width: 60%;
+  height: 28px;
+  background: #e8dcc8;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+.skeleton-line {
+  height: 16px;
+  background: #e8dcc8;
+  border-radius: 4px;
+  margin-bottom: 10px;
 }
 
 /* ===== 帖子头部 ===== */
@@ -1110,26 +1157,15 @@ onMounted(async () => {
   margin-bottom: 20px;
 }
 
-/* ===== 帖子内容 ===== */
 .content {
   line-height: 1.9;
   font-size: 16px;
   overflow-wrap: break-word;
   color: #4a3a25;
 }
-.content img {
-  max-width: 100%;
-}
-.content a {
-  color: #b8860b;
-  text-decoration: none;
-  border-bottom: 1px dashed #e6c88a;
-}
-.content a:hover {
-  color: #7a5d2e;
-  border-bottom-color: #7a5d2e;
-  text-decoration: none;
-}
+.content img { max-width: 100%; }
+.content a { color: #b8860b; text-decoration: none; border-bottom: 1px dashed #e6c88a; }
+.content a:hover { color: #7a5d2e; border-bottom-color: #7a5d2e; text-decoration: none; }
 
 .error {
   color: #c0392b;
@@ -1137,7 +1173,6 @@ onMounted(async () => {
   padding: 50px 0;
 }
 
-/* ===== 上下篇导航 ===== */
 /* ===== 上下篇导航 ===== */
 .post-nav {
   display: flex;
@@ -1147,7 +1182,7 @@ onMounted(async () => {
   padding: 12px 16px;
   border-top: 1px solid #f0e0b8;
   border-bottom: 1px solid #f0e0b8;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: nowrap;
   background: rgba(255, 248, 220, 0.4);
   border-radius: 8px;
@@ -1161,7 +1196,7 @@ onMounted(async () => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  padding: 4px 6px;
+  padding: 4px 10px;
   border-radius: 4px;
   transition: all 0.3s ease;
 }
@@ -1175,10 +1210,9 @@ onMounted(async () => {
   cursor: default;
 }
 
-/* ===== 手机端适配 ===== */
 @media (max-width: 600px) {
   .post-nav {
-    padding: 12px 14px;
+    padding: 10px 12px;
     gap: 6px;
   }
   .nav-link {
