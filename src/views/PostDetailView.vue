@@ -1133,7 +1133,7 @@ onMounted(async () => {
     width: 100%;
   }
   .nav-search-input {
-    flex: 1;
+    flex: 2;
     width: auto;
   }
   .nav-search-btn {
