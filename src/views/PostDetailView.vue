@@ -894,10 +894,11 @@ const loadPost = async (tid) => {
       let allPosts = []
       let page = 1
       const limit = 50
+      const maxPages = 6  // ← 新增：限制最多6页
       let hasMore = true
       let found = false
 
-      while (hasMore && !found) {
+      while (hasMore && !found && page <= maxPages) {
         try {
           const listRes = await fetch(`${baseUrl}?action=list&fid=${fid}&limit=${limit}&page=${page}`)
           const listData = await listRes.json()
