@@ -645,7 +645,7 @@ h1 {
 ul { list-style: none; padding: 0; }
 li { padding: 12px 15px; background: white; margin-bottom: 8px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: 0.2s; }
 li:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
-a { text-decoration: none; color: #2c3e50; font-weight: 500; font-size: 17px; }  /* 加大 */
+a { text-decoration: none; color: #2c3e50; font-weight: 600; font-size: 17px; }  /* 加大 */
 a:hover { color: #42b983; }
 .author { color: #888; font-size: 10px; }
 .meta { color: #aaa; font-size: 8px; float: right; }
