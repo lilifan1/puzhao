@@ -890,7 +890,7 @@ const loadPost = async (tid) => {
       const currentTid = Number(tid)
 
       try {
-        const listRes = await fetch(`${baseUrl}?action=list&fid=${fid}&limit=1000`)
+        const listRes = await fetch(`${baseUrl}?action=list&fid=${fid}&limit=1500`)
         const listData = await listRes.json()
         if (listData.code === 0) {
           const posts = listData.data.sort((a, b) => b.dateline - a.dateline)
