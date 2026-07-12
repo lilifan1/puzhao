@@ -1131,18 +1131,17 @@ onMounted(async () => {
   .nav-search {
     margin-left: 0;
     width: 100%;
-    gap: 2px;  /* 减小间距，让搜索框更宽 */
   }
   .nav-search-input {
     flex: 1;
-    min-width: 140px;
+    min-width: 150px;
   }
   .nav-search-btn {
-    padding: 6px 8px;
+    padding: 8px 10px;
     font-size: 13px;
   }
   .nav-fullsearch-btn {
-    padding: 6px 8px;
+    padding: 8px 10px;
     font-size: 13px;
   }
 }
