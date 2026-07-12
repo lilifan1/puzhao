@@ -1571,21 +1571,8 @@ onMounted(async () => {
 }
 
 @media (max-width: 600px) {
-  .nav-search {
-    margin-left: 0;
-    width: 100%;
-    gap: 4px;
-  }
   .nav-search-input {
-    flex: 1 1 160px;   /* 强制最小宽度 160px */
-    min-width: 160px;
-    width: 100%;
-  }
-  .nav-search-btn,
-  .nav-fullsearch-btn {
-    flex-shrink: 0;     /* 按钮不压缩 */
-    padding: 6px 10px;
-    font-size: 13px;
+    min-width: 160px !important;
   }
 }
 
