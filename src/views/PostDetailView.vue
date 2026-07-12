@@ -896,35 +896,35 @@ const loadPost = async (tid) => {
   let found = false
 
   while (!found && page <= maxPages) {
-    try {
-      const listRes = await fetch(`${baseUrl}?action=list&fid=${fid}&limit=${limit}&page=${page}`)
-      const listData = await listRes.json()
-      if (listData.code === 0 && listData.data && listData.data.length > 0) {
-        const posts = listData.data
-        allPosts = allPosts.concat(posts)
-        const foundInPage = posts.findIndex(p => Number(p.tid) === currentTid)
-        if (foundInPage !== -1) {
-          found = true
-          const sortedPosts = allPosts.sort((a, b) => b.dateline - a.dateline)
-          const currentIndex = sortedPosts.findIndex(p => Number(p.tid) === currentTid)
-          if (currentIndex !== -1) {
-            prevPost.value = currentIndex > 0 ? sortedPosts[currentIndex - 1] : null
-            nextPost.value = currentIndex < sortedPosts.length - 1 ? sortedPosts[currentIndex + 1] : null
-          }
-          break
-        }
-        page++
-        if (listData.data.length < limit) {
-          break
-        }
-      } else {
+  try {
+    const listRes = await fetch(`${baseUrl}?action=list&fid=${fid}&limit=${limit}&page=${page}`)
+    const listData = await listRes.json()
+    if (listData.code === 0 && listData.data && listData.data.length > 0) {
+      const posts = listData.data
+      // 先合并到 allPosts
+      allPosts = allPosts.concat(posts)
+      
+      // 每次合并后都重新排序，并检查当前帖子是否在其中
+      const sortedPosts = allPosts.sort((a, b) => b.dateline - a.dateline)
+      const currentIndex = sortedPosts.findIndex(p => Number(p.tid) === currentTid)
+      if (currentIndex !== -1) {
+        found = true
+        prevPost.value = currentIndex > 0 ? sortedPosts[currentIndex - 1] : null
+        nextPost.value = currentIndex < sortedPosts.length - 1 ? sortedPosts[currentIndex + 1] : null
         break
       }
-    } catch (e) {
-      console.error('获取上下篇失败:', e)
+      page++
+      if (listData.data.length < limit) {
+        break
+      }
+    } else {
       break
     }
+  } catch (e) {
+    console.error('获取上下篇失败:', e)
+    break
   }
+}
 
   // 如果5页内没找到，放弃查找
   if (!found) {
