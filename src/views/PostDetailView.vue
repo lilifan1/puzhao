@@ -1084,7 +1084,7 @@ onMounted(async () => {
   font-size: 13px;
   background: #fffcf0;
   color: #4a3a25;
-  width: 160px;
+  width: 180px;
   transition: border-color 0.3s;
 }
 .nav-search-input:focus {
