@@ -905,7 +905,7 @@ const loadPost = async (tid) => {
       let allPosts = []
       let page = 1
       const limit = 50
-      const maxPages = 10
+      const maxPages = 8
       let found = false
 
       while (!found && page <= maxPages) {
