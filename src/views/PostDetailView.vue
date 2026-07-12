@@ -1047,7 +1047,7 @@ onMounted(async () => {
   display: flex;
   gap: 12px;
   margin-bottom: 20px;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items: center;
 }
 .nav-btn {
@@ -1070,22 +1070,21 @@ onMounted(async () => {
 }
 
 /* ===== 导航栏搜索 ===== */
+/* ===== 导航栏搜索 ===== */
 .nav-search {
   display: flex;
   align-items: center;
   gap: 4px;
   margin-left: auto;
-  flex-shrink: 0;
 }
- .nav-search-input {
+.nav-search-input {
   padding: 6px 12px;
   border: 1px solid #e6c88a;
   border-radius: 4px;
   font-size: 13px;
   background: #fffcf0;
   color: #4a3a25;
-  width: 200px !important;  /* 强制加宽 */
-  min-width: 150px !important;
+  width: 180px;
   transition: border-color 0.3s;
 }
 .nav-search-input:focus {
@@ -1104,7 +1103,6 @@ onMounted(async () => {
   cursor: pointer;
   font-size: 14px;
   transition: all 0.3s ease;
-  flex-shrink: 0;
 }
 .nav-search-btn:hover {
   background: #f1c40f;
@@ -1122,7 +1120,6 @@ onMounted(async () => {
   font-size: 14px;
   text-decoration: none;
   transition: all 0.3s ease;
-  flex-shrink: 0;
 }
 .nav-fullsearch-btn:hover {
   background: #d4ac0d;
@@ -1134,16 +1131,17 @@ onMounted(async () => {
   .nav-search {
     margin-left: 0;
     width: 100%;
-    gap: 4px;
   }
   .nav-search-input {
     flex: 1;
-    width: 100%;
-    min-width: 0;
+    min-width: 150px;
   }
-  .nav-search-btn,
+  .nav-search-btn {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
   .nav-fullsearch-btn {
-    padding: 6px 8px;
+    padding: 8px 10px;
     font-size: 13px;
   }
 }
@@ -1573,21 +1571,21 @@ onMounted(async () => {
 }
 
 @media (max-width: 600px) {
-  .nav-search {
-    margin-left: 0;
-    width: 100%;
-    gap: 4px;
+  .media-controls {
+    gap: 5px;
+    padding: 8px 10px;
   }
-  .nav-search-input {
-    flex: 1;
-    min-width: 150px;
-    width: 100%;
+  .ctrl-btn {
+    padding: 4px 10px;
+    font-size: 12px;
   }
-  .nav-search-btn,
-  .nav-fullsearch-btn {
-    flex-shrink: 0;
-    padding: 6px 10px;
-    font-size: 13px;
+  .jump-input {
+    width: 32px;
+    font-size: 12px;
+    padding: 3px 1px;
+  }
+  .ctrl-label {
+    font-size: 12px;
   }
 }
 
