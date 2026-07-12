@@ -718,7 +718,7 @@ ul li a:hover {
 }
 .sub-meta {
   color: #a07d4a;
-  font-size: 10px;
+  font-size: 14px;
   margin-left: 8px;
 }
 
