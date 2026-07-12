@@ -419,8 +419,8 @@ onMounted(() => {
 }
 .search-results a {
   text-decoration: none;
-  color: #7a5d2e;
-  font-weight: 500;
+  color: #5a3f1e;
+  font-weight: 600;
   font-size: 17px;
 }
 .search-results a:hover {
