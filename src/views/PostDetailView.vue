@@ -1070,12 +1070,12 @@ onMounted(async () => {
 }
 
 /* ===== 导航栏搜索 ===== */
-/* ===== 导航栏搜索 ===== */
 .nav-search {
   display: flex;
   align-items: center;
   gap: 4px;
   margin-left: auto;
+  flex-shrink: 0;
 }
 .nav-search-input {
   padding: 6px 12px;
@@ -1084,8 +1084,9 @@ onMounted(async () => {
   font-size: 13px;
   background: #fffcf0;
   color: #4a3a25;
-  width: 180px;
+  width: 200px;  /* 固定宽度 */
   transition: border-color 0.3s;
+  min-width: 120px;
 }
 .nav-search-input:focus {
   outline: none;
@@ -1103,6 +1104,7 @@ onMounted(async () => {
   cursor: pointer;
   font-size: 14px;
   transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 .nav-search-btn:hover {
   background: #f1c40f;
@@ -1120,6 +1122,7 @@ onMounted(async () => {
   font-size: 14px;
   text-decoration: none;
   transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 .nav-fullsearch-btn:hover {
   background: #d4ac0d;
@@ -1131,17 +1134,16 @@ onMounted(async () => {
   .nav-search {
     margin-left: 0;
     width: 100%;
+    gap: 4px;
   }
   .nav-search-input {
     flex: 1;
-    min-width: 150px;
+    width: 100%;
+    min-width: 0;
   }
-  .nav-search-btn {
-    padding: 8px 10px;
-    font-size: 13px;
-  }
+  .nav-search-btn,
   .nav-fullsearch-btn {
-    padding: 8px 10px;
+    padding: 6px 8px;
     font-size: 13px;
   }
 }
