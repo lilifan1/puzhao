@@ -647,8 +647,8 @@ li { padding: 12px 15px; background: white; margin-bottom: 8px; border-radius: 6
 li:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
 a { text-decoration: none; color: #2c3e50; font-weight: 500; font-size: 17px; }  /* 加大 */
 a:hover { color: #42b983; }
-.author { color: #888; font-size: 14px; }
-.meta { color: #aaa; font-size: 12px; float: right; }
+.author { color: #888; font-size: 12px; }
+.meta { color: #aaa; font-size: 10px; float: right; }
 .empty { color: #999; text-align: center; padding: 40px 0; }
 
 .sub-forums { margin: 20px 0; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
