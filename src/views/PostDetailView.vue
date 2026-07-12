@@ -1244,7 +1244,7 @@ onMounted(async () => {
 /* ===== 上下篇导航 ===== */
 .post-nav {
   display: flex;
-  flex-direction: column;  /* 改为纵向排列 */
+  flex-direction: column;
   align-items: stretch;
   margin: 20px 0;
   padding: 12px 16px;
@@ -1254,37 +1254,40 @@ onMounted(async () => {
   background: rgba(255, 248, 220, 0.4);
   border-radius: 8px;
 }
+
 .nav-link {
   color: #b8860b;
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  padding: 4px 6px;
+  padding: 6px 4px;
   border-radius: 4px;
   transition: all 0.3s ease;
-  display: block;  /* 块级显示 */
+  display: block;
   width: 100%;
+  word-break: break-word;      /* 允许长单词/数字换行 */
+  white-space: normal;          /* 允许换行 */
+  line-height: 1.5;            /* 增加行高，避免文字挤在一起 */
 }
+
 .nav-link:hover:not(.disabled) {
   color: #7a5d2e;
   background: rgba(241, 196, 15, 0.2);
   text-decoration: underline;
 }
+
 .nav-link.disabled {
   color: transparent;
   cursor: default;
 }
 
-/* ===== 上一篇和下一篇之间的分隔 ===== */
+/* 分隔线 */
 .post-nav .nav-link:first-child {
   border-bottom: 1px dashed #f0e0b8;
-  padding-bottom: 6px;
+  padding-bottom: 8px;
 }
 .post-nav .nav-link:last-child {
-  padding-top: 6px;
+  padding-top: 8px;
 }
 
 @media (max-width: 600px) {
