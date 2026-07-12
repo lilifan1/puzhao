@@ -1245,12 +1245,11 @@ onMounted(async () => {
 .post-nav {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
   margin: 20px 0;
   padding: 12px 16px;
   border-top: 1px solid #f0e0b8;
   border-bottom: 1px solid #f0e0b8;
-  gap: 6px;
+  gap: 4px;
   background: rgba(255, 248, 220, 0.4);
   border-radius: 8px;
 }
@@ -1260,19 +1259,17 @@ onMounted(async () => {
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
-  padding: 6px 4px;
-  border-radius: 4px;
-  transition: all 0.3s ease;
-  display: block;
+  padding: 4px 0;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   width: 100%;
-  word-break: break-word;      /* 允许长单词/数字换行 */
-  white-space: normal;          /* 允许换行 */
-  line-height: 1.5;            /* 增加行高，避免文字挤在一起 */
 }
 
 .nav-link:hover:not(.disabled) {
   color: #7a5d2e;
-  background: rgba(241, 196, 15, 0.2);
   text-decoration: underline;
 }
 
@@ -1284,21 +1281,18 @@ onMounted(async () => {
 /* 分隔线 */
 .post-nav .nav-link:first-child {
   border-bottom: 1px dashed #f0e0b8;
-  padding-bottom: 8px;
+  padding-bottom: 6px;
 }
 .post-nav .nav-link:last-child {
-  padding-top: 8px;
+  padding-top: 6px;
 }
 
 @media (max-width: 600px) {
   .post-nav {
     padding: 10px 12px;
-    gap: 6px;
   }
   .nav-link {
-    max-width: 48%;
     font-size: 13px;
-    padding: 4px 4px;
   }
 }
 
