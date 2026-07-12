@@ -6,14 +6,22 @@
       <button @click="goBack" class="nav-btn">← 返回上一级</button>
       <!-- ===== 搜索框 ===== -->
       <div class="nav-search">
-        <input 
-          v-model="searchKeyword" 
-          @keyup.enter="doNavSearch" 
-          placeholder="搜索..." 
-          class="nav-search-input"
-        />
-        <button @click="doNavSearch" class="nav-search-btn">🔍</button>
-      </div>
+  <input 
+    v-model="searchKeyword" 
+    @keyup.enter="doNavSearch" 
+    placeholder="搜索..." 
+    class="nav-search-input"
+  />
+  <button @click="doNavSearch" class="nav-search-btn">🔍</button>
+  <!-- ===== 全文搜索按钮 ===== -->
+  <router-link 
+    :to="`/fullsearch?q=${encodeURIComponent(searchKeyword)}`" 
+    class="nav-fullsearch-btn"
+    title="全文搜索"
+  >
+    📚
+  </router-link>
+</div>
     </div>
 
     <!-- 骨架屏 -->
@@ -1062,6 +1070,7 @@ onMounted(async () => {
 }
 
 /* ===== 导航栏搜索 ===== */
+/* ===== 导航栏搜索 ===== */
 .nav-search {
   display: flex;
   align-items: center;
@@ -1100,6 +1109,24 @@ onMounted(async () => {
   color: #fff;
 }
 
+/* ===== 全文搜索按钮 ===== */
+.nav-fullsearch-btn {
+  padding: 6px 10px;
+  background: #e8d5a0;
+  color: #7a5d2e;
+  border: 1px solid #e6c88a;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+.nav-fullsearch-btn:hover {
+  background: #d4ac0d;
+  color: #fff;
+}
+
+/* ===== 手机端适配 ===== */
 @media (max-width: 600px) {
   .nav-search {
     margin-left: 0;
@@ -1108,6 +1135,14 @@ onMounted(async () => {
   .nav-search-input {
     flex: 1;
     width: auto;
+  }
+  .nav-search-btn {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+  .nav-fullsearch-btn {
+    padding: 6px 10px;
+    font-size: 13px;
   }
 }
 
