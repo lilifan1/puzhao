@@ -1077,16 +1077,16 @@ onMounted(async () => {
   margin-left: auto;
   flex-shrink: 0;
 }
-.nav-search-input {
+ .nav-search-input {
   padding: 6px 12px;
   border: 1px solid #e6c88a;
   border-radius: 4px;
   font-size: 13px;
   background: #fffcf0;
   color: #4a3a25;
-  width: 200px;  /* 固定宽度 */
+  width: 200px !important;  /* 强制加宽 */
+  min-width: 150px !important;
   transition: border-color 0.3s;
-  min-width: 120px;
 }
 .nav-search-input:focus {
   outline: none;
