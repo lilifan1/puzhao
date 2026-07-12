@@ -652,11 +652,11 @@ a:hover { color: #42b983; }
 .empty { color: #999; text-align: center; padding: 40px 0; }
 
 .sub-forums { margin: 20px 0; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-.sub-forums h3 { color: #785635; margin-bottom: 15px; font-size: 18px; }
+.sub-forums h3 { color: #785635; margin-bottom: 15px; font-size: 17px; }
 .sub-forums ul { list-style: none; padding: 0; }
 .sub-forums li { padding: 10px 15px; border-bottom: 1px solid #f0f0f0; background: transparent; box-shadow: none; margin: 0; border-radius: 0; }
 .sub-forums li:last-child { border-bottom: none; }
-.sub-forums a { font-weight: 500; font-size: 16px; }
+.sub-forums a { font-weight: 500; font-size: 18px; }
 .sub-meta { color: #999; font-size: 14px; margin-left: 8px; }
 
 .pagination-nav {
