@@ -1571,21 +1571,21 @@ onMounted(async () => {
 }
 
 @media (max-width: 600px) {
-  .media-controls {
-    gap: 5px;
-    padding: 8px 10px;
+  .nav-search {
+    margin-left: 0;
+    width: 100%;
+    gap: 4px;
   }
-  .ctrl-btn {
-    padding: 4px 10px;
-    font-size: 12px;
+  .nav-search-input {
+    flex: 1 1 160px;   /* 强制最小宽度 160px */
+    min-width: 160px;
+    width: 100%;
   }
-  .jump-input {
-    width: 32px;
-    font-size: 12px;
-    padding: 3px 1px;
-  }
-  .ctrl-label {
-    font-size: 12px;
+  .nav-search-btn,
+  .nav-fullsearch-btn {
+    flex-shrink: 0;     /* 按钮不压缩 */
+    padding: 6px 10px;
+    font-size: 13px;
   }
 }
 
