@@ -7,7 +7,7 @@
     @keyup.enter="doSearch" 
     @input="onSearchInput"
     @focus="onSearchFocus"
-    placeholder="🔍 关键词，空格隔开"
+    placeholder="🔍 关键词空格隔开"
     class="search-input"
     ref="searchInput"
     autocomplete="off"
