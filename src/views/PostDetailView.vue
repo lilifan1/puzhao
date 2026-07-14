@@ -9,7 +9,7 @@
   <input 
     v-model="searchKeyword" 
     @keyup.enter="doNavSearch" 
-    placeholder="搜索..." 
+    placeholder="关键词，空格隔开" 
     class="nav-search-input"
   />
   <button @click="doNavSearch" class="nav-search-btn">🔍</button>

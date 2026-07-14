@@ -7,7 +7,7 @@
     @keyup.enter="doSearch" 
     @input="onSearchInput"
     @focus="onSearchFocus"
-    placeholder="🔍 搜索帖子标题..."
+    placeholder="🔍 关键词，空格隔开"
     class="search-input"
     ref="searchInput"
     autocomplete="off"
