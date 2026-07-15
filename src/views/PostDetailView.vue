@@ -140,7 +140,7 @@
             <input type="number" v-model.number="audioJumpSec" min="0" max="59" class="jump-input" placeholder="秒">
             <button @click="audioFastUpdate(3)" class="ctrl-btn jump-btn">跳转</button>
           </div>
-          <p class="play-status" v-if="audioList.length > 1">⏭️ 播放完成后将自动播放下一个</p>
+          <p class="play-status" v-if="audioList.length > 1">⏭️ 播放完成后将自动播放下一个 记忆续航</p>
         </div>
         <ul>
           <li v-for="(item, index) in audioList" :key="index" 
