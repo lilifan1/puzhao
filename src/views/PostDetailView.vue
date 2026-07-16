@@ -1231,8 +1231,8 @@ onMounted(async () => {
   color: #4a3a25;
 }
 .content img {
-  max-width: 100% !important;
-  height: auto !important;
+  max-width: 100%;
+  height: auto;
 }
 .content a { color: #b8860b; text-decoration: none; border-bottom: 1px dashed #e6c88a; }
 .content a:hover { color: #7a5d2e; border-bottom-color: #7a5d2e; text-decoration: none; }
