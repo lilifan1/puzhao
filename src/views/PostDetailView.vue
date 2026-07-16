@@ -1226,13 +1226,14 @@ onMounted(async () => {
 
 .content {
   line-height: 1.9;
-  font-size: 16px;
+  font-size: 19px;
   overflow-wrap: break-word;
-  color: #4a3a25;
+  color: #000000;
+  font-weight: 500;
 }
 .content img {
-  max-width: 100%;
-  height: auto;
+  max-width: 100% !important;
+  height: auto !important;
 }
 .content a { color: #b8860b; text-decoration: none; border-bottom: 1px dashed #e6c88a; }
 .content a:hover { color: #7a5d2e; border-bottom-color: #7a5d2e; text-decoration: none; }
