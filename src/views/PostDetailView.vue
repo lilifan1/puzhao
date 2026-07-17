@@ -1383,24 +1383,26 @@ onMounted(async () => {
 
 /* ===== 视频 ===== */
 .video-section {
-  margin: 20px 0;
-  padding: 18px;
+  margin: 12px 0;
+  padding: 10px 12px;  /* 减少内边距 */
   background: #fdf6e0;
-  border-radius: 10px;
+  border-radius: 8px;
   border: 1px solid #f0e0b8;
 }
 .video-section h3 {
   color: #7a5d2e;
   border-bottom: 2px solid #f1c40f;
-  padding-bottom: 8px;
-  margin-bottom: 12px;
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+  font-size: 16px;  /* 稍微缩小标题，腾出空间 */
 }
+
 .video-container {
   background: #1a1a1a;
-  border-radius: 8px;
+  border-radius: 6px;
   overflow: hidden;
-  margin: 10px 0;
-  min-height: 200px;
+  margin: 6px 0;
+  min-height: 180px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1408,15 +1410,30 @@ onMounted(async () => {
   background-size: cover;
   background-position: center;
   position: relative;
-  border: 2px solid #e6c88a;
+  border: 1px solid #e6c88a;  /* 边框变细 */
 }
 .video-container video {
   display: block;
-  max-height: 500px;
+  max-height: 550px;  /* 从 500px 改为 550px */
   width: 100%;
   position: relative;
   z-index: 1;
 }
+
+/* ===== 手机端适配 ===== */
+@media (max-width: 600px) {
+  .video-section {
+    padding: 8px 8px;
+  }
+  .video-container {
+    min-height: 150px;
+    border-radius: 4px;
+  }
+  .video-container video {
+    max-height: 400px;
+  }
+}
+
 .no-video {
   color: #999;
   padding: 40px;
