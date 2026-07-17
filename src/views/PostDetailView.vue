@@ -1416,6 +1416,7 @@ onMounted(async () => {
   display: block;
   max-height: 550px;  /* 从 500px 改为 550px */
   width: 100%;
+  height: auto;
   position: relative;
   z-index: 1;
 }
@@ -1431,6 +1432,7 @@ onMounted(async () => {
   }
   .video-container video {
     max-height: 400px;
+    height: auto;
   }
 }
 
