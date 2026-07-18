@@ -269,22 +269,6 @@ const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-// ===== 最新帖子 =====
-const latestPosts = ref([])
-
-const fetchLatestPosts = async () => {
-  try {
-    const res = await fetch('https://www.dadaozjzhitojian.cloud/sina/ff/safe_api.php?action=latest&limit=20')
-    const data = await res.json()
-    if (data.code === 0) {
-      latestPosts.value = data.data || []
-    }
-  } catch (error) {
-    console.error('获取最新帖子失败:', error)
-  }
-}
-// ===== 最新帖子结束 =====
-
 // ==================== 记忆播放 ====================
 const saveAudioProgress = () => {
   const player = audioPlayer.value
@@ -1045,7 +1029,6 @@ onMounted(async () => {
     await loadPost(tid)
   }
   window.addEventListener('scroll', handleScroll)
-  fetchLatestPosts()
 })
 </script>
 
@@ -1628,20 +1611,6 @@ onMounted(async () => {
   }
 }
 
-<!-- ===== 最新帖子 ===== -->
-<div v-if="latestPosts.length > 0" class="latest-posts">
-  <h3>📋 最新帖子</h3>
-  <ul>
-    <li v-for="post in latestPosts" :key="post.tid">
-      <router-link :to="`/post/${post.tid}`">
-        {{ post.subject }}
-      </router-link>
-      <span class="latest-meta">{{ formatTime(post.dateline) }}</span>
-    </li>
-  </ul>
-</div>
-<!-- ===== 最新帖子结束 ===== -->
-
 /* ===== 返回顶部 ===== */
 .back-to-top {
   position: fixed;
@@ -1667,47 +1636,6 @@ onMounted(async () => {
   color: #fff;
   transform: translateY(-3px);
 }
-
-/* ===== 最新帖子 ===== */
-.latest-posts {
-  margin-top: 30px;
-  padding: 20px;
-  background: #fdf6e0;
-  border-radius: 10px;
-  border: 1px solid #f0e0b8;
-}
-.latest-posts h3 {
-  color: #7a5d2e;
-  margin-bottom: 15px;
-  border-bottom: 2px solid #f1c40f;
-  padding-bottom: 8px;
-}
-.latest-posts ul {
-  list-style: none;
-  padding: 0;
-}
-.latest-posts li {
-  padding: 8px 0;
-  border-bottom: 1px solid #f5ecce;
-}
-.latest-posts li:last-child {
-  border-bottom: none;
-}
-.latest-posts a {
-  text-decoration: none;
-  color: #5a3f1e;
-  font-weight: 500;
-  font-size: 15px;
-}
-.latest-posts a:hover {
-  color: #b8860b;
-}
-.latest-meta {
-  float: right;
-  color: #a07d4a;
-  font-size: 12px;
-}
-
 .back-to-top:active {
   transform: scale(0.92);
 }
