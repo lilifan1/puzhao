@@ -420,6 +420,9 @@ const forumNames = {
   '1096': '精彩感言',
   '1097': '网友反馈',
   '1098': '精彩专题',
+  '1428': '灵验实例',
+  '1429': '精彩感言2026',
+  '1430': '网友反馈2026',
 }
 
 const baseUrl = 'https://www.dadaozjzhitojian.cloud/sina/ff/safe_api.php'
