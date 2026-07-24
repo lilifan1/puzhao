@@ -397,7 +397,7 @@ const extractAudioList = (retryCount = 0) => {
     
     // ===== 删除“更多精彩”目录 =====
     const allElements = contentEl.querySelectorAll('*')
-    const keywords = ['更多精彩请点击以下目录', '更多精彩', '备用音频', '每日学习', '每日畅听', '白话佛法', '入门知识', '感动视频', '广播讲座', '睡前一听', '博客留言', '法會开示']
+    const keywords = ['更多精彩请点击以下目录', '更多精彩', '每日学习', '每日畅听', '白话佛法', '入门知识', '感动视频', '广播讲座', '睡前一听', '博客留言', '法會开示']
     allElements.forEach(el => {
       const text = el.textContent || ''
       let matchCount = 0
@@ -420,7 +420,7 @@ const extractAudioList = (retryCount = 0) => {
 const waitForAudioList = () => {
   const contentEl = document.querySelector('.content')
   if (!contentEl) {
-    setTimeout(() => waitForAudioList(), 500)
+    setTimeout(() => waitForAudioList(), 300)
     return
   }
 
@@ -430,9 +430,12 @@ const waitForAudioList = () => {
     return
   }
 
+  let executed = false
   const observer = new MutationObserver(() => {
+    if (executed) return
     const ul = contentEl.querySelector('ul.sm2-playlist-bd')
     if (ul) {
+      executed = true
       observer.disconnect()
       extractAudioList()
     }
@@ -443,10 +446,13 @@ const waitForAudioList = () => {
     subtree: true
   })
 
+  // 从 10 秒改为 3 秒
   setTimeout(() => {
-    observer.disconnect()
-    extractAudioList()
-  }, 10000)
+    if (!executed) {
+      observer.disconnect()
+      extractAudioList()  // 超时后仍然尝试提取
+    }
+  }, 3000)
 }
 // ===== 等待结束 =====
 
