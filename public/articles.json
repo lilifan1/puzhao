@@ -620,12 +620,20 @@
             "group_title": "每日学习|每日畅听|睡前一听",
             "items": [
                 {
-                    "title": "每日学习",
+                    "title": "每日学习2026",
+                    "url": "article.html#\/forumdisplay\/fid\/1457"
+                },
+                {
+                    "title": "每日学习往期",
                     "url": "article.html#\/forumdisplay\/fid\/1326"
                 },
                 {
-                    "title": "每日畅听",
+                    "title": "每日畅听2026",
                     "url": "article.html#\/forumdisplay\/fid\/1335"
+                },
+                {
+                    "title": "每日畅听2025",
+                    "url": "article.html#\/forumdisplay\/fid\/1431"
                 },
                 {
                     "title": "睡前一听",
@@ -1024,7 +1032,7 @@
                 },
                 {
                     "title": "感动视频",
-                    "url": "article.html#\/forumdisplay\/fid\/347"
+                    "url": "article.html#\/forumdisplay\/fid\/1447"
                 },
                 {
                     "title": "恩师寄语",
@@ -1391,7 +1399,11 @@
             "group_title": "留言板选摘",
             "items": [
                 {
-                    "title": "留言板选摘",
+                    "title": "留言板选摘2026",
+                    "url": "article.html#\/forumdisplay\/fid\/1439"
+                },
+                {
+                    "title": "留言板选摘往期",
                     "url": "article.html#\/forumdisplay\/fid\/409"
                 },
                 {
