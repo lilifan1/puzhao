@@ -416,6 +416,40 @@ const extractAudioList = (retryCount = 0) => {
   }
 }
 
+// ===== 等待音频列表出现 =====
+const waitForAudioList = () => {
+  const contentEl = document.querySelector('.content')
+  if (!contentEl) {
+    setTimeout(() => waitForAudioList(), 500)
+    return
+  }
+
+  const existingUl = contentEl.querySelector('ul.sm2-playlist-bd')
+  if (existingUl) {
+    extractAudioList()
+    return
+  }
+
+  const observer = new MutationObserver(() => {
+    const ul = contentEl.querySelector('ul.sm2-playlist-bd')
+    if (ul) {
+      observer.disconnect()
+      extractAudioList()
+    }
+  })
+
+  observer.observe(contentEl, {
+    childList: true,
+    subtree: true
+  })
+
+  setTimeout(() => {
+    observer.disconnect()
+    extractAudioList()
+  }, 10000)
+}
+// ===== 等待结束 =====
+
 const moveAudioListAfterTitle = () => {
   const contentEl = document.querySelector('.content')
   if (!contentEl) return
@@ -899,6 +933,7 @@ const loadPost = async (tid) => {
     nextTick(() => {
       setTimeout(() => {
         extractAudioList()
+        waitForAudioList()
         extractVideoList()
         bindLinkHandler()
         setupMediaObserver()
@@ -990,6 +1025,7 @@ watch(post, () => {
   if (post.value) {
     nextTick(() => {
       setTimeout(() => {
+        waitForAudioList()
         bindLinkHandler()
         setupMediaObserver()
       }, 500)
