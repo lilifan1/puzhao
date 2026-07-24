@@ -397,7 +397,7 @@ const extractAudioList = (retryCount = 0) => {
     
     // ===== 删除“更多精彩”目录 =====
     const allElements = contentEl.querySelectorAll('*')
-    const keywords = ['更多精彩请点击以下目录', '更多精彩', '每日学习', '每日畅听', '白话佛法', '入门知识', '感动视频', '广播讲座', '睡前一听', '博客留言', '法會开示']
+    const keywords = ['更多精彩请点击以下目录', '更多精彩', '备用音频', '每日学习', '每日畅听', '白话佛法', '入门知识', '感动视频', '广播讲座', '睡前一听', '博客留言', '法會开示']
     allElements.forEach(el => {
       const text = el.textContent || ''
       let matchCount = 0
