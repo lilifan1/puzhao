@@ -133,7 +133,7 @@ const onSearchFocus = () => {
     return
   }
   isKeywordSuggestion.value = true
-  suggestions.value = hotKeywords.slice(0, 19) // 改为19个
+  suggestions.value = hotKeywords.slice(0, 19) 
 }
 
 const selectSuggestion = (item) => {

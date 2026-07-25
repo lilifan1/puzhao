@@ -162,8 +162,8 @@ const handleLinkClick = (url) => {
 
 .accordion-header-text {
   font-size: 20px;
-  color: #785635;
-  font-weight: 500;
+  color: #5a3f1e;
+  font-weight: 600;
   flex: 1;
 }
 
@@ -197,9 +197,10 @@ const handleLinkClick = (url) => {
 .submenu-item a {
   display: block;
   padding: 12px 20px;
-  color: #6b4d2d;
+  color: #4a3220;
   text-decoration: none;
-  font-size: 15px;
+  font-size: 17px;
+  font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s;
 }
