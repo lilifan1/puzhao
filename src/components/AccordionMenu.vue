@@ -78,7 +78,6 @@ onMounted(async () => {
 })
 
 // ===== 恢复展开状态 =====
-// ===== 恢复展开状态 =====
 const restoreAccordionState = () => {
   const saved = getOpenItem()
   if (!saved) return
@@ -86,16 +85,15 @@ const restoreAccordionState = () => {
   const { catName, groupTitle } = saved
   if (!catName || !groupTitle) return
   
-  // 遍历查找对应的元素
+  let targetHeader = null
+  
   const headers = document.querySelectorAll('.accordion-header')
   for (const header of headers) {
     const textSpan = header.querySelector('.accordion-header-text')
     if (textSpan) {
-      // 清除多余空格和换行符后再比较
       const text = textSpan.textContent.replace(/\s+/g, ' ').trim()
       const targetText = groupTitle.replace(/\s+/g, ' ').trim()
       if (text === targetText) {
-        // 检查这个 header 是否属于对应的分类
         const container = header.closest('.accordion-container')
         if (container) {
           const prevTitle = container.previousElementSibling
@@ -105,7 +103,7 @@ const restoreAccordionState = () => {
               const catText = titleSpan.textContent.replace(/\s+/g, ' ').trim()
               const targetCat = catName.replace(/\s+/g, ' ').trim()
               if (catText === targetCat) {
-                // 模拟点击展开
+                targetHeader = header
                 const content = header.nextElementSibling
                 const icon = header.querySelector('.accordion-icon')
                 if (content && !content.style.maxHeight) {
@@ -119,6 +117,15 @@ const restoreAccordionState = () => {
         }
       }
     }
+  }
+  
+  // ===== 定位到展开的栏目 =====
+  if (targetHeader) {
+    setTimeout(() => {
+      const rect = targetHeader.getBoundingClientRect()
+      const top = rect.top + window.pageYOffset - 80 // 80px 偏移，避免被顶部栏遮挡
+      window.scrollTo({ top, behavior: 'smooth' })
+    }, 350) // 等待展开动画完成后再滚动
   }
 }
 
