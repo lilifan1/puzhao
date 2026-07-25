@@ -218,6 +218,9 @@ const goBack = () => {
     router.push('/?from=search')
     return
   }
+  // 从帖子返回时带上栏目标识
+  const category = sessionStorage.getItem('activeCategory') || ''
+  router.push(`/?category=${encodeURIComponent(category)}`)
   window.history.back()
 }
 

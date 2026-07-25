@@ -8,14 +8,14 @@
       </div>
       <div class="accordion-container">
         <div v-for="(group, gIndex) in groups" :key="gIndex" class="accordion-item">
-          <div class="accordion-header" @click="toggleAccordion($event, index, gIndex)">
+          <div class="accordion-header" @click="toggleAccordion($event, catName, group.group_title)">
             <span class="accordion-header-text">{{ group.group_title }}</span>
-            <span class="accordion-icon" :ref="`icon_${index}_${gIndex}`">▶</span>
+            <span class="accordion-icon" :ref="`icon_${catName}_${group.group_title}`">▶</span>
           </div>
-          <div class="accordion-content" :ref="`content_${index}_${gIndex}`">
+          <div class="accordion-content" :ref="`content_${catName}_${group.group_title}`">
             <ul class="submenu">
               <li v-for="(item, i) in group.items" :key="i" class="submenu-item">
-                <a :href="item.url" @click.prevent="handleLinkClick(item.url)">
+                <a :href="item.url" @click.prevent="handleLinkClick(item.url, catName, group.group_title)">
                   {{ item.title }}
                 </a>
               </li>
@@ -28,25 +28,89 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const categories = ref({})
 
-// 加载 JSON 数据
+// ===== 展开状态存储 =====
+const SESSION_KEY = 'accordion_open_item'
+
+// 保存当前展开的栏目（分类名 + 组名）
+const saveOpenItem = (catName, groupTitle) => {
+  if (catName && groupTitle) {
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ catName, groupTitle }))
+  }
+}
+
+// 获取保存的展开栏目
+const getOpenItem = () => {
+  try {
+    const saved = sessionStorage.getItem(SESSION_KEY)
+    return saved ? JSON.parse(saved) : null
+  } catch {
+    return null
+  }
+}
+
+// 清除保存的展开状态（可选的清除方法）
+const clearOpenItem = () => {
+  sessionStorage.removeItem(SESSION_KEY)
+}
+
+// ===== 加载数据 =====
 onMounted(async () => {
   try {
     const res = await fetch('/articles.json?_=' + Date.now())
     if (!res.ok) throw new Error('加载失败')
     categories.value = await res.json()
+    
+    // 数据加载完成后，恢复展开状态
+    await nextTick()
+    restoreAccordionState()
   } catch (e) {
     console.error('手风琴数据加载失败:', e)
   }
 })
 
-// 切换手风琴
-const toggleAccordion = (event, catIndex, groupIndex) => {
+// ===== 恢复展开状态 =====
+const restoreAccordionState = () => {
+  const saved = getOpenItem()
+  if (!saved) return
+  
+  const { catName, groupTitle } = saved
+  if (!catName || !groupTitle) return
+  
+  // 遍历查找对应的元素
+  const headers = document.querySelectorAll('.accordion-header')
+  for (const header of headers) {
+    const textSpan = header.querySelector('.accordion-header-text')
+    if (textSpan && textSpan.textContent.trim() === groupTitle) {
+      // 检查这个 header 是否属于对应的分类
+      const container = header.closest('.accordion-container')
+      if (container) {
+        const prevTitle = container.previousElementSibling
+        if (prevTitle && prevTitle.classList.contains('category-title')) {
+          const titleSpan = prevTitle.querySelector('.category-title-text')
+          if (titleSpan && titleSpan.textContent.trim() === catName) {
+            // 模拟点击展开
+            const content = header.nextElementSibling
+            const icon = header.querySelector('.accordion-icon')
+            if (content && !content.style.maxHeight) {
+              content.style.maxHeight = content.scrollHeight + 'px'
+              if (icon) icon.classList.add('active')
+            }
+            break
+          }
+        }
+      }
+    }
+  }
+}
+
+// ===== 切换手风琴 =====
+const toggleAccordion = (event, catName, groupTitle) => {
   const content = event.currentTarget.nextElementSibling
   const icon = event.currentTarget.querySelector('.accordion-icon')
   
@@ -62,17 +126,28 @@ const toggleAccordion = (event, catIndex, groupIndex) => {
     })
   }
   
+  // 切换当前项
   if (content.style.maxHeight) {
     content.style.maxHeight = null
     icon.classList.remove('active')
+    // 如果关闭的是当前保存的项，清除保存状态
+    const saved = getOpenItem()
+    if (saved && saved.catName === catName && saved.groupTitle === groupTitle) {
+      sessionStorage.removeItem(SESSION_KEY)
+    }
   } else {
     content.style.maxHeight = content.scrollHeight + 'px'
     icon.classList.add('active')
+    // 保存当前展开的项
+    saveOpenItem(catName, groupTitle)
   }
 }
 
-// 处理链接点击 - 支持哈希路由
-const handleLinkClick = (url) => {
+// ===== 处理链接点击 =====
+const handleLinkClick = (url, catName, groupTitle) => {
+  // 保存当前展开状态，返回时恢复
+  saveOpenItem(catName, groupTitle)
+  
   // 帖子链接：article.html#/viewthread/tid/xxx
   const tidMatch = url.match(/article\.html#\/viewthread\/tid\/(\d+)/)
   if (tidMatch) {
@@ -97,6 +172,9 @@ const handleLinkClick = (url) => {
   // 其他链接跳转到首页
   router.push('/')
 }
+
+// 暴露清除方法（可选）
+defineExpose({ clearOpenItem })
 </script>
 
 <style scoped>
