@@ -558,7 +558,7 @@ const toggleSortOrder = () => {
 const loadForum = async () => {
   loading.value = true
   subForums.value = []
-  parentFid.value = null  // 重置父版块
+  parentFid.value = null
   
   const newFid = parseInt(route.params.fid)
   if (!newFid) {
@@ -567,30 +567,23 @@ const loadForum = async () => {
   }
   fid.value = newFid
   
-  // ===== 调试：打印映射表结果 =====
-  console.log('当前 fid:', fid.value)
-  console.log('forumNames 中的值:', forumNames[fid.value])
-  // ===== 调试结束 =====
-  
-  forumName.value = forumNames[fid.value] || `版块 ${fid.value}`
-  // ...
-}
-
   const savedSort = localStorage.getItem(`forum_sort_${fid.value}`)
   if (savedSort) {
     sortOrder.value = savedSort
   }
   
   try {
-    // ===== 获取版块信息（含父版块） =====
+    // ===== 强制使用映射表显示版块名称 =====
+    forumName.value = forumNames[String(fid.value)] || `版块 ${fid.value}`
+    
+    // ===== 获取父版块信息（不覆盖 forumName） =====
     const forumRes = await fetch(`${baseUrl}?action=forum&fid=${fid.value}`)
     const forumData = await forumRes.json()
     if (forumData.code === 0 && forumData.data) {
-      forumName.value = forumData.data.name || `版块 ${fid.value}`
-      parentFid.value = forumData.data.fup || null  // 保存父版块
+      parentFid.value = forumData.data.fup || null
     }
     
-    // 获取帖子列表
+    // ===== 获取帖子列表 =====
     const res = await fetch(`${baseUrl}?action=list&fid=${fid.value}&page=${page.value}&limit=${perPage}`)
     const data = await res.json()
     if (data.code === 0) {
