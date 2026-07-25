@@ -567,6 +567,15 @@ const loadForum = async () => {
   }
   fid.value = newFid
   
+  // ===== 调试：打印映射表结果 =====
+  console.log('当前 fid:', fid.value)
+  console.log('forumNames 中的值:', forumNames[fid.value])
+  // ===== 调试结束 =====
+  
+  forumName.value = forumNames[fid.value] || `版块 ${fid.value}`
+  // ...
+}
+
   const savedSort = localStorage.getItem(`forum_sort_${fid.value}`)
   if (savedSort) {
     sortOrder.value = savedSort
