@@ -101,7 +101,7 @@ const hasMore = ref(true)
 const parentFid = ref(null)  // ===== 新增：父版块 ID =====
 
 const forumNames = {
-  '1326': '每日学习',
+  '1325': '每日学习',
   '1457': '每日学习2026',
   '1458': '每日学习2025',
   '1459': '每日学习2024',
