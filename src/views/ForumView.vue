@@ -1,7 +1,14 @@
 <template>
   <div class="container">
     <div class="forum-header">
-      <router-link to="/" class="back">← 返回资料集首页</router-link>
+      <!-- ===== 第一行：返回按钮 ===== -->
+      <div class="forum-nav-links">
+        <router-link to="/" class="back">← 返回资料集首页</router-link>
+        <router-link v-if="parentFid" :to="`/forum/${parentFid}`" class="back back-parent">
+          ← 返回上一级
+        </router-link>
+      </div>
+      <!-- ===== 第二行：标题 + 排序 ===== -->
       <div class="forum-title-row">
         <h1>{{ forumName }}</h1>
         <button 
@@ -26,7 +33,6 @@
         {{ num }}
       </button>
     </div>
-    <!-- ===== 顶部页码结束 ===== -->
 
     <div v-if="loading">⏳ 加载中...</div>
     <div v-else-if="posts.length === 0 && subForums.length === 0" class="empty">该版块暂无帖子</div>
@@ -57,9 +63,8 @@
       <div class="pagination-left">
         <a href="#" @click.prevent="prevPage" :class="{ disabled: page <= 1 }">‹ 上一页</a>
         <span class="page-info">第 {{ page }} 页</span>
-        <a href="#" @click.prevent="nextPage" :class="{ disabled: posts.length < perPage }">下一页 ›</a>
+        <a href="#" @click.prevent="nextPage" :class="{ disabled: !hasMore }">下一页 ›</a>
       </div>
-      <!-- ===== 底部跳转输入 ===== -->
       <div class="page-jump">
         <span class="jump-label">跳转到</span>
         <input 
@@ -72,16 +77,16 @@
         <span class="jump-label">页</span>
         <button @click="goToPage" class="jump-btn">GO</button>
       </div>
-      <!-- ===== 底部跳转结束 ===== -->
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
+const router = useRouter()
 const posts = ref([])
 const loading = ref(true)
 const forumName = ref('版块帖子')
@@ -93,6 +98,7 @@ const sortOrder = ref('desc')
 const jumpPage = ref(1)
 const pageNumbers = ref([])
 const hasMore = ref(true)
+const parentFid = ref(null)  // ===== 新增：父版块 ID =====
 
 const forumNames = {
   '1326': '每日学习',
@@ -477,6 +483,62 @@ const forumNames = {
   '1186': '台长语',
   '1187': '观音堂',
   '1188': '弟子证',
+  '647': '一键畅听',
+  '621': '法门相关',
+  '622': '皈依拜师',
+  '623': '许愿求愿',
+  '624': '放生护生',
+  '625': '吃素养生',
+  '626': '修心修行',
+  '627': '弘法度人',
+  '628': '因果业障',
+  '629': '关劫相关',
+  '630': '疾病医药',
+  '631': '超度往生',
+  '632': '魂魄相关',
+  '633': '天地人',
+  '634': '婚姻情感',
+  '635': '教育伦理',
+  '636': '工作事业',
+  '637': '取名改名',
+  '638': '居家风水',
+  '639': '节日节气',
+  '640': '佛台供奉',
+  '641': '升文相关',
+  '642': '经文念诵',
+  '643': '小房子',
+  '644': '自修经文',
+  '645': '法会相关',
+  '646': '梦境解梦',
+  '245': '许愿违愿',
+'229': '放生',
+'233': '念经',
+'227': '大忏悔',
+'236': '佛台',
+'327': '戒淫清修',
+'328': '戒杀吃素',
+'230': '吊坠法宝',
+'291': '经典组合',
+'232': '流产打胎',
+'237': '生活情感',
+'320': '护法弘法',
+'231': '集资敛财',
+'238': '持戒实修',
+'240': '工作学业',
+'242': '感应偏差',
+'250': '白话佛法',
+'253': '尊师重道',
+'267': '往生超度',
+'1324': '一世修成',
+'422': '因果业障',
+'421': '三六九犯太岁',
+'435': '布施功德',
+'1345': '忍辱',
+'1346': '精进',
+'1347': '禅定',
+'1348': '般若',
+'1349': '正念修心',
+'1350': '疾病调理',
 }
 
 const baseUrl = 'https://www.dadaozjzhitojian.cloud/sina/ff/safe_api.php'
@@ -490,15 +552,37 @@ const toggleSortOrder = () => {
   sortOrder.value = sortOrder.value === 'desc' ? 'asc' : 'desc'
   localStorage.setItem(`forum_sort_${fid.value}`, sortOrder.value)
   page.value = 1
-  loadPosts()
+  loadForum()
 }
 
-const loadPosts = async () => {
+const loadForum = async () => {
   loading.value = true
   subForums.value = []
+  parentFid.value = null  // 重置父版块
+  
+  const newFid = parseInt(route.params.fid)
+  if (!newFid) {
+    loading.value = false
+    return
+  }
+  fid.value = newFid
+  
+  const savedSort = localStorage.getItem(`forum_sort_${fid.value}`)
+  if (savedSort) {
+    sortOrder.value = savedSort
+  }
+  
   try {
-    const url = `${baseUrl}?action=list&fid=${fid.value}&page=${page.value}&limit=${perPage}`
-    const res = await fetch(url)
+    // ===== 获取版块信息（含父版块） =====
+    const forumRes = await fetch(`${baseUrl}?action=forum&fid=${fid.value}`)
+    const forumData = await forumRes.json()
+    if (forumData.code === 0 && forumData.data) {
+      forumName.value = forumData.data.name || `版块 ${fid.value}`
+      parentFid.value = forumData.data.fup || null  // 保存父版块
+    }
+    
+    // 获取帖子列表
+    const res = await fetch(`${baseUrl}?action=list&fid=${fid.value}&page=${page.value}&limit=${perPage}`)
     const data = await res.json()
     if (data.code === 0) {
       const rawData = data.data || []
@@ -517,7 +601,7 @@ const loadPosts = async () => {
       
       if (posts.value.length === 0 && page.value > 1) {
         page.value = 1
-        await loadPosts()
+        await loadForum()
         return
       }
       
@@ -547,7 +631,7 @@ const loadSubForums = async () => {
 const prevPage = () => {
   if (page.value > 1) {
     page.value--
-    loadPosts()
+    loadForum()
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 }
@@ -555,7 +639,7 @@ const prevPage = () => {
 const nextPage = () => {
   if (hasMore.value) {
     page.value++
-    loadPosts()
+    loadForum()
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 }
@@ -563,7 +647,7 @@ const nextPage = () => {
 const goToPage = () => {
   if (jumpPage.value >= 1) {
     page.value = jumpPage.value
-    loadPosts()
+    loadForum()
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 }
@@ -571,7 +655,7 @@ const goToPage = () => {
 const goToPageNum = (num) => {
   if (num >= 1 && num !== page.value) {
     page.value = num
-    loadPosts()
+    loadForum()
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 }
@@ -580,33 +664,21 @@ watch(
   () => route.params.fid,
   (newFid) => {
     if (newFid) {
-      fid.value = parseInt(newFid)
       page.value = 1
-      forumName.value = forumNames[newFid] || `版块 ${newFid}`
-      const savedSort = localStorage.getItem(`forum_sort_${fid.value}`)
-      sortOrder.value = savedSort || 'desc'
-      loadPosts()
+      loadForum()
     }
   }
 )
 
 onMounted(() => {
-  const fidParam = route.params.fid
-  if (fidParam) {
-    fid.value = parseInt(fidParam)
-    forumName.value = forumNames[fidParam] || `版块 ${fidParam}`
-    const savedSort = localStorage.getItem(`forum_sort_${fid.value}`)
-    sortOrder.value = savedSort || 'desc'
-    loadPosts()
-  } else {
-    loading.value = false
-  }
+  loadForum()
 })
 </script>
 
 <style scoped>
 .container { max-width: 800px; margin: 0 auto; padding: 20px; background: #fef9e7; min-height: 100vh; }
 
+/* ===== 导航栏 ===== */
 .forum-header {
   display: flex;
   flex-direction: column;
@@ -614,12 +686,10 @@ onMounted(() => {
   margin-bottom: 12px;
 }
 
-.forum-title-row {
+.forum-nav-links {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  gap: 12px;
   flex-wrap: wrap;
-  gap: 10px;
 }
 
 .back {
@@ -633,7 +703,6 @@ onMounted(() => {
   font-size: 14px;
   font-weight: 500;
   transition: all 0.3s ease;
-  align-self: flex-start;
 }
 .back:hover {
   background: linear-gradient(145deg, #f1c40f, #d4ac0d);
@@ -641,6 +710,22 @@ onMounted(() => {
   transform: translateY(-1px);
   box-shadow: 0 3px 8px rgba(180, 130, 30, 0.25);
   text-decoration: none;
+}
+
+.back-parent {
+  background: #e8d5a0;
+}
+.back-parent:hover {
+  background: #d4ac0d;
+  color: #fff;
+}
+
+.forum-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 h1 { 
@@ -672,6 +757,7 @@ h1 {
   box-shadow: 0 3px 8px rgba(180, 130, 30, 0.25);
 }
 
+/* ===== 顶部页码 ===== */
 .top-page-numbers {
   display: flex;
   flex-wrap: wrap;
@@ -701,85 +787,23 @@ h1 {
   border-color: #d4ac0d;
 }
 
-/* 帖子列表 - 与搜索结果样式统一 */
-ul { 
-  list-style: none; 
-  padding: 0; 
-}
-ul li { 
-  padding: 12px 15px; 
-  background: #fdf6e0; 
-  margin-bottom: 8px; 
-  border-radius: 6px; 
-  border: 1px solid #f0e0b8; 
-  transition: all 0.2s; 
-}
-ul li:hover { 
-  box-shadow: 0 2px 8px rgba(180, 130, 30, 0.15); 
-  border-color: #e6c88a; 
-}
-ul li a { 
-  text-decoration: none; 
-  color: #5a3f1e; 
-  font-weight: 600; 
-  font-size: 17px; 
-}
-ul li a:hover { 
-  color: #b8860b; 
-}
-.author { 
-  color: #a07d4a; 
-  font-size: 12px; 
-  margin-left: 4px; 
-}
-.meta { 
-  color: #b8950a; 
-  font-size: 10px; 
-  float: right; 
-}
+ul { list-style: none; padding: 0; }
+li { padding: 12px 15px; background: #fdf6e0; margin-bottom: 8px; border-radius: 6px; border: 1px solid #f0e0b8; transition: all 0.2s; }
+li:hover { box-shadow: 0 2px 8px rgba(180, 130, 30, 0.15); border-color: #e6c88a; }
+ul li a { text-decoration: none; color: #5a3f1e; font-weight: 600; font-size: 17px; }
+ul li a:hover { color: #b8860b; }
+.author { color: #a07d4a; font-size: 14px; margin-left: 4px; }
+.meta { color: #b8950a; font-size: 12px; float: right; }
 .empty { color: #999; text-align: center; padding: 40px 0; }
 
-.sub-forums {
-  margin: 20px 0;
-  padding: 15px;
-  background: #fdf6e0;
-  border-radius: 8px;
-  border: 1px solid #f0e0b8;
-}
-.sub-forums h3 {
-  color: #7a5d2e;
-  margin-bottom: 15px;
-  font-size: 17px;
-}
-.sub-forums ul {
-  list-style: none;
-  padding: 0;
-}
-.sub-forums li {
-  padding: 10px 15px;
-  border-bottom: 1px solid #f0f0f0;
-  background: transparent;
-  box-shadow: none;
-  margin: 0;
-  border-radius: 0;
-}
-.sub-forums li:last-child {
-  border-bottom: none;
-}
-.sub-forums a {
-  font-weight: 600;
-  font-size: 17px;
-  color: #5a3f1e;
-  text-decoration: none;
-}
-.sub-forums a:hover {
-  color: #b8860b;
-}
-.sub-meta {
-  color: #a07d4a;
-  font-size: 14px;
-  margin-left: 8px;
-}
+.sub-forums { margin: 20px 0; padding: 15px; background: #fdf6e0; border-radius: 8px; border: 1px solid #f0e0b8; }
+.sub-forums h3 { color: #7a5d2e; margin-bottom: 15px; font-size: 18px; }
+.sub-forums ul { list-style: none; padding: 0; }
+.sub-forums li { padding: 10px 15px; border-bottom: 1px solid #f0f0f0; background: transparent; box-shadow: none; margin: 0; border-radius: 0; }
+.sub-forums li:last-child { border-bottom: none; }
+.sub-forums a { font-weight: 600; font-size: 17px; color: #5a3f1e; text-decoration: none; }
+.sub-forums a:hover { color: #b8860b; }
+.sub-meta { color: #a07d4a; font-size: 14px; margin-left: 8px; }
 
 .pagination-nav {
   display: flex;
@@ -814,7 +838,6 @@ ul li a:hover {
   color: #fff;
   transform: translateY(-1px);
   box-shadow: 0 3px 8px rgba(180, 130, 30, 0.25);
-  text-decoration: none;
 }
 .pagination-left a.disabled {
   color: #ccc !important;
