@@ -71,12 +71,13 @@ onMounted(async () => {
     // 延迟执行，确保所有元素都已渲染
     setTimeout(() => {
       restoreAccordionState()
-    }, 200)
+    }, 300)
   } catch (e) {
     console.error('手风琴数据加载失败:', e)
   }
 })
 
+// ===== 恢复展开状态 =====
 // ===== 恢复展开状态 =====
 const restoreAccordionState = () => {
   const saved = getOpenItem()
@@ -89,22 +90,31 @@ const restoreAccordionState = () => {
   const headers = document.querySelectorAll('.accordion-header')
   for (const header of headers) {
     const textSpan = header.querySelector('.accordion-header-text')
-    if (textSpan && textSpan.textContent.trim() === groupTitle) {
-      // 检查这个 header 是否属于对应的分类
-      const container = header.closest('.accordion-container')
-      if (container) {
-        const prevTitle = container.previousElementSibling
-        if (prevTitle && prevTitle.classList.contains('category-title')) {
-          const titleSpan = prevTitle.querySelector('.category-title-text')
-          if (titleSpan && titleSpan.textContent.trim() === catName) {
-            // 模拟点击展开
-            const content = header.nextElementSibling
-            const icon = header.querySelector('.accordion-icon')
-            if (content && !content.style.maxHeight) {
-              content.style.maxHeight = content.scrollHeight + 'px'
-              if (icon) icon.classList.add('active')
+    if (textSpan) {
+      // 清除多余空格和换行符后再比较
+      const text = textSpan.textContent.replace(/\s+/g, ' ').trim()
+      const targetText = groupTitle.replace(/\s+/g, ' ').trim()
+      if (text === targetText) {
+        // 检查这个 header 是否属于对应的分类
+        const container = header.closest('.accordion-container')
+        if (container) {
+          const prevTitle = container.previousElementSibling
+          if (prevTitle && prevTitle.classList.contains('category-title')) {
+            const titleSpan = prevTitle.querySelector('.category-title-text')
+            if (titleSpan) {
+              const catText = titleSpan.textContent.replace(/\s+/g, ' ').trim()
+              const targetCat = catName.replace(/\s+/g, ' ').trim()
+              if (catText === targetCat) {
+                // 模拟点击展开
+                const content = header.nextElementSibling
+                const icon = header.querySelector('.accordion-icon')
+                if (content && !content.style.maxHeight) {
+                  content.style.maxHeight = content.scrollHeight + 'px'
+                  if (icon) icon.classList.add('active')
+                }
+                break
+              }
             }
-            break
           }
         }
       }
