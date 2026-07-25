@@ -66,9 +66,12 @@ onMounted(async () => {
     if (!res.ok) throw new Error('加载失败')
     categories.value = await res.json()
     
-    // 数据加载完成后，恢复展开状态
+    // 等待 DOM 更新
     await nextTick()
-    restoreAccordionState()
+    // 延迟执行，确保所有元素都已渲染
+    setTimeout(() => {
+      restoreAccordionState()
+    }, 200)
   } catch (e) {
     console.error('手风琴数据加载失败:', e)
   }
