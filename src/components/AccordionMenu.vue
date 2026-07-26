@@ -60,21 +60,61 @@ const clearOpenItem = () => {
 }
 
 // ===== 加载数据 =====
-onMounted(async () => {
+// ===== 加载数据（带缓存） =====
+const loadData = async () => {
+  // 检查缓存
+  const cached = localStorage.getItem('articles_data')
+  const cachedTime = localStorage.getItem('articles_data_time')
+  const now = Date.now()
+  
+  // 如果缓存存在且未过期（24小时）
+  if (cached && cachedTime && (now - parseInt(cachedTime) < 24 * 60 * 60 * 1000)) {
+    try {
+      categories.value = JSON.parse(cached)
+      console.log('✅ 使用缓存的手风琴数据')
+      // 数据加载完成后恢复展开状态
+      await nextTick()
+      setTimeout(() => {
+        restoreAccordionState()
+      }, 100)
+      return
+    } catch (e) {}
+  }
+  
+  // 请求新数据
   try {
     const res = await fetch('/articles.json?_=' + Date.now())
     if (!res.ok) throw new Error('加载失败')
-    categories.value = await res.json()
+    const data = await res.json()
+    categories.value = data
+    localStorage.setItem('articles_data', JSON.stringify(data))
+    localStorage.setItem('articles_data_time', String(now))
+    console.log('✅ 已缓存手风琴数据')
     
-    // 等待 DOM 更新
+    // 数据加载完成后恢复展开状态
     await nextTick()
-    // 延迟执行，确保所有元素都已渲染
     setTimeout(() => {
       restoreAccordionState()
-    }, 300)
+    }, 100)
   } catch (e) {
     console.error('手风琴数据加载失败:', e)
+    // 如果请求失败，尝试使用过期缓存
+    if (cached) {
+      try {
+        categories.value = JSON.parse(cached)
+        console.log('⚠️ 使用过期缓存数据')
+        await nextTick()
+        setTimeout(() => {
+          restoreAccordionState()
+        }, 100)
+      } catch (e2) {}
+    }
   }
+}
+
+// 在 onMounted 中调用 loadData
+onMounted(() => {
+  loadData()
 })
 
 // ===== 恢复展开状态 =====
