@@ -233,6 +233,9 @@ onMounted(() => {
     keyword.value = decodeURIComponent(urlKeyword)
     currentPage.value = parseInt(route.query.page) || 1
     doSearch()
+    // ===== 如果有搜索关键词，清除手风琴保存的状态 =====
+    sessionStorage.removeItem('accordion_open_item')
+    // ===== 清除结束 =====
   } else {
     restoreSearchState()
   }
