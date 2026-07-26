@@ -3,11 +3,16 @@
     <div class="forum-header">
       <!-- ===== 第一行：返回按钮 ===== -->
       <div class="forum-nav-links">
-        <router-link to="/" class="back">← 返回资料集首页</router-link>
-        <router-link v-if="parentFid" :to="`/forum/${parentFid}`" class="back back-parent">
-          ← 返回上一级
-        </router-link>
-      </div>
+  <router-link to="/" class="back">← 返回资料集首页</router-link>
+  <!-- 只有当存在父版块 且 当前没有子版块时才显示返回上一级 -->
+  <router-link 
+    v-if="parentFid && parentFid !== 0 && subForums.length === 0" 
+    :to="`/forum/${parentFid}`" 
+    class="back back-parent"
+  >
+    ← 返回上一级
+  </router-link>
+</div>
       <!-- ===== 第二行：标题 + 排序 ===== -->
       <div class="forum-title-row">
         <h1>{{ forumName }}</h1>
@@ -578,11 +583,10 @@ const loadForum = async () => {
     
     // ===== 获取父版块信息（不覆盖 forumName） =====
     const forumRes = await fetch(`${baseUrl}?action=forum&fid=${fid.value}`)
-const forumData = await forumRes.json()
-if (forumData.code === 0 && forumData.data) {
-  parentFid.value = forumData.data.fup || null
-  console.log('fid:', fid.value, 'fup:', forumData.data.fup)
-}
+    const forumData = await forumRes.json()
+    if (forumData.code === 0 && forumData.data) {
+      parentFid.value = forumData.data.fup || null
+    }
     
     // ===== 获取帖子列表 =====
     const res = await fetch(`${baseUrl}?action=list&fid=${fid.value}&page=${page.value}&limit=${perPage}`)
