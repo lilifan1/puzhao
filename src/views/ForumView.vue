@@ -1,30 +1,19 @@
 <template>
   <div class="container">
     <div class="forum-header">
-      <!-- ===== 第一行：返回按钮 ===== -->
-      <div class="forum-nav-links">
-  <router-link to="/" class="back">← 返回资料集首页</router-link>
-  <!-- 只有当存在父版块 且 当前没有子版块时才显示返回上一级 -->
-  <router-link 
-    v-if="parentFid && parentFid !== 0 && subForums.length === 0" 
-    :to="`/forum/${parentFid}`" 
-    class="back back-parent"
-  >
-    ← 返回上一级
-  </router-link>
+  <div class="forum-nav-links">
+    <router-link to="/" class="back">← 返回资料集首页</router-link>
+    <button @click="goBack" class="back back-parent">
+      ← 返回上一级
+    </button>
+  </div>
+  <div class="forum-title-row">
+    <h1>{{ forumName }}</h1>
+    <button @click="toggleSortOrder" class="sort-btn">
+      {{ sortOrder === 'desc' ? '📅 倒序' : '📅 正序' }}
+    </button>
+  </div>
 </div>
-      <!-- ===== 第二行：标题 + 排序 ===== -->
-      <div class="forum-title-row">
-        <h1>{{ forumName }}</h1>
-        <button 
-          @click="toggleSortOrder" 
-          class="sort-btn"
-          :title="sortOrder === 'desc' ? '点击切换为正序（从旧到新）' : '点击切换为倒序（从新到旧）'"
-        >
-          {{ sortOrder === 'desc' ? '📅 倒序' : '📅 正序' }}
-        </button>
-      </div>
-    </div>
 
     <!-- ===== 顶部页码 ===== -->
     <div v-if="pageNumbers.length > 1" class="top-page-numbers">
@@ -558,6 +547,11 @@ const toggleSortOrder = () => {
   localStorage.setItem(`forum_sort_${fid.value}`, sortOrder.value)
   page.value = 1
   loadForum()
+}
+
+// ===== 在 loadForum 前面添加 =====
+const goBack = () => {
+  window.history.back()
 }
 
 const loadForum = async () => {
