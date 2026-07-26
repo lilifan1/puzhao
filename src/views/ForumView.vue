@@ -578,10 +578,11 @@ const loadForum = async () => {
     
     // ===== 获取父版块信息（不覆盖 forumName） =====
     const forumRes = await fetch(`${baseUrl}?action=forum&fid=${fid.value}`)
-    const forumData = await forumRes.json()
-    if (forumData.code === 0 && forumData.data) {
-      parentFid.value = forumData.data.fup || null
-    }
+const forumData = await forumRes.json()
+if (forumData.code === 0 && forumData.data) {
+  parentFid.value = forumData.data.fup || null
+  console.log('fid:', fid.value, 'fup:', forumData.data.fup)
+}
     
     // ===== 获取帖子列表 =====
     const res = await fetch(`${baseUrl}?action=list&fid=${fid.value}&page=${page.value}&limit=${perPage}`)
