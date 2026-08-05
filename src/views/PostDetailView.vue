@@ -1085,7 +1085,7 @@ onMounted(async () => {
   background-color: #fef9e7;
   min-height: 100vh;
   border-radius: 8px;
-  box-shadow: 0 0 0 1px #e6c88a;  /* 外发光效果，不影响内部 */
+  box-shadow: 0 0 0 2px #e6c88a;  /* 2px 更明显 */
 }
 
 /* ===== 导航栏 ===== */
