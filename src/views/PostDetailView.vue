@@ -1085,7 +1085,6 @@ onMounted(async () => {
   background-color: #fef9e7;
   min-height: 100vh;
   border-radius: 8px;
-  border: 1px solid #e6c88a !important;  /* 加深边框颜色，强制生效 */
 }
 
 /* ===== 导航栏 ===== */
