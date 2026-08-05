@@ -1082,9 +1082,10 @@ onMounted(async () => {
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
-  background-color: #fefcf0;
+  background-color: #fef9e7; 
   min-height: 100vh;
   border-radius: 8px;
+  border: 1px solid #f0e0b8;  /* 加淡金色边框 */
 }
 
 /* ===== 导航栏 ===== */
