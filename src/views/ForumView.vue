@@ -533,6 +533,9 @@ const forumNames = {
 '1348': '般若',
 '1349': '正念修心',
 '1350': '疾病调理',
+'465': '中考、高考',
+'70': '一世修成',
+'101710': '师父的开示都可用来共修',
 }
 
 const baseUrl = 'https://www.dadaozjzhitojian.cloud/sina/ff/safe_api.php'
