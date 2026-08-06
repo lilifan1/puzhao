@@ -1082,10 +1082,9 @@ onMounted(async () => {
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
-  background: linear-gradient(135deg, #fef9e7 0%, #fcf0e0 100%);
+  background-color: #fef9e7;
   min-height: 100vh;
   border-radius: 8px;
-  border: 2px solid #e6c88a;  /* 手机上看2px更明显 */
 }
 
 /* ===== 导航栏 ===== */
