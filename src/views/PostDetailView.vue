@@ -86,8 +86,8 @@
   <button @click="videoFastUpdate(3)" class="ctrl-btn jump-btn">跳转</button>
   <!-- ===== 循环按钮 ===== -->
   <button @click="toggleLoop" class="ctrl-btn loop-btn" :class="{ active: loopMode }">
-    {{ loopMode ? '🔁 单曲循环' : '➡️ 顺序播放' }}
-  </button>
+  {{ loopMode ? '🔁 循环' : '⏹ 循环' }}
+</button>
 </div>
         <div class="video-list">
           <div 
@@ -145,7 +145,7 @@
   <button @click="audioFastUpdate(3)" class="ctrl-btn jump-btn">跳转</button>
   <!-- ===== 循环按钮 ===== -->
   <button @click="toggleLoop" class="ctrl-btn loop-btn" :class="{ active: loopMode }">
-  {{ loopMode ? '🔁 单曲循环' : '➡️ 顺序播放' }}
+  {{ loopMode ? '🔁 循环' : '⏹ 循环' }}
 </button>
 </div>
           <p class="play-status" v-if="audioList.length > 1">⏭️ 播放完成后将自动播放下一个 记忆续航</p>
@@ -342,7 +342,6 @@ const loopMode = ref(false)
 
 const toggleLoop = () => {
   loopMode.value = !loopMode.value
-  console.log(loopMode.value ? '🔁 单曲循环已开启' : '➡️ 顺序播放已开启')
 }
 // ===== 循环模式结束 =====
 
