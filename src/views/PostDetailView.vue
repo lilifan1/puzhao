@@ -86,8 +86,8 @@
   <button @click="audioFastUpdate(3)" class="ctrl-btn jump-btn">跳转</button>
   <!-- ===== 循环按钮 ===== -->
   <button @click="toggleLoop" class="ctrl-btn loop-btn" :class="{ active: loopMode }">
-    {{ loopMode ? '🔁 单曲循环' : '➡️ 顺序播放' }}
-  </button>
+  {{ loopMode ? '🔁 单曲循环' : '➡️ 顺序播放' }}
+</button>
 </div>
         <div class="video-list">
           <div 
@@ -1727,14 +1727,5 @@ onMounted(async () => {
     height: 42px;
     font-size: 20px;
   }
-}
-
-.loop-btn {
-  background: #e8d5a0;
-}
-.loop-btn.active {
-  background: #f1c40f;
-  color: #fff;
-  box-shadow: 0 0 8px rgba(241, 196, 15, 0.4);
 }
 </style>
