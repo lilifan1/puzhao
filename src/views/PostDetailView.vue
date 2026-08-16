@@ -74,20 +74,20 @@
           <button @click="nextVideo" :disabled="currentVideoIndex >= videoList.length - 1">下一个 ▶</button>
         </div>
         <div class="media-controls">
-  <button @click="audioFastUpdate(1)" class="ctrl-btn">⏪ 快退15秒</button>
-  <button @click="audioFastUpdate(2)" class="ctrl-btn">快进15秒 ⏩</button>
+  <button @click="videoFastUpdate(1)" class="ctrl-btn">⏪ 快退15秒</button>
+  <button @click="videoFastUpdate(2)" class="ctrl-btn">快进15秒 ⏩</button>
   <span class="ctrl-divider">|</span>
   <span class="ctrl-label">跳转：</span>
-  <input type="number" v-model.number="audioJumpHour" min="0" max="99" class="jump-input" placeholder="时">
+  <input type="number" v-model.number="videoJumpHour" min="0" max="99" class="jump-input" placeholder="时">
   <span class="jump-colon">:</span>
-  <input type="number" v-model.number="audioJumpMin" min="0" max="59" class="jump-input" placeholder="分">
+  <input type="number" v-model.number="videoJumpMin" min="0" max="59" class="jump-input" placeholder="分">
   <span class="jump-colon">:</span>
-  <input type="number" v-model.number="audioJumpSec" min="0" max="59" class="jump-input" placeholder="秒">
-  <button @click="audioFastUpdate(3)" class="ctrl-btn jump-btn">跳转</button>
+  <input type="number" v-model.number="videoJumpSec" min="0" max="59" class="jump-input" placeholder="秒">
+  <button @click="videoFastUpdate(3)" class="ctrl-btn jump-btn">跳转</button>
   <!-- ===== 循环按钮 ===== -->
   <button @click="toggleLoop" class="ctrl-btn loop-btn" :class="{ active: loopMode }">
-  {{ loopMode ? '🔁 单曲循环' : '➡️ 顺序播放' }}
-</button>
+    {{ loopMode ? '🔁 单曲循环' : '➡️ 顺序播放' }}
+  </button>
 </div>
         <div class="video-list">
           <div 
@@ -133,17 +133,21 @@
           ></audio>
           <p>正在播放：{{ currentAudio.title }}</p>
           <div class="media-controls">
-            <button @click="audioFastUpdate(1)" class="ctrl-btn">⏪ 快退15秒</button>
-            <button @click="audioFastUpdate(2)" class="ctrl-btn">快进15秒 ⏩</button>
-            <span class="ctrl-divider">|</span>
-            <span class="ctrl-label">跳转：</span>
-            <input type="number" v-model.number="audioJumpHour" min="0" max="99" class="jump-input" placeholder="时">
-            <span class="jump-colon">:</span>
-            <input type="number" v-model.number="audioJumpMin" min="0" max="59" class="jump-input" placeholder="分">
-            <span class="jump-colon">:</span>
-            <input type="number" v-model.number="audioJumpSec" min="0" max="59" class="jump-input" placeholder="秒">
-            <button @click="audioFastUpdate(3)" class="ctrl-btn jump-btn">跳转</button>
-          </div>
+  <button @click="audioFastUpdate(1)" class="ctrl-btn">⏪ 快退15秒</button>
+  <button @click="audioFastUpdate(2)" class="ctrl-btn">快进15秒 ⏩</button>
+  <span class="ctrl-divider">|</span>
+  <span class="ctrl-label">跳转：</span>
+  <input type="number" v-model.number="audioJumpHour" min="0" max="99" class="jump-input" placeholder="时">
+  <span class="jump-colon">:</span>
+  <input type="number" v-model.number="audioJumpMin" min="0" max="59" class="jump-input" placeholder="分">
+  <span class="jump-colon">:</span>
+  <input type="number" v-model.number="audioJumpSec" min="0" max="59" class="jump-input" placeholder="秒">
+  <button @click="audioFastUpdate(3)" class="ctrl-btn jump-btn">跳转</button>
+  <!-- ===== 循环按钮 ===== -->
+  <button @click="toggleLoop" class="ctrl-btn loop-btn" :class="{ active: loopMode }">
+  {{ loopMode ? '🔁 单曲循环' : '➡️ 顺序播放' }}
+</button>
+</div>
           <p class="play-status" v-if="audioList.length > 1">⏭️ 播放完成后将自动播放下一个 记忆续航</p>
         </div>
         <ul>
@@ -1681,13 +1685,12 @@ onMounted(async () => {
 }
 
 /* ===== 循环按钮 ===== */
+.ctrl-btn.loop-btn,
 .loop-btn {
-  background: #e8d5a0;
-}
-.loop-btn.active {
-  background: #f1c40f;
-  color: #fff;
-  box-shadow: 0 0 8px rgba(241, 196, 15, 0.4);
+  background: #e8d5a0 !important;
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 /* ===== 返回顶部 ===== */
