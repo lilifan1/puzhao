@@ -329,6 +329,15 @@ const videoFastUpdate = (type) => {
   }
 }
 
+// ===== 循环模式 =====
+const loopMode = ref(false)
+
+const toggleLoop = () => {
+  loopMode.value = !loopMode.value
+  console.log(loopMode.value ? '🔁 单曲循环已开启' : '➡️ 顺序播放已开启')
+}
+// ===== 循环模式结束 =====
+
 // ==================== 音频 ====================
 const extractAudioList = (retryCount = 0) => {
   const contentEl = document.querySelector('.content')
@@ -519,34 +528,23 @@ const moveAudioListAfterTitle = () => {
 const playAudio = (index) => {
   if (index >= 0 && index < audioList.value.length) {
     const item = audioList.value[index]
-    
-    // ===== 判断是否点击的是同一个音频 =====
-    const isSameAudio = currentAudioIndex.value === index && currentAudio.value?.url === item.url
-    
     currentAudioIndex.value = index
     currentAudio.value = { 
       url: item.url, 
       title: item.title 
     }
     
+    const key = `audio_progress_${item.url}`
+    const savedTime = localStorage.getItem(key)
+    
     nextTick(() => {
       const player = audioPlayer.value
       if (player) {
-        if (isSameAudio) {
-          // ===== 点击同一个音频：从头播放 =====
-          player.currentTime = 0
-          player.play().catch(() => {})
-          console.log('🔄 重听当前音频，从头播放')
-        } else {
-          // ===== 切换到其他音频：恢复进度 =====
-          const key = `audio_progress_${item.url}`
-          const savedTime = localStorage.getItem(key)
-          if (savedTime && !isNaN(parseFloat(savedTime)) && parseFloat(savedTime) > 0) {
-            player.currentTime = parseFloat(savedTime)
-            console.log(`🎵 恢复进度: ${parseFloat(savedTime).toFixed(1)}秒`)
-          }
-          player.play().catch(() => {})
+        if (savedTime && !isNaN(parseFloat(savedTime)) && parseFloat(savedTime) > 0) {
+          player.currentTime = parseFloat(savedTime)
+          console.log(`🎵 恢复进度: ${parseFloat(savedTime).toFixed(1)}秒`)
         }
+        player.play().catch(() => {})
       }
     })
   }
@@ -576,6 +574,17 @@ const playVideo = (index) => {
 }
 
 const onAudioEnded = () => {
+  if (loopMode.value) {
+    // ===== 单曲循环模式：重新播放当前音频 =====
+    if (audioPlayer.value) {
+      audioPlayer.value.currentTime = 0
+      audioPlayer.value.play().catch(() => {})
+      console.log('🔁 单曲循环：重新播放')
+    }
+    return
+  }
+  
+  // ===== 顺序播放模式：自动跳转下一个 =====
   if (currentAudioIndex.value < audioList.value.length - 1) {
     const nextIndex = currentAudioIndex.value + 1
     playAudio(nextIndex)
@@ -1667,6 +1676,16 @@ onMounted(async () => {
   }
 }
 
+/* ===== 循环按钮 ===== */
+.loop-btn {
+  background: #e8d5a0;
+}
+.loop-btn.active {
+  background: #f1c40f;
+  color: #fff;
+  box-shadow: 0 0 8px rgba(241, 196, 15, 0.4);
+}
+
 /* ===== 返回顶部 ===== */
 .back-to-top {
   position: fixed;
@@ -1705,4 +1724,14 @@ onMounted(async () => {
     font-size: 20px;
   }
 }
+
+.loop-btn {
+  background: #e8d5a0;
+}
+.loop-btn.active {
+  background: #f1c40f;
+  color: #fff;
+  box-shadow: 0 0 8px rgba(241, 196, 15, 0.4);
+}
+
 </style>
