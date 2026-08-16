@@ -519,23 +519,34 @@ const moveAudioListAfterTitle = () => {
 const playAudio = (index) => {
   if (index >= 0 && index < audioList.value.length) {
     const item = audioList.value[index]
+    
+    // ===== 判断是否点击的是同一个音频 =====
+    const isSameAudio = currentAudioIndex.value === index && currentAudio.value?.url === item.url
+    
     currentAudioIndex.value = index
     currentAudio.value = { 
       url: item.url, 
       title: item.title 
     }
     
-    const key = `audio_progress_${item.url}`
-    const savedTime = localStorage.getItem(key)
-    
     nextTick(() => {
       const player = audioPlayer.value
       if (player) {
-        if (savedTime && !isNaN(parseFloat(savedTime)) && parseFloat(savedTime) > 0) {
-          player.currentTime = parseFloat(savedTime)
-          console.log(`🎵 恢复进度: ${parseFloat(savedTime).toFixed(1)}秒`)
+        if (isSameAudio) {
+          // ===== 点击同一个音频：从头播放 =====
+          player.currentTime = 0
+          player.play().catch(() => {})
+          console.log('🔄 重听当前音频，从头播放')
+        } else {
+          // ===== 切换到其他音频：恢复进度 =====
+          const key = `audio_progress_${item.url}`
+          const savedTime = localStorage.getItem(key)
+          if (savedTime && !isNaN(parseFloat(savedTime)) && parseFloat(savedTime) > 0) {
+            player.currentTime = parseFloat(savedTime)
+            console.log(`🎵 恢复进度: ${parseFloat(savedTime).toFixed(1)}秒`)
+          }
+          player.play().catch(() => {})
         }
-        player.play().catch(() => {})
       }
     })
   }
