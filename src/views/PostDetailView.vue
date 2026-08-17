@@ -971,10 +971,10 @@ const loadPost = async (tid) => {
       post.value = null
     }
 
-    // ===== 先提取音频列表 =====
+    // ===== 提取音频列表（只调用一次） =====
     nextTick(() => {
       setTimeout(() => {
-        extractAudioList()
+        // extractAudioList()  // ← 删除这行
         waitForAudioList()
         extractVideoList()
         bindLinkHandler()
