@@ -389,41 +389,31 @@ const extractAudioList = (retryCount = 0) => {
     })
   }
 
-  // ===== 方法2：提取新结构的音频列表（自定义列表） =====
+  // ===== 方法2：提取自定义列表中的 .mp3 链接 =====
   if (list.length === 0) {
-    // 查找包含 .mp3 链接的容器（根据你的新结构调整选择器）
-    const customItems = contentEl.querySelectorAll('.audio-item, [class*="audio"], [class*="playlist"] a[href*=".mp3"]')
-    if (customItems.length > 0) {
-      customItems.forEach(item => {
-        // 如果是链接本身
-        let a = item.tagName === 'A' ? item : item.querySelector('a[href*=".mp3"]')
-        if (a) {
-          const url = a.getAttribute('href')
-          if (url && !list.find(i => i.url === url)) {
-            let title = a.textContent.trim()
-            // 如果链接内没有标题，从父级元素提取
-            if (!title) {
-              const parent = a.closest('div, li, p')
-              if (parent) {
-                // 克隆并移除 a 标签，提取剩余文本
-                const clone = parent.cloneNode(true)
-                const aClone = clone.querySelector('a')
-                if (aClone) aClone.remove()
-                title = clone.textContent.trim()
-              }
-            }
-            title = title.replace(/\s+/g, ' ').trim()
-            if (!title || /^\d+$/.test(title)) {
-              title = `音频 ${list.length + 1}`
-            }
-            list.push({ title, url })
+    // 查找所有 audio 标签的 src
+    const audios = contentEl.querySelectorAll('audio[src]')
+    audios.forEach(audio => {
+      const url = audio.getAttribute('src')
+      if (url && !list.find(item => item.url === url)) {
+        // 尝试从附近的 .name 元素获取标题
+        let title = ''
+        const parent = audio.closest('.audio-player-box')
+        if (parent) {
+          const nameSpan = parent.querySelector('.audio-item .name')
+          if (nameSpan) {
+            title = nameSpan.textContent.trim()
           }
         }
-      })
-    }
+        if (!title) {
+          title = `音频 ${list.length + 1}`
+        }
+        list.push({ title, url })
+      }
+    })
   }
 
-  // ===== 方法3：如果上面都没找到，查找所有 .mp3 链接 =====
+  // ===== 方法3：提取所有 .mp3/.m4a 链接 =====
   if (list.length === 0) {
     const links = contentEl.querySelectorAll('a[href*=".mp3"], a[href*=".m4a"]')
     links.forEach(a => {
@@ -439,7 +429,37 @@ const extractAudioList = (retryCount = 0) => {
     })
   }
 
-  // ===== 后续处理（保持不变） =====
+  // ===== 方法4：从 script 中提取 audioData（兜底） =====
+  if (list.length === 0) {
+    const scripts = document.querySelectorAll('script')
+    for (const script of scripts) {
+      const text = script.textContent || ''
+      // 匹配 url: 'http...mp3' 或 url: "http...mp3"
+      const matches = text.match(/url:\s*['"]([^'"]+\.(mp3|m4a))['"]/g)
+      if (matches) {
+        const urls = matches.map(m => m.match(/['"]([^'"]+)['"]/)[1])
+        // 提取标题
+        const nameSpans = contentEl.querySelectorAll('.audio-item .name')
+        urls.forEach((url, index) => {
+          if (url && !list.find(item => item.url === url)) {
+            let title = nameSpans[index]?.textContent.trim() || `音频 ${list.length + 1}`
+            // 尝试添加标签
+            const item = nameSpans[index]?.closest('.audio-item')
+            if (item) {
+              const tag = item.querySelector('.tag')
+              if (tag) {
+                title = `「${tag.textContent.trim()}」${title}`
+              }
+            }
+            list.push({ title, url })
+          }
+        })
+        break
+      }
+    }
+  }
+
+  // ===== 后续处理 =====
   if (list.length > 0) {
     audioList.value = list
     if (currentAudioIndex.value === -1) {
