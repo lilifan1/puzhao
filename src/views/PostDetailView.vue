@@ -1204,6 +1204,40 @@ onMounted(async () => {
     await loadPost(tid)
   }
   window.addEventListener('scroll', handleScroll)
+  
+  // ===== 暴露 playAudio 到全局 =====
+  window.playAudio = playAudio
+  
+  // ===== 绑定自定义音频列表 =====
+  setTimeout(() => {
+    const contentEl = document.querySelector('.content')
+    if (contentEl) {
+      const items = contentEl.querySelectorAll('.audio-item')
+      items.forEach((item) => {
+        // 移除可能残留的 onclick
+        item.removeAttribute('onclick')
+        item.onclick = null
+        
+        // 移除旧监听器，避免重复绑定
+        item.removeEventListener('click', item._clickHandler)
+        
+        item._clickHandler = function() {
+          const id = this.id || ''
+          const match = id.match(/item(\d+)/)
+          if (match) {
+            const index = parseInt(match[1])
+            // 用 window.playAudio 调用
+            if (typeof window.playAudio === 'function') {
+              window.playAudio(index)
+            } else {
+              console.warn('playAudio 未暴露到全局')
+            }
+          }
+        }
+        item.addEventListener('click', item._clickHandler)
+      })
+    }
+  }, 1000)
 })
 </script>
 
