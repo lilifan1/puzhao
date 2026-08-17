@@ -356,6 +356,8 @@ const extractAudioList = (retryCount = 0) => {
   }
 
   let list = []
+  
+  // ===== 方法1：提取 ul.sm2-playlist-bd（原有结构） =====
   const ul = contentEl.querySelector('ul.sm2-playlist-bd')
   if (ul) {
     const items = ul.querySelectorAll('li')
@@ -387,6 +389,41 @@ const extractAudioList = (retryCount = 0) => {
     })
   }
 
+  // ===== 方法2：提取新结构的音频列表（自定义列表） =====
+  if (list.length === 0) {
+    // 查找包含 .mp3 链接的容器（根据你的新结构调整选择器）
+    const customItems = contentEl.querySelectorAll('.audio-item, [class*="audio"], [class*="playlist"] a[href*=".mp3"]')
+    if (customItems.length > 0) {
+      customItems.forEach(item => {
+        // 如果是链接本身
+        let a = item.tagName === 'A' ? item : item.querySelector('a[href*=".mp3"]')
+        if (a) {
+          const url = a.getAttribute('href')
+          if (url && !list.find(i => i.url === url)) {
+            let title = a.textContent.trim()
+            // 如果链接内没有标题，从父级元素提取
+            if (!title) {
+              const parent = a.closest('div, li, p')
+              if (parent) {
+                // 克隆并移除 a 标签，提取剩余文本
+                const clone = parent.cloneNode(true)
+                const aClone = clone.querySelector('a')
+                if (aClone) aClone.remove()
+                title = clone.textContent.trim()
+              }
+            }
+            title = title.replace(/\s+/g, ' ').trim()
+            if (!title || /^\d+$/.test(title)) {
+              title = `音频 ${list.length + 1}`
+            }
+            list.push({ title, url })
+          }
+        }
+      })
+    }
+  }
+
+  // ===== 方法3：如果上面都没找到，查找所有 .mp3 链接 =====
   if (list.length === 0) {
     const links = contentEl.querySelectorAll('a[href*=".mp3"], a[href*=".m4a"]')
     links.forEach(a => {
@@ -402,6 +439,7 @@ const extractAudioList = (retryCount = 0) => {
     })
   }
 
+  // ===== 后续处理（保持不变） =====
   if (list.length > 0) {
     audioList.value = list
     if (currentAudioIndex.value === -1) {
