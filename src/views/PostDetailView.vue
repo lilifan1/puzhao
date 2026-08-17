@@ -357,7 +357,7 @@ const extractAudioList = (retryCount = 0) => {
 
   let list = []
   
-  // ===== 只提取隐藏的 .netlify-audio-list =====
+  // ===== 优先提取 .netlify-audio-list =====
   const hiddenList = contentEl.querySelector('.netlify-audio-list')
   if (hiddenList) {
     const links = hiddenList.querySelectorAll('a')
@@ -372,7 +372,41 @@ const extractAudioList = (retryCount = 0) => {
     })
   }
 
-  // ===== 如果隐藏列表有数据，直接使用 =====
+  // ===== 如果没有隐藏列表，走原有逻辑 =====
+  if (list.length === 0) {
+    const ul = contentEl.querySelector('ul.sm2-playlist-bd')
+    if (ul) {
+      const items = ul.querySelectorAll('li')
+      items.forEach(li => {
+        const a = li.querySelector('a')
+        if (a) {
+          const url = a.getAttribute('href')
+          if (url) {
+            let title = a.textContent.trim()
+            title = title.replace(/\s+/g, ' ').trim()
+            
+            if (!title || /^\d+$/.test(title)) {
+              const clone = li.cloneNode(true)
+              const aClone = clone.querySelector('a')
+              if (aClone) aClone.remove()
+              const extraText = clone.textContent.trim()
+              if (extraText) {
+                title = extraText.replace(/\s+/g, ' ').trim()
+              }
+            }
+            
+            if (!title || /^\d+$/.test(title)) {
+              title = `音频 ${list.length + 1}`
+            }
+            
+            list.push({ title, url })
+          }
+        }
+      })
+    }
+  }
+
+  // ===== 后续处理 =====
   if (list.length > 0) {
     audioList.value = list
     if (currentAudioIndex.value === -1) {
@@ -406,12 +440,7 @@ const extractAudioList = (retryCount = 0) => {
     nextTick(() => {
       moveAudioListAfterTitle()
     })
-    return  // ← 直接返回，不再执行后续提取逻辑
   }
-
-  // ===== 如果没有隐藏列表，走原有逻辑 =====
-  const ul = contentEl.querySelector('ul.sm2-playlist-bd')
-  // ... 原有 ul.sm2-playlist-bd 提取逻辑 ...
 }
 
 // ===== 等待音频列表出现 =====
