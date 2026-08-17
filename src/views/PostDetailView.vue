@@ -153,11 +153,11 @@
         <ul>
   <li v-for="(item, index) in audioList" :key="index" 
       @click="playAudio(index)"
-      class="netlify-audio-item"
+      class="audio-item"
       :class="{ active: currentAudioIndex === index }">
-    <span class="netlify-audio-index">{{ index + 1 }}</span>
-    <span class="netlify-audio-title">{{ item.title }}</span>
-    <span class="netlify-audio-play">▶</span>
+    <span class="audio-index">{{ index + 1 }}</span>
+    <span class="audio-title">{{ item.title }}</span>
+    <span class="audio-play">▶</span>
   </li>
 </ul>
       </div>
@@ -1318,6 +1318,13 @@ onMounted(async () => {
 .content a { color: #b8860b; text-decoration: none; border-bottom: 1px dashed #e6c88a; }
 .content a:hover { color: #7a5d2e; border-bottom-color: #7a5d2e; text-decoration: none; }
 
+/* ===== 添加在这里 ===== */
+/* ===== 隐藏 Discuz 自定义音频列表 ===== */
+.content .audio-player-wrap {
+  display: none !important;
+}
+/* ===== 隐藏结束 ===== */
+
 .error {
   color: #c0392b;
   text-align: center;
@@ -1397,54 +1404,6 @@ onMounted(async () => {
   list-style: none;
   padding: 0;
 }
-
-/* ===== 添加在这里 ===== */
-/* ===== Netlify 音频列表样式（独立，不受 Discuz 影响） ===== */
-.netlify-audio-item {
-  display: flex !important;
-  align-items: center !important;
-  gap: 12px !important;
-  padding: 12px 15px !important;
-  border-bottom: 1px solid #f5ecce !important;
-  cursor: pointer !important;
-  transition: all 0.25s ease !important;
-  border-radius: 6px !important;
-  background: transparent !important;
-}
-.netlify-audio-item:hover {
-  background: rgba(241, 196, 15, 0.15) !important;
-}
-.netlify-audio-item.active {
-  background: rgba(241, 196, 15, 0.25) !important;
-  border-left: 3px solid #f1c40f !important;
-}
-.netlify-audio-index {
-  width: 30px !important;
-  height: 30px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  background: #f1c40f !important;
-  color: white !important;
-  border-radius: 50% !important;
-  font-size: 13px !important;
-  font-weight: bold !important;
-  flex-shrink: 0 !important;
-}
-.netlify-audio-title {
-  flex: 1 !important;
-  font-size: 16px !important;
-  color: #4a3a25 !important;
-  font-weight: 500 !important;
-}
-.netlify-audio-play {
-  color: #b8860b !important;
-  font-size: 16px !important;
-}
-.netlify-audio-item:hover .netlify-audio-play {
-  color: #d4a017 !important;
-}
-/* ===== 样式结束 ===== */
 
 .audio-item {
   display: flex;
