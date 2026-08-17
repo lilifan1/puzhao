@@ -1025,14 +1025,38 @@ const loadPost = async (tid) => {
 
     // ===== 先提取音频列表 =====
     nextTick(() => {
-      setTimeout(() => {
-        extractAudioList()
-        waitForAudioList()
-        extractVideoList()
-        bindLinkHandler()
-        setupMediaObserver()
-      }, 300)
-    })
+  setTimeout(() => {
+    extractAudioList()
+    waitForAudioList()
+    extractVideoList()
+    bindLinkHandler()
+    setupMediaObserver()
+    
+    // ===== 绑定自定义音频列表（同上） =====
+    const contentEl = document.querySelector('.content')
+    if (contentEl) {
+      const items = contentEl.querySelectorAll('.audio-item')
+      items.forEach((item) => {
+        item.removeAttribute('onclick')
+        item.onclick = null
+        item.removeEventListener('click', item._clickHandler)
+        item._clickHandler = (e) => {
+          const id = item.id || ''
+          const match = id.match(/item(\d+)/)
+          if (match) {
+            const index = parseInt(match[1])
+            if (audioList.value && audioList.value[index]) {
+              playAudio(index)
+            }
+          }
+        }
+        item.addEventListener('click', item._clickHandler)
+      })
+    }
+    // ===== 自定义列表绑定结束 =====
+    
+  }, 300)
+})
 
     // ===== 上下篇 =====
     // ===== 上下篇：分页循环获取全部帖子 =====
@@ -1122,6 +1146,30 @@ watch(post, () => {
         waitForAudioList()
         bindLinkHandler()
         setupMediaObserver()
+        
+        // ===== 绑定自定义音频列表 =====
+        const contentEl = document.querySelector('.content')
+        if (contentEl) {
+          const items = contentEl.querySelectorAll('.audio-item')
+          items.forEach((item) => {
+            item.removeAttribute('onclick')
+            item.onclick = null
+            item.removeEventListener('click', item._clickHandler)
+            item._clickHandler = (e) => {
+              const id = item.id || ''
+              const match = id.match(/item(\d+)/)
+              if (match) {
+                const index = parseInt(match[1])
+                if (audioList.value && audioList.value[index]) {
+                  playAudio(index)
+                }
+              }
+            }
+            item.addEventListener('click', item._clickHandler)
+          })
+        }
+        // ===== 自定义列表绑定结束 =====
+        
       }, 500)
     })
   }
