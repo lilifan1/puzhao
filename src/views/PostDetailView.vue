@@ -1037,20 +1037,7 @@ const loadPost = async (tid) => {
     if (contentEl) {
       const items = contentEl.querySelectorAll('.audio-item')
       items.forEach((item) => {
-        item.removeAttribute('onclick')
-        item.onclick = null
-        item.removeEventListener('click', item._clickHandler)
-        item._clickHandler = (e) => {
-          const id = item.id || ''
-          const match = id.match(/item(\d+)/)
-          if (match) {
-            const index = parseInt(match[1])
-            if (audioList.value && audioList.value[index]) {
-              playAudio(index)
-            }
-          }
-        }
-        item.addEventListener('click', item._clickHandler)
+        // ...
       })
     }
     // ===== 自定义列表绑定结束 =====
@@ -1147,27 +1134,37 @@ watch(post, () => {
         bindLinkHandler()
         setupMediaObserver()
         
-        // ===== 绑定自定义音频列表 =====
-        const contentEl = document.querySelector('.content')
-        if (contentEl) {
-          const items = contentEl.querySelectorAll('.audio-item')
-          items.forEach((item) => {
-            item.removeAttribute('onclick')
-            item.onclick = null
-            item.removeEventListener('click', item._clickHandler)
-            item._clickHandler = (e) => {
-              const id = item.id || ''
-              const match = id.match(/item(\d+)/)
-              if (match) {
-                const index = parseInt(match[1])
-                if (audioList.value && audioList.value[index]) {
-                  playAudio(index)
+        watch(post, () => {
+  if (post.value) {
+    nextTick(() => {
+      setTimeout(() => {
+        waitForAudioList()
+        bindLinkHandler()
+        setupMediaObserver()
+        
+        // ===== 延迟绑定自定义音频列表 =====
+        setTimeout(() => {
+          const contentEl = document.querySelector('.content')
+          if (contentEl && audioList.value && audioList.value.length > 0) {
+            const items = contentEl.querySelectorAll('.audio-item')
+            items.forEach((item) => {
+              item.removeAttribute('onclick')
+              item.onclick = null
+              item.removeEventListener('click', item._clickHandler)
+              item._clickHandler = (e) => {
+                const id = item.id || ''
+                const match = id.match(/item(\d+)/)
+                if (match) {
+                  const index = parseInt(match[1])
+                  if (audioList.value && audioList.value[index]) {
+                    playAudio(index)
+                  }
                 }
               }
-            }
-            item.addEventListener('click', item._clickHandler)
-          })
-        }
+              item.addEventListener('click', item._clickHandler)
+            })
+          }
+        }, 500)
         // ===== 自定义列表绑定结束 =====
         
       }, 500)
