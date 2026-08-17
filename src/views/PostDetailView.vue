@@ -151,15 +151,15 @@
           <p class="play-status" v-if="audioList.length > 1">⏭️ 播放完成后将自动播放下一个 记忆续航</p>
         </div>
         <ul>
-  <li v-for="(item, index) in audioList" :key="index" 
-      @click="playAudio(index)"
-      class="audio-item"
-      :class="{ active: currentAudioIndex === index }">
-    <span class="audio-index">{{ index + 1 }}</span>
-    <span class="audio-title">{{ item.title }}</span>
-    <span class="audio-play">▶</span>
-  </li>
-</ul>
+          <li v-for="(item, index) in audioList" :key="index" 
+              @click="playAudio(index)"
+              class="audio-item"
+              :class="{ active: currentAudioIndex === index }">
+            <span class="audio-index">{{ index + 1 }}</span>
+            <span class="audio-title">{{ item.title }}</span>
+            <span class="audio-play">▶</span>
+          </li>
+        </ul>
       </div>
     </div>
     <div v-else class="error">❌ 帖子不存在或已被删除</div>
@@ -356,57 +356,52 @@ const extractAudioList = (retryCount = 0) => {
   }
 
   let list = []
-  
-  // ===== 优先提取 .netlify-audio-list =====
-  const hiddenList = contentEl.querySelector('.netlify-audio-list')
-  if (hiddenList) {
-    const links = hiddenList.querySelectorAll('a')
+  const ul = contentEl.querySelector('ul.sm2-playlist-bd')
+  if (ul) {
+    const items = ul.querySelectorAll('li')
+    items.forEach(li => {
+      const a = li.querySelector('a')
+      if (a) {
+        const url = a.getAttribute('href')
+        if (url) {
+          let title = a.textContent.trim()
+          title = title.replace(/\s+/g, ' ').trim()
+          
+          if (!title || /^\d+$/.test(title)) {
+            const clone = li.cloneNode(true)
+            const aClone = clone.querySelector('a')
+            if (aClone) aClone.remove()
+            const extraText = clone.textContent.trim()
+            if (extraText) {
+              title = extraText.replace(/\s+/g, ' ').trim()
+            }
+          }
+          
+          if (!title || /^\d+$/.test(title)) {
+            title = `音频 ${list.length + 1}`
+          }
+          
+          list.push({ title, url })
+        }
+      }
+    })
+  }
+
+  if (list.length === 0) {
+    const links = contentEl.querySelectorAll('a[href*=".mp3"], a[href*=".m4a"]')
     links.forEach(a => {
       const url = a.getAttribute('href')
-      if (url) {
+      if (url && !list.find(item => item.url === url)) {
         let title = a.textContent.trim()
         title = title.replace(/\s+/g, ' ').trim()
-        if (!title) title = `音频 ${list.length + 1}`
+        if (!title || /^\d+$/.test(title)) {
+          title = `音频 ${list.length + 1}`
+        }
         list.push({ title, url })
       }
     })
   }
 
-  // ===== 如果没有隐藏列表，走原有逻辑 =====
-  if (list.length === 0) {
-    const ul = contentEl.querySelector('ul.sm2-playlist-bd')
-    if (ul) {
-      const items = ul.querySelectorAll('li')
-      items.forEach(li => {
-        const a = li.querySelector('a')
-        if (a) {
-          const url = a.getAttribute('href')
-          if (url) {
-            let title = a.textContent.trim()
-            title = title.replace(/\s+/g, ' ').trim()
-            
-            if (!title || /^\d+$/.test(title)) {
-              const clone = li.cloneNode(true)
-              const aClone = clone.querySelector('a')
-              if (aClone) aClone.remove()
-              const extraText = clone.textContent.trim()
-              if (extraText) {
-                title = extraText.replace(/\s+/g, ' ').trim()
-              }
-            }
-            
-            if (!title || /^\d+$/.test(title)) {
-              title = `音频 ${list.length + 1}`
-            }
-            
-            list.push({ title, url })
-          }
-        }
-      })
-    }
-  }
-
-  // ===== 后续处理 =====
   if (list.length > 0) {
     audioList.value = list
     if (currentAudioIndex.value === -1) {
@@ -419,11 +414,7 @@ const extractAudioList = (retryCount = 0) => {
       el.style.display = 'none'
     })
     
-    const audioSection = document.getElementById('audio-list-container')
-    if (audioSection) {
-      audioSection.style.display = 'block'
-    }
-    
+    // ===== 删除“更多精彩”目录 =====
     const allElements = contentEl.querySelectorAll('*')
     const keywords = ['更多精彩请点击以下目录', '更多精彩', '每日学习', '每日畅听', '白话佛法', '入门知识', '感动视频', '广播讲座', '睡前一听', '博客留言', '法會开示']
     allElements.forEach(el => {
@@ -436,6 +427,7 @@ const extractAudioList = (retryCount = 0) => {
         el.style.display = 'none'
       }
     })
+    // ===== 删除结束 =====
 
     nextTick(() => {
       moveAudioListAfterTitle()
@@ -973,10 +965,10 @@ const loadPost = async (tid) => {
       post.value = null
     }
 
-    // ===== 提取音频列表（只调用一次） =====
+    // ===== 先提取音频列表 =====
     nextTick(() => {
       setTimeout(() => {
-        // extractAudioList()  // ← 删除这行
+        extractAudioList()
         waitForAudioList()
         extractVideoList()
         bindLinkHandler()
@@ -1404,7 +1396,6 @@ onMounted(async () => {
   list-style: none;
   padding: 0;
 }
-
 .audio-item {
   display: flex;
   align-items: center;
