@@ -356,8 +356,6 @@ const extractAudioList = (retryCount = 0) => {
   }
 
   let list = []
-  
-  // ===== 方法1：提取 ul.sm2-playlist-bd（原有结构） =====
   const ul = contentEl.querySelector('ul.sm2-playlist-bd')
   if (ul) {
     const items = ul.querySelectorAll('li')
@@ -389,31 +387,6 @@ const extractAudioList = (retryCount = 0) => {
     })
   }
 
-  // ===== 方法2：提取自定义列表中的 .mp3 链接 =====
-  if (list.length === 0) {
-    // 查找所有 audio 标签的 src
-    const audios = contentEl.querySelectorAll('audio[src]')
-    audios.forEach(audio => {
-      const url = audio.getAttribute('src')
-      if (url && !list.find(item => item.url === url)) {
-        // 尝试从附近的 .name 元素获取标题
-        let title = ''
-        const parent = audio.closest('.audio-player-box')
-        if (parent) {
-          const nameSpan = parent.querySelector('.audio-item .name')
-          if (nameSpan) {
-            title = nameSpan.textContent.trim()
-          }
-        }
-        if (!title) {
-          title = `音频 ${list.length + 1}`
-        }
-        list.push({ title, url })
-      }
-    })
-  }
-
-  // ===== 方法3：提取所有 .mp3/.m4a 链接 =====
   if (list.length === 0) {
     const links = contentEl.querySelectorAll('a[href*=".mp3"], a[href*=".m4a"]')
     links.forEach(a => {
@@ -429,68 +402,43 @@ const extractAudioList = (retryCount = 0) => {
     })
   }
 
-  // ===== 方法4：从 script 中提取 audioData（兜底） =====
-  if (list.length === 0) {
-    const scripts = document.querySelectorAll('script')
-    for (const script of scripts) {
-      const text = script.textContent || ''
-      // 匹配 url: 'http...mp3' 或 url: "http...mp3"
-      const matches = text.match(/url:\s*['"]([^'"]+\.(mp3|m4a))['"]/g)
-      if (matches) {
-        const urls = matches.map(m => m.match(/['"]([^'"]+)['"]/)[1])
-        // 提取标题
-        const nameSpans = contentEl.querySelectorAll('.audio-item .name')
-        urls.forEach((url, index) => {
-          if (url && !list.find(item => item.url === url)) {
-            let title = nameSpans[index]?.textContent.trim() || `音频 ${list.length + 1}`
-            // 尝试添加标签
-            const item = nameSpans[index]?.closest('.audio-item')
-            if (item) {
-              const tag = item.querySelector('.tag')
-              if (tag) {
-                title = `「${tag.textContent.trim()}」${title}`
-              }
-            }
-            list.push({ title, url })
-          }
-        })
-        break
-      }
-    }
-  }
-
-  // ===== 后续处理 =====
   if (list.length > 0) {
-    audioList.value = list
-    if (currentAudioIndex.value === -1) {
-      currentAudioIndex.value = 0
-      currentAudio.value = { url: list[0].url, title: list[0].title }
-    }
-    
-    const allPlayers = contentEl.querySelectorAll('.sm2-bar-ui, ul.sm2-playlist-bd, .sm2-playlist-drawer')
-    allPlayers.forEach(el => {
-      el.style.display = 'none'
-    })
-    
-    // ===== 删除“更多精彩”目录 =====
-    const allElements = contentEl.querySelectorAll('*')
-    const keywords = ['更多精彩请点击以下目录', '更多精彩', '每日学习', '每日畅听', '白话佛法', '入门知识', '感动视频', '广播讲座', '睡前一听', '博客留言', '法會开示']
-    allElements.forEach(el => {
-      const text = el.textContent || ''
-      let matchCount = 0
-      for (const kw of keywords) {
-        if (text.includes(kw)) matchCount++
-      }
-      if (matchCount >= 3 && !el.querySelector('.sm2-bar-ui') && !el.querySelector('audio')) {
-        el.style.display = 'none'
-      }
-    })
-    // ===== 删除结束 =====
-
-    nextTick(() => {
-      moveAudioListAfterTitle()
-    })
+  audioList.value = list
+  if (currentAudioIndex.value === -1) {
+    currentAudioIndex.value = 0
+    currentAudio.value = { url: list[0].url, title: list[0].title }
   }
+  
+  const allPlayers = contentEl.querySelectorAll('.sm2-bar-ui, ul.sm2-playlist-bd, .sm2-playlist-drawer')
+  allPlayers.forEach(el => {
+    el.style.display = 'none'
+  })
+  
+  // ===== 强制显示音频列表容器 =====
+  const audioSection = document.getElementById('audio-list-container')
+  if (audioSection) {
+    audioSection.style.display = 'block'
+  }
+  // ===== 强制显示结束 =====
+  
+  // ===== 删除“更多精彩”目录 =====
+  const allElements = contentEl.querySelectorAll('*')
+  const keywords = ['更多精彩请点击以下目录', '更多精彩', '每日学习', '每日畅听', '白话佛法', '入门知识', '感动视频', '广播讲座', '睡前一听', '博客留言', '法會开示']
+  allElements.forEach(el => {
+    const text = el.textContent || ''
+    let matchCount = 0
+    for (const kw of keywords) {
+      if (text.includes(kw)) matchCount++
+    }
+    if (matchCount >= 3 && !el.querySelector('.sm2-bar-ui') && !el.querySelector('audio')) {
+      el.style.display = 'none'
+    }
+  })
+  // ===== 删除结束 =====
+
+  nextTick(() => {
+    moveAudioListAfterTitle()
+  })
 }
 
 // ===== 等待音频列表出现 =====
@@ -1025,25 +973,14 @@ const loadPost = async (tid) => {
 
     // ===== 先提取音频列表 =====
     nextTick(() => {
-  setTimeout(() => {
-    extractAudioList()
-    waitForAudioList()
-    extractVideoList()
-    bindLinkHandler()
-    setupMediaObserver()
-    
-    // ===== 绑定自定义音频列表（同上） =====
-    const contentEl = document.querySelector('.content')
-    if (contentEl) {
-      const items = contentEl.querySelectorAll('.audio-item')
-      items.forEach((item) => {
-        // ...
-      })
-    }
-    // ===== 自定义列表绑定结束 =====
-    
-  }, 300)
-})
+      setTimeout(() => {
+        extractAudioList()
+        waitForAudioList()
+        extractVideoList()
+        bindLinkHandler()
+        setupMediaObserver()
+      }, 300)
+    })
 
     // ===== 上下篇 =====
     // ===== 上下篇：分页循环获取全部帖子 =====
@@ -1133,40 +1070,6 @@ watch(post, () => {
         waitForAudioList()
         bindLinkHandler()
         setupMediaObserver()
-        
-        watch(post, () => {
-  if (post.value) {
-    nextTick(() => {
-      setTimeout(() => {
-        waitForAudioList()
-        bindLinkHandler()
-        setupMediaObserver()
-        
-        // ===== 延迟绑定自定义音频列表 =====
-        setTimeout(() => {
-          const contentEl = document.querySelector('.content')
-          if (contentEl && audioList.value && audioList.value.length > 0) {
-            const items = contentEl.querySelectorAll('.audio-item')
-            items.forEach((item) => {
-              item.removeAttribute('onclick')
-              item.onclick = null
-              item.removeEventListener('click', item._clickHandler)
-              item._clickHandler = (e) => {
-                const id = item.id || ''
-                const match = id.match(/item(\d+)/)
-                if (match) {
-                  const index = parseInt(match[1])
-                  if (audioList.value && audioList.value[index]) {
-                    playAudio(index)
-                  }
-                }
-              }
-              item.addEventListener('click', item._clickHandler)
-            })
-          }
-        }, 500)
-        // ===== 自定义列表绑定结束 =====
-        
       }, 500)
     })
   }
@@ -1204,40 +1107,6 @@ onMounted(async () => {
     await loadPost(tid)
   }
   window.addEventListener('scroll', handleScroll)
-  
-  // ===== 暴露 playAudio 到全局 =====
-  window.playAudio = playAudio
-  
-  // ===== 绑定自定义音频列表 =====
-  setTimeout(() => {
-    const contentEl = document.querySelector('.content')
-    if (contentEl) {
-      const items = contentEl.querySelectorAll('.audio-item')
-      items.forEach((item) => {
-        // 移除可能残留的 onclick
-        item.removeAttribute('onclick')
-        item.onclick = null
-        
-        // 移除旧监听器，避免重复绑定
-        item.removeEventListener('click', item._clickHandler)
-        
-        item._clickHandler = function() {
-          const id = this.id || ''
-          const match = id.match(/item(\d+)/)
-          if (match) {
-            const index = parseInt(match[1])
-            // 用 window.playAudio 调用
-            if (typeof window.playAudio === 'function') {
-              window.playAudio(index)
-            } else {
-              console.warn('playAudio 未暴露到全局')
-            }
-          }
-        }
-        item.addEventListener('click', item._clickHandler)
-      })
-    }
-  }, 1000)
 })
 </script>
 
