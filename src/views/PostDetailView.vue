@@ -1311,7 +1311,7 @@ onMounted(async () => {
 .content a:hover { color: #7a5d2e; border-bottom-color: #7a5d2e; text-decoration: none; }
 
 /* ===== 隐藏 Discuz 自定义音频列表 ===== */
-.content .audio-player-wrap {
+.audio-player-wrap {
   display: none !important;
 }
 /* ===== 隐藏结束 ===== */
