@@ -1737,3 +1737,10 @@ onMounted(async () => {
   }
 }
 </style>
+
+<style>
+/* ===== 全局隐藏 Discuz 自定义音频列表 ===== */
+.audio-player-wrap {
+  display: none !important;
+}
+</style>
