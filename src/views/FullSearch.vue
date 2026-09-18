@@ -50,7 +50,7 @@ onMounted(() => {
 
 const iframeSrc = computed(() => {
   const q = keyword.value || ''
-  return `https://xuexi.pzyuanman.space/sina/ff/plugin.php?id=twpx_xunsearch&q=${encodeURIComponent(q)}&s=relevance&syn=yes&mod=forum&searchsubmit=yes`
+  return `https://l1.jingyixin.space/sina/ff/plugin.php?id=twpx_xunsearch&q=${encodeURIComponent(q)}&s=relevance&syn=yes&mod=forum&searchsubmit=yes`
 })
 
 // 回到首页（清除所有状态）
