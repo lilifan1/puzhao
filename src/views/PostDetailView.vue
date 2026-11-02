@@ -1037,7 +1037,15 @@ watch(post, () => {
   if (post.value) {
     nextTick(() => {
       setTimeout(() => {
+        // 1. 处理音频
         waitForAudioList()
+        
+        // 2. 处理视频（加个短暂延时，确保 Discuz 的脚本已经渲染出了 .dplayer 和 data-src）
+        setTimeout(() => {
+          extractVideoList()
+        }, 300)
+
+        // 3. 处理链接和媒体控制
         bindLinkHandler()
         setupMediaObserver()
       }, 500)
