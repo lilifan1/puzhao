@@ -599,6 +599,7 @@ const onAudioEnded = () => {
 }
 
 // ==================== 视频 ====================
+// 提取视频列表（暴力全量抓取）
 const extractVideoList = (retryCount = 0) => {
   const contentEl = document.querySelector('.content')
   if (!contentEl) {
@@ -606,50 +607,74 @@ const extractVideoList = (retryCount = 0) => {
     return
   }
 
-  // 直接找截图里那个带 data-src 的 dplayer 元素
-  const dplayers = contentEl.querySelectorAll('.dplayer[data-src]')
-  
-  if (dplayers.length === 0) {
-    // 兼容一下，如果没加载出来，再等等
-    if (retryCount < 5) setTimeout(() => extractVideoList(retryCount + 1), 500)
-    return
-  }
-
   const list = []
+  
+  // 1. 暴力搜索所有带 data-src 的 dplayer 元素
+  const dplayers = contentEl.querySelectorAll('.dplayer[data-src]')
   dplayers.forEach((item, index) => {
-    // 1. 提取视频真实地址
     const url = item.getAttribute('data-src')
-    if (!url) return
-
-    // 2. 提取标题：去上一级找 videolist-title 里的文字
-    let title = `视频 ${index + 1}`
-    const listItem = item.closest('.vl-list-item')
-    if (listItem) {
-      const titleEl = listItem.querySelector('.videolist-title')
-      if (titleEl && titleEl.textContent.trim()) {
-        title = titleEl.textContent.trim()
+    if (url && url.startsWith('http')) {
+      let title = `视频 ${index + 1}`
+      const listItem = item.closest('.vl-list-item')
+      if (listItem) {
+        const titleEl = listItem.querySelector('.videolist-title')
+        if (titleEl && titleEl.textContent.trim()) title = titleEl.textContent.trim()
       }
+      list.push({ title, url })
     }
-
-    list.push({ title, url })
   })
 
-  if (list.length > 0) {
-    videoList.value = list
+  // 2. 如果 dplayer 没找到，尝试搜索所有包含 mp4 的元素（兼容各种奇葩格式）
+  if (list.length === 0) {
+    const allElements = contentEl.querySelectorAll('*')
+    allElements.forEach((el, index) => {
+      const src = el.getAttribute('data-src') || el.getAttribute('src')
+      if (src && src.includes('.mp4')) {
+        list.push({ title: `视频 ${list.length + 1}`, url: src })
+      }
+    })
+  }
+
+  // 3. 去重（防止同一个视频被抓取两次）
+  const uniqueList = []
+  const seenUrls = new Set()
+  list.forEach(item => {
+    if (!seenUrls.has(item.url)) {
+      seenUrls.add(item.url)
+      uniqueList.push(item)
+    }
+  })
+
+  if (uniqueList.length > 0) {
+    videoList.value = uniqueList
     if (currentVideoIndex.value === -1) {
       currentVideoIndex.value = 0
-      currentVideoUrl.value = list[0].url
-      currentVideoTitle.value = list[0].title
+      currentVideoUrl.value = uniqueList[0].url
+      currentVideoTitle.value = uniqueList[0].title
     }
     
-   const hideOriginalVideo = () => {
-   const contentEl = document.querySelector('.content')
-   if (!contentEl) return
-
-    // 🎯 核心操作：把所有原始的 vl-player 彻底从 DOM 里删掉，释放内存！
-    const originalPlayers = contentEl.querySelectorAll('vl-player')
-    originalPlayers.forEach(el => el.remove())
+    // 🎯 关键：抓到视频后，立刻把原视频删掉，释放内存
+    setTimeout(() => {
+       hideOriginalVideo()
+    }, 100)
   }
+}
+
+// 暴力清理原始视频元素
+const hideOriginalVideo = () => {
+  const contentEl = document.querySelector('.content')
+  if (!contentEl) return
+  
+  // 干掉所有 dplayer、vl-player
+  contentEl.querySelectorAll('.dplayer, vl-player, .video-container, .vl-list, .vl-list-item').forEach(el => el.remove())
+  
+  // 干掉可能残留的 div 容器
+  const divs = contentEl.querySelectorAll('div')
+  divs.forEach(div => {
+    if (div.innerHTML.includes('class="dplayer"') || div.innerHTML.includes('vl-player')) {
+      div.remove()
+    }
+  })
 }
 
 const setupVideoListObserver = () => {
