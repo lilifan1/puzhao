@@ -602,69 +602,36 @@ const onAudioEnded = () => {
 const extractVideoList = (retryCount = 0) => {
   const contentEl = document.querySelector('.content')
   if (!contentEl) {
-    if (retryCount < 10) {
-      setTimeout(() => extractVideoList(retryCount + 1), 300)
-    }
+    if (retryCount < 10) setTimeout(() => extractVideoList(retryCount + 1), 300)
     return
   }
 
-  let items = contentEl.querySelectorAll('.videolist1')
-  if (items.length === 0) {
-    items = contentEl.querySelectorAll('.videolist')
-  }
-
-  if (items.length === 0) {
-    if (retryCount === 0) {
-      setupVideoListObserver()
-    }
+  // 直接找截图里那个带 data-src 的 dplayer 元素
+  const dplayers = contentEl.querySelectorAll('.dplayer[data-src]')
+  
+  if (dplayers.length === 0) {
+    // 兼容一下，如果没加载出来，再等等
+    if (retryCount < 5) setTimeout(() => extractVideoList(retryCount + 1), 500)
     return
   }
 
   const list = []
-  items.forEach(item => {
-    let title = ''
-    const span = item.querySelector('span[id]')
-    if (span) {
-      title = span.textContent.trim()
-    }
-    if (!title) {
-      const ac = item.querySelector('ac')
-      if (ac) {
-        title = ac.textContent.trim()
+  dplayers.forEach((item, index) => {
+    // 1. 提取视频真实地址
+    const url = item.getAttribute('data-src')
+    if (!url) return
+
+    // 2. 提取标题：去上一级找 videolist-title 里的文字
+    let title = `视频 ${index + 1}`
+    const listItem = item.closest('.vl-list-item')
+    if (listItem) {
+      const titleEl = listItem.querySelector('.videolist-title')
+      if (titleEl && titleEl.textContent.trim()) {
+        title = titleEl.textContent.trim()
       }
     }
-    if (!title) {
-      title = item.textContent.trim()
-    }
-    title = title.replace(/\s+/g, ' ').trim()
-    
-    let url = ''
-    if (span) {
-      const onclick = span.getAttribute('@click') || ''
-      const match = onclick.match(/'(http[^']+)'/)
-      if (match) {
-        url = match[1]
-      }
-    }
-    if (!url) {
-      const a = item.querySelector('a[href*=".mp4"]')
-      if (a) {
-        url = a.getAttribute('href')
-      }
-    }
-    if (!url) {
-      const a = item.querySelector('a')
-      if (a) {
-        const href = a.getAttribute('href')
-        if (href && (href.includes('.mp4') || href.includes('.m3u8'))) {
-          url = href
-        }
-      }
-    }
-    
-    if (url && title) {
-      list.push({ title, url })
-    }
+
+    list.push({ title, url })
   })
 
   if (list.length > 0) {
@@ -674,37 +641,34 @@ const extractVideoList = (retryCount = 0) => {
       currentVideoUrl.value = list[0].url
       currentVideoTitle.value = list[0].title
     }
-    hideOriginalVideo()
+    
+    // 🎯 核心操作：把所有原始的 vl-player 彻底从 DOM 里删掉，释放内存！
+    const originalPlayers = contentEl.querySelectorAll('vl-player')
+    originalPlayers.forEach(el => el.remove())
   }
 }
 
 const hideOriginalVideo = () => {
   const contentEl = document.querySelector('.content')
   if (!contentEl) return
-
-  // 隐藏所有视频列表项的父容器
-  const allVideoItems = contentEl.querySelectorAll('.videolist1, .videolist')
-  allVideoItems.forEach(item => {
-    let parent = item.parentElement
+  
+  const firstVideo = contentEl.querySelector('.videolist1')
+  if (firstVideo) {
+    let parent = firstVideo.parentElement
     let count = 0
     while (parent && count < 6) {
-      if (parent.tagName === 'DIV' && parent.children.length > 1) {
+      if (parent.tagName === 'DIV' && parent.children.length > 2) {
         parent.style.display = 'none'
         break
       }
       parent = parent.parentElement
       count++
     }
-  })
-
-  // 兜底：隐藏所有直接包含 video/iframe 的容器
-  const mediaContainers = contentEl.querySelectorAll('video, iframe[src*="video"], embed[src*="video"]')
-  mediaContainers.forEach(media => {
-    const container = media.closest('div, section')
-    if (container && !container.closest('.video-section')) {
-      container.style.display = 'none'
-    }
-  })
+  }
+  const videoContainer = contentEl.querySelector('#app, .video-container-original, div[style*="text-align: center; margin: 15px 0px;"]')
+  if (videoContainer) {
+    videoContainer.style.display = 'none'
+  }
 }
 
 const setupVideoListObserver = () => {
@@ -1747,6 +1711,11 @@ onMounted(async () => {
 <style>
 /* ===== 全局隐藏 Discuz 自定义音频列表 ===== */
 .audio-player-wrap {
+  display: none !important;
+}
+
+/* 彻底隐藏老播放器的列表区域 */
+.vl-list, vl-player {
   display: none !important;
 }
 </style>
