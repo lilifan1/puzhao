@@ -56,6 +56,7 @@
             ref="videoPlayer"
             controls 
             :src="currentVideoUrl" 
+            referrerpolicy="no-referrer"
             poster="https://static.wixstatic.com/media/8dd7cb_777ac92550e94cf3824d803eaa3941d8~mv2.jpg"
             style="width: 100%; max-height: 500px;"
             controlslist="nodownload"
@@ -599,82 +600,113 @@ const onAudioEnded = () => {
 }
 
 // ==================== 视频 ====================
-// 提取视频列表（暴力全量抓取）
 const extractVideoList = (retryCount = 0) => {
   const contentEl = document.querySelector('.content')
   if (!contentEl) {
-    if (retryCount < 10) setTimeout(() => extractVideoList(retryCount + 1), 300)
+    if (retryCount < 10) {
+      setTimeout(() => extractVideoList(retryCount + 1), 300)
+    }
+    return
+  }
+
+    // 兼容 discuz 的旧版 class 和最新版 vl-player class
+  let items = contentEl.querySelectorAll('.videolist1, .videolist, .vl-list-item')
+  if (items.length === 0) {
+    items = contentEl.querySelectorAll('.videolist')
+  }
+
+  if (items.length === 0) {
+    if (retryCount === 0) {
+      setupVideoListObserver()
+    }
     return
   }
 
   const list = []
-  
-  // 1. 暴力搜索所有带 data-src 的 dplayer 元素
-  const dplayers = contentEl.querySelectorAll('.dplayer[data-src]')
-  dplayers.forEach((item, index) => {
-    const url = item.getAttribute('data-src')
-    if (url && url.startsWith('http')) {
-      let title = `视频 ${index + 1}`
-      const listItem = item.closest('.vl-list-item')
-      if (listItem) {
-        const titleEl = listItem.querySelector('.videolist-title')
-        if (titleEl && titleEl.textContent.trim()) title = titleEl.textContent.trim()
+  items.forEach(item => {
+    let title = ''
+    const span = item.querySelector('span[id]')
+    if (span) {
+      title = span.textContent.trim()
+    }
+    if (!title) {
+      const ac = item.querySelector('ac')
+      if (ac) {
+        title = ac.textContent.trim()
       }
+    }
+    if (!title) {
+      title = item.textContent.trim()
+    }
+    title = title.replace(/\s+/g, ' ').trim()
+    
+    let url = ''
+    if (span) {
+      const onclick = span.getAttribute('@click') || ''
+      const match = onclick.match(/'(http[^']+)'/)
+      if (match) {
+        url = match[1]
+      }
+    }
+    if (!url) {
+      const a = item.querySelector('a[href*=".mp4"]')
+      if (a) {
+        url = a.getAttribute('href')
+      }
+    }
+    if (!url) {
+      const a = item.querySelector('a')
+      if (a) {
+        const href = a.getAttribute('href')
+        if (href && (href.includes('.mp4') || href.includes('.m3u8'))) {
+          url = href
+        }
+      }
+    }
+    
+    if (url && title) {
       list.push({ title, url })
     }
   })
 
-  // 2. 如果 dplayer 没找到，尝试搜索所有包含 mp4 的元素（兼容各种奇葩格式）
-  if (list.length === 0) {
-    const allElements = contentEl.querySelectorAll('*')
-    allElements.forEach((el, index) => {
-      const src = el.getAttribute('data-src') || el.getAttribute('src')
-      if (src && src.includes('.mp4')) {
-        list.push({ title: `视频 ${list.length + 1}`, url: src })
-      }
-    })
-  }
-
-  // 3. 去重（防止同一个视频被抓取两次）
-  const uniqueList = []
-  const seenUrls = new Set()
-  list.forEach(item => {
-    if (!seenUrls.has(item.url)) {
-      seenUrls.add(item.url)
-      uniqueList.push(item)
-    }
-  })
-
-  if (uniqueList.length > 0) {
-    videoList.value = uniqueList
+  if (list.length > 0) {
+    videoList.value = list
     if (currentVideoIndex.value === -1) {
       currentVideoIndex.value = 0
-      currentVideoUrl.value = uniqueList[0].url
-      currentVideoTitle.value = uniqueList[0].title
+      currentVideoUrl.value = list[0].url
+      currentVideoTitle.value = list[0].title
     }
-    
-    // 🎯 关键：抓到视频后，立刻把原视频删掉，释放内存
-    setTimeout(() => {
-       hideOriginalVideo()
-    }, 100)
+    hideOriginalVideo()
   }
 }
 
-// 暴力清理原始视频元素
 const hideOriginalVideo = () => {
   const contentEl = document.querySelector('.content')
   if (!contentEl) return
+
+  // 🎯 新增：无情删除所有 vl-player 组件（防止它报错、抢资源）
+  contentEl.querySelectorAll('vl-player').forEach(el => el.remove())
   
-  // 干掉所有 dplayer、vl-player
-  contentEl.querySelectorAll('.dplayer, vl-player, .video-container, .vl-list, .vl-list-item').forEach(el => el.remove())
+  // 🎯 新增：删除所有动态注入的 script 标签（防止 Vue 2 冲突，解决 {{playBtn}} 问题）
+  contentEl.querySelectorAll('script').forEach(el => el.remove())
   
-  // 干掉可能残留的 div 容器
-  const divs = contentEl.querySelectorAll('div')
-  divs.forEach(div => {
-    if (div.innerHTML.includes('class="dplayer"') || div.innerHTML.includes('vl-player')) {
-      div.remove()
+  const firstVideo = contentEl.querySelector('.videolist1')
+  if (firstVideo) {
+    let parent = firstVideo.parentElement
+    let count = 0
+    while (parent && count < 6) {
+      if (parent.tagName === 'DIV' && parent.children.length > 2) {
+        parent.style.display = 'none'
+        break
+      }
+      parent = parent.parentElement
+      count++
     }
-  })
+  }
+  const videoContainer = contentEl.querySelector('#app, .video-container-original, div[style*="text-align: center; margin: 15px 0px;"]')
+  if (videoContainer) {
+    videoContainer.style.display = 'none'
+  }
 }
 
 const setupVideoListObserver = () => {
@@ -1037,15 +1069,7 @@ watch(post, () => {
   if (post.value) {
     nextTick(() => {
       setTimeout(() => {
-        // 1. 处理音频
         waitForAudioList()
-        
-        // 2. 处理视频（加个短暂延时，确保 Discuz 的脚本已经渲染出了 .dplayer 和 data-src）
-        setTimeout(() => {
-          extractVideoList()
-        }, 300)
-
-        // 3. 处理链接和媒体控制
         bindLinkHandler()
         setupMediaObserver()
       }, 500)
@@ -1725,11 +1749,6 @@ onMounted(async () => {
 <style>
 /* ===== 全局隐藏 Discuz 自定义音频列表 ===== */
 .audio-player-wrap {
-  display: none !important;
-}
-
-/* 彻底隐藏老播放器的列表区域 */
-.vl-list, vl-player {
   display: none !important;
 }
 </style>
