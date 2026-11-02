@@ -601,72 +601,34 @@ const onAudioEnded = () => {
 // ==================== 视频 ====================
 const extractVideoList = (retryCount = 0) => {
   const contentEl = document.querySelector('.content')
-  if (!contentEl) {
-    if (retryCount < 10) {
-      setTimeout(() => extractVideoList(retryCount + 1), 300)
-    }
-    return
-  }
+  if (!contentEl) return
 
-  let items = contentEl.querySelectorAll('.videolist1')
-  if (items.length === 0) {
-    items = contentEl.querySelectorAll('.videolist')
-  }
-
-  if (items.length === 0) {
-    if (retryCount === 0) {
-      setupVideoListObserver()
-    }
+  // 1. 抓取所有真实的播放器元素
+  const dplayers = contentEl.querySelectorAll('.dplayer[data-src]')
+  
+  // 如果没抓到，说明可能还在渲染，或者结构不一样，重试几次
+  if (dplayers.length === 0 && retryCount < 10) {
+    setTimeout(() => extractVideoList(retryCount + 1), 500)
     return
   }
 
   const list = []
-  items.forEach(item => {
-    let title = ''
-    const span = item.querySelector('span[id]')
-    if (span) {
-      title = span.textContent.trim()
-    }
-    if (!title) {
-      const ac = item.querySelector('ac')
-      if (ac) {
-        title = ac.textContent.trim()
+  dplayers.forEach((item, index) => {
+    const url = item.getAttribute('data-src')
+    if (!url || !url.startsWith('http')) return
+
+    let title = `视频 ${index + 1}`
+    const listItem = item.closest('.vl-list-item')
+    if (listItem) {
+      const titleEl = listItem.querySelector('.videolist-title')
+      if (titleEl && titleEl.textContent.trim()) {
+        title = titleEl.textContent.trim()
       }
     }
-    if (!title) {
-      title = item.textContent.trim()
-    }
-    title = title.replace(/\s+/g, ' ').trim()
-    
-    let url = ''
-    if (span) {
-      const onclick = span.getAttribute('@click') || ''
-      const match = onclick.match(/'(http[^']+)'/)
-      if (match) {
-        url = match[1]
-      }
-    }
-    if (!url) {
-      const a = item.querySelector('a[href*=".mp4"]')
-      if (a) {
-        url = a.getAttribute('href')
-      }
-    }
-    if (!url) {
-      const a = item.querySelector('a')
-      if (a) {
-        const href = a.getAttribute('href')
-        if (href && (href.includes('.mp4') || href.includes('.m3u8'))) {
-          url = href
-        }
-      }
-    }
-    
-    if (url && title) {
-      list.push({ title, url })
-    }
+    list.push({ title, url })
   })
 
+  // 2. 只有抓到了，才赋给 Vue 的变量
   if (list.length > 0) {
     videoList.value = list
     if (currentVideoIndex.value === -1) {
@@ -674,6 +636,8 @@ const extractVideoList = (retryCount = 0) => {
       currentVideoUrl.value = list[0].url
       currentVideoTitle.value = list[0].title
     }
+    
+    // 3. 抓完后，把原始的垃圾全部删掉，释放浏览器内存
     hideOriginalVideo()
   }
 }
@@ -681,6 +645,9 @@ const extractVideoList = (retryCount = 0) => {
 const hideOriginalVideo = () => {
   const contentEl = document.querySelector('.content')
   if (!contentEl) return
+
+  // 直接干掉原来的播放器容器、列表，以及可能存在的 script 标签
+  contentEl.querySelectorAll('vl-player, .vl-list, script').forEach(el => el.remove())
   
   const firstVideo = contentEl.querySelector('.videolist1')
   if (firstVideo) {
@@ -960,10 +927,15 @@ const loadPost = async (tid) => {
     const res = await fetch(`${baseUrl}?action=thread&tid=${tid}`)
     const data = await res.json()
     if (data.code === 0) {
-      post.value = data.data
-    } else {
-      post.value = null
-    }
+  // 过滤掉所有的 <script> 代码块
+  let rawHtml = data.data.message || ''
+  rawHtml = rawHtml.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+  data.data.message = rawHtml
+  
+  post.value = data.data
+} else {
+  post.value = null
+}
 
     // ===== 先提取音频列表 =====
     nextTick(() => {
@@ -972,9 +944,14 @@ const loadPost = async (tid) => {
         waitForAudioList()
         extractVideoList()
         bindLinkHandler()
-        setupMediaObserver()
-      }, 300)
-    })
+
+        // 2. 🎯 重点：给 Discuz 原生脚本留足时间，延迟 1000 毫秒再去抓视频
+    setTimeout(() => {
+      extractVideoList()
+    }, 1000) 
+    
+  }, 300)
+})
 
     // ===== 上下篇 =====
     // ===== 上下篇：分页循环获取全部帖子 =====
@@ -1063,7 +1040,12 @@ watch(post, () => {
       setTimeout(() => {
         waitForAudioList()
         bindLinkHandler()
-        setupMediaObserver()
+        
+        // 🎯 同样加上 1000ms 延迟提取
+        setTimeout(() => {
+          extractVideoList()
+        }, 1000)
+        
       }, 500)
     })
   }
