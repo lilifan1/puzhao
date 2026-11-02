@@ -681,24 +681,30 @@ const extractVideoList = (retryCount = 0) => {
 const hideOriginalVideo = () => {
   const contentEl = document.querySelector('.content')
   if (!contentEl) return
-  
-  const firstVideo = contentEl.querySelector('.videolist1')
-  if (firstVideo) {
-    let parent = firstVideo.parentElement
+
+  // 隐藏所有视频列表项的父容器
+  const allVideoItems = contentEl.querySelectorAll('.videolist1, .videolist')
+  allVideoItems.forEach(item => {
+    let parent = item.parentElement
     let count = 0
     while (parent && count < 6) {
-      if (parent.tagName === 'DIV' && parent.children.length > 2) {
+      if (parent.tagName === 'DIV' && parent.children.length > 1) {
         parent.style.display = 'none'
         break
       }
       parent = parent.parentElement
       count++
     }
-  }
-  const videoContainer = contentEl.querySelector('#app, .video-container-original, div[style*="text-align: center; margin: 15px 0px;"]')
-  if (videoContainer) {
-    videoContainer.style.display = 'none'
-  }
+  })
+
+  // 兜底：隐藏所有直接包含 video/iframe 的容器
+  const mediaContainers = contentEl.querySelectorAll('video, iframe[src*="video"], embed[src*="video"]')
+  mediaContainers.forEach(media => {
+    const container = media.closest('div, section')
+    if (container && !container.closest('.video-section')) {
+      container.style.display = 'none'
+    }
+  })
 }
 
 const setupVideoListObserver = () => {
