@@ -642,19 +642,14 @@ const extractVideoList = (retryCount = 0) => {
       currentVideoTitle.value = list[0].title
     }
     
+   const hideOriginalVideo = () => {
+   const contentEl = document.querySelector('.content')
+   if (!contentEl) return
+
     // 🎯 核心操作：把所有原始的 vl-player 彻底从 DOM 里删掉，释放内存！
     const originalPlayers = contentEl.querySelectorAll('vl-player')
     originalPlayers.forEach(el => el.remove())
   }
-}
-
-const hideOriginalVideo = () => {
-  const contentEl = document.querySelector('.content')
-  if (!contentEl) return
-  
-  // 🎯 核心操作：把所有原始的 vl-player 彻底从 DOM 里删掉，释放内存！
-  const originalPlayers = contentEl.querySelectorAll('vl-player')
-  originalPlayers.forEach(el => el.remove())
 }
 
 const setupVideoListObserver = () => {
